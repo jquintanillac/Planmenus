@@ -1,0 +1,75 @@
+﻿@model List<Planmenus.Models.VMCaja_Q05>
+@*@{
+    Layout = null;
+}*@
+<div class="container text-center">
+    <div class="card text-center">
+        <div class="card-header">
+            <div class="div-title">
+				<h2 class="text-center">CUADRE DE CAJA</h2>
+                <h4 class="text-center">Empresa MENU</h4>                
+			 </div>
+        </div>
+        <div class="card-body">
+            @foreach (var item in Model)
+            {
+                <div class="row">
+                    <div class="col">
+                          <div class="row justify-content-center">
+                              <label class="text-center"><b>Fecha: </b> </label><br/>                              
+                          </div>
+                          <div class="row justify-content-center">                             
+                              <p class="text-center">@Html.DisplayFor(modelItem => item.fecha)</p>
+                          </div>
+                    </div>
+                </div>        
+                <div class="row offset-2">
+                    <div class="col">
+                          <div class="row">
+                               <label class="text-center"><b>Monto Inicial: </b> </label><br/>                            
+                          </div>  
+                          <div class="row">                              
+                              <p class="text-center">@Html.DisplayFor(modelItem => item.Inicial)</p>
+                          </div>  
+                    </div>
+                    <div class="col">
+                           <div class="row">
+                              <label class="text-center"><b>Ventas: </b> </label><br/>                            
+                          </div>  
+                           <div class="row">               
+                              <p class="text-center">@Html.DisplayFor(modelItem => item.Ventas)</p>
+                          </div>  
+                    </div>
+                </div>              
+                <div class="row offset-2">
+                    <div class="col">
+                          <div class="row">
+                              <label class="text-center"><b>Ingresos: </b> </label><br/>                             
+                          </div>  
+                           <div class="row">
+                              <p class="text-center">@Html.DisplayFor(modelItem => item.Ingresos)</p>
+                          </div>  
+                    </div>
+                    <div class="col">
+                          <div class="row">
+                              <label class="text-center"><b>Egresos: </b> </label><br/>                             
+                          </div>  
+                           <div class="row">
+                              <p class="text-center">@Html.DisplayFor(modelItem => item.Egresos)</p>
+                          </div>  
+                    </div>
+                </div>             
+                <div class="row offset-2">
+                    <div class="col">
+                          <div class="row">
+                              <label class="text-center"><b>Total: </b> </label><br/>
+                          </div>  
+                          <div class="row">                          
+                              <p class="text-center">@Html.DisplayFor(modelItem => item.Total)</p>
+                          </div>  
+                    </div>
+                </div>        
+            }                               
+        </div>
+    </div>
+</div>

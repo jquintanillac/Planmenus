@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Texao</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" type="text/css" href="./dist/css/adminx.css" media="screen" />
+
+    <!--
+      # Optional Resources
+      Feel free to delete these if you don't need them in your project
+    -->
+  </head>
+  <body>
+    <div class="adminx-container">
+      <nav class="navbar navbar-expand justify-content-between fixed-top">
+        <a class="navbar-brand mb-0 h1 d-none d-md-block" href="index.html">
+          <img src="./demo/img/logo.png" class="navbar-brand-image d-inline-block align-top mr-2" alt="">
+          Texao
+        </a>
+
+        <div class="d-flex flex-1 d-block d-md-none">
+          <a href="#" class="sidebar-toggle ml-3">
+            <i data-feather="menu"></i>
+          </a>
+        </div>
+      
+          <!-- Notificatoins -->
+          <li class="nav-item dropdown d-flex align-items-center mr-2">
+            <a class="nav-link nav-link-notifications" id="dropdownNotifications" data-toggle="dropdown" href="#">
+              <i class="oi oi-bell display-inline-block align-middle"></i>
+              <span class="nav-link-notification-number">3</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right dropdown-menu-notifications" aria-labelledby="dropdownNotifications">
+              <div class="notifications-header d-flex justify-content-between align-items-center">
+                <span class="notifications-header-title">
+                  Notifications
+                </span>
+                <a href="#" class="d-flex"><small>Mark all as read</small></a>
+              </div>
+
+              <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action unread">
+                  <p class="mb-1">Invitation for <strong>Lunch</strong> on <strong>Jan 12th 2018</strong> by <strong>Laura</strong></p>
+
+                  <div class="mb-1">
+                    <button type="button" class="btn btn-primary btn-sm">Accept invite</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm">Decline</button>
+                  </div>
+
+                  <small>1 hour ago</small>
+                </a>
+
+                <a href="#" class="list-group-item list-group-item-action">
+                  <p class="mb-1"><strong class="text-success">Goal completed</strong><br />1,000 new members today</p>
+                  <small>3 days ago</small>
+                </a>
+
+                <a href="#" class="list-group-item list-group-item-action">
+                  <p class="mb-1 text-danger"><strong>System error detected</strong></p>
+                  <small>3 days ago</small>
+                </a>
+
+                <a href="#" class="list-group-item list-group-item-action">
+                  <p class="mb-1">Your task <strong>Design Draft</strong> is due today.</p>
+                  <small>4 days ago</small>
+                </a>
+              </div>
+
+              <div class="notifications-footer text-center">
+                <a href="#"><small>View all notifications</small></a>
+              </div>
+            </div>
+          </li>
+          <!-- Notifications -->
+          <li class="nav-item dropdown">
+            <a class="nav-link avatar-with-name" id="navbarDropdownMenuLink" data-toggle="dropdown" href="#">
+              <img src="https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg" class="d-inline-block align-top" alt="">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" href="#">My Profile</a>
+              <a class="dropdown-item" href="#">My Tasks</a>
+              <a class="dropdown-item" href="#">Settings</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item text-danger" href="#">Sign out</a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- expand-hover push -->
+      <!-- Sidebar -->
+      <div class="adminx-sidebar expand-hover push">
+        <ul class="sidebar-nav">       
+          <li class="sidebar-nav-item">
+            <a class="sidebar-nav-link collapsed" data-toggle="collapse" href="#menu" aria-expanded="false" aria-controls="example">
+              <span class="sidebar-nav-icon">
+                <i data-feather="pie-chart"></i>
+              </span>
+              <span class="sidebar-nav-name">
+                Menu
+              </span>
+              <span class="sidebar-nav-end">
+                <i data-feather="chevron-right" class="nav-collapse-icon"></i>
+              </span>
+            </a>
+
+            <ul class="sidebar-sub-nav collapse" id="menu">
+              <li class="sidebar-nav-item">
+                <a href="./layouts/charts_chartjs.html" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">
+                    Programacion
+                  </span>
+                  <span class="sidebar-nav-name">
+                    Calendario
+                  </span>
+                </a>
+              </li>
+
+              <li class="sidebar-nav-item">
+                <a href="./layouts/charts_morris.html" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">
+                    Mo
+                  </span>
+                  <span class="sidebar-nav-name">
+                    Morris
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </li>
+
+        </ul>
+      </div><!-- Sidebar End -->
+
+      <!-- adminx-content-aside -->
+      <div class="adminx-content">
+        <!-- <div class="adminx-aside">
+
+        </div> -->
+
+        <div class="adminx-main-content">
+          <div class="container-fluid">
+				@RenderBody()
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- If you prefer jQuery these are the required scripts -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+    <script src="./dist/js/vendor.js"></script>
+    <script src="./dist/js/adminx.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+	<footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2022 - Planmenus - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+  </body>
+</html>

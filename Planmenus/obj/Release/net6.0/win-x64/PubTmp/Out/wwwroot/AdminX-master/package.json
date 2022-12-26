@@ -1,0 +1,41 @@
+{
+  "name": "adminx",
+  "version": "1.0.0-alpha.6",
+  "description": "Bootstrap 4 based Admin Template",
+  "repository": "https://mxmtsk@github.com/MOVACT/AdminX.git",
+  "main": "dist/js/adminx.js",
+  "keywords": [
+    "admin",
+    "dashboard",
+    "bootstrap4",
+    "template"
+  ],
+  "license": "MIT",
+  "author": "MOVACT",
+  "bugs": {
+    "url": "https://github.com/MOVACT/AdminX/issues"
+  },
+  "dependencies": {
+    "bootstrap": "4.1.2",
+    "bootstrap.native": "2.0.22",
+    "choices.js": "^3.0.2",
+    "cleave.js": "^1.0.7",
+    "feather-icons": "^4.0.1",
+    "flatpickr": "^4.1.4",
+    "open-iconic": "^1.1.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.18.13",
+    "browser-sync-webpack-plugin": "^1.2.0",
+    "express": "^4.16.2",
+    "express-urlrewrite": "^1.2.0",
+    "laravel-mix": "^1.6.1"
+  },
+  "scripts": {
+    "dev": "NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "watch": "NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "hot": "NODE_ENV=development webpack-dev-server --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "production": "NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "serve": "node server.js"
+  }
+}

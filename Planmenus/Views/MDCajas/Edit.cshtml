@@ -1,0 +1,53 @@
+﻿@model Planmenus.Data.Entities.MDCaja
+
+@{
+    ViewData["Title"] = "Anular Ticket";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+             <div class="div-title">
+				<h2 class="text-center">ANULAR TICKET</h2>
+			 </div>
+        </div>
+        <div class="card-body">
+             <div class="row">
+                <div class="col-5">
+                     <form asp-action="Anular">
+                        <input type="hidden" id="id" name="id" asp-for="id_caja" />
+                        <div class="form-group">
+                            <label asp-for="caja_monto" class="control-label"></label>
+                            <input asp-for="caja_monto" class="form-control" readonly />
+                            <span asp-validation-for="caja_monto" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="caja_fecha" class="control-label"></label>
+                            <input asp-for="caja_fecha" class="form-control" readonly />
+                            <span asp-validation-for="caja_fecha" class="text-danger"></span>
+                        </div>
+                         <div class="form-group">
+                            <label asp-for="caja_obs" class="control-label"></label>
+                            <input asp-for="caja_obs" class="form-control"/>
+                            <span asp-validation-for="caja_obs" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" id="btnbuscar" class="btn btn-danger btn-sm">Anular</button>               
+                            <a class="btn btn-sm btn-primary" asp-action="Cajadiaria">Regresar</a>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-7">
+                    <img src="~/AdminX-master/demo/img/menueditar.jpg" width="580" height="400" />
+                </div>
+            </div> 
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

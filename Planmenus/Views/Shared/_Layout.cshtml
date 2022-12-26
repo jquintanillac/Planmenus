@@ -1,0 +1,322 @@
+﻿@using Planmenus.Helpers;
+@using System.Security.Claims;
+@using System.Security.Principal;
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>SOLUCIONES FLP</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" type="text/css" href="~/AdminX-master/dist/css/adminx.css" media="screen" />
+
+    <!--
+      # Optional Resources
+      Feel free to delete these if you don't need them in your project
+    -->
+  </head>
+  <body>
+    <div class="adminx-container">
+      <nav class="navbar navbar-expand justify-content-between fixed-top">
+        <a class="navbar-brand mb-0 h1 d-none d-md-block" href="index.html">
+          <img src="~/AdminX-master/demo/img/logo.png" class="navbar-brand-image d-inline-block align-top mr-2" alt="">
+          Soluciones FLP
+        </a>
+
+        <div class="d-flex flex-1 d-block d-md-none">
+          <a href="#" class="sidebar-toggle ml-3">
+            <i data-feather="menu"></i>
+          </a>
+        </div>
+
+        <ul class="navbar-nav d-flex justify-content-end mr-2">
+          <li class="nav-item dropdown">
+            <a class="nav-link avatar-with-name" id="navbarDropdownMenuLink" data-toggle="dropdown" href="#">
+              <img src="~/AdminX-master/demo/img/logo.png" class="d-inline-block align-top" alt="">
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" href="#">Usuario: @SessionHelper.GetNameIdentifier(User)</a>
+              <a class="dropdown-item" href="#">Nombre: @SessionHelper.GetName(User)</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" asp-controller="Home" asp-action="Logout">Cerrar Session</a>
+            </div>
+          </li>
+        </ul>
+     
+      </nav>
+
+      <!-- expand-hover push -->
+      <!-- Sidebar -->
+      <div class="adminx-sidebar expand-hover push">
+        <ul class="sidebar-nav">
+         @if (SessionHelper.GetValue(User, "menu1") == "S")
+         {
+                    <li class="sidebar-nav-item">
+                        <a class="sidebar-nav-link collapsed" data-toggle="collapse" href="#admin" aria-expanded="false" aria-controls="example">
+                            <span class="sidebar-nav-icon">
+                                <i data-feather="server"></i>
+                            </span>
+                            <span class="sidebar-nav-name">
+                                Administracion
+                            </span>
+                            <span class="sidebar-nav-end">
+                                <i data-feather="chevron-right" class="nav-collapse-icon"></i>
+                            </span>
+                        </a>
+
+                        <ul class="sidebar-sub-nav collapse" id="admin">
+                            <li class="sidebar-nav-item">
+                               @if (SessionHelper.GetValue(User, "submenu1_1") == "S")
+                               {
+                                <a href="#" class="sidebar-nav-link">
+                                    <span class="sidebar-nav-abbr">                    
+                                        <a class="nav-link" asp-controller="MDGenerales" asp-action="Index">Generales</a>
+                                    </span>
+                                </a>
+                               }
+                               @if (SessionHelper.GetValue(User, "submenu1_2") == "S")
+                               {
+                                <a href="#" class="sidebar-nav-link">
+                                    <span class="sidebar-nav-abbr">                    
+                                        <a class="nav-link" asp-controller="MDUsuarios" asp-action="Index">Usuario</a>
+                                    </span>
+                                </a>
+                               }
+                               @if (SessionHelper.GetValue(User, "submenu1_3") == "S")
+                               {
+                                <a href="#" class="sidebar-nav-link">
+                                    <span class="sidebar-nav-abbr">                    
+                                        <a class="nav-link" asp-controller="MDRols" asp-action="Index">Roles</a>
+                                    </span>
+                                </a>
+                               }
+                               @if (SessionHelper.GetValue(User, "submenu1_4") == "S")
+                               {
+                                <a href="#" class="sidebar-nav-link">
+                                    <span class="sidebar-nav-abbr">                    
+                                        <a class="nav-link" asp-controller="MDMenuprins" asp-action="Index">Menus Modulos</a>
+                                    </span>
+                                </a>
+                               }
+                               @if (SessionHelper.GetValue(User, "submenu1_5") == "S")
+                               {
+                                <a href="#" class="sidebar-nav-link">
+                                    <span class="sidebar-nav-abbr">                    
+                                        <a class="nav-link" asp-controller="MDSubmenus" asp-action="Index">Sub Menu</a>
+                                    </span>
+                                </a>
+                               }
+                               @if (SessionHelper.GetValue(User, "submenu1_6") == "S")
+                               {
+                                <a href="#" class="sidebar-nav-link">
+                                    <span class="sidebar-nav-abbr">                    
+                                        <a class="nav-link" asp-controller="MDRol_Usuario" asp-action="Index">Rol Usuarios</a>
+                                    </span>
+                                </a>
+                               }
+                               @if (SessionHelper.GetValue(User, "submenu1_7") == "S")
+                               {
+                                <a href="#" class="sidebar-nav-link">
+                                    <span class="sidebar-nav-abbr">                    
+                                        <a class="nav-link" asp-controller="MDRol_Permisos" asp-action="Index">Roles Permisos</a>
+                                    </span>
+                                </a>
+                               }
+                            </li>
+                        </ul>
+                    </li>
+         }
+         @if (SessionHelper.GetValue(User, "menu2") == "S")
+         {
+             <li class="sidebar-nav-item">
+             <a class="sidebar-nav-link collapsed" data-toggle="collapse" href="#menu" aria-expanded="false" aria-controls="example">
+              <span class="sidebar-nav-icon">
+                <i data-feather="box"></i>
+              </span>
+              <span class="sidebar-nav-name">
+                Planificacion
+              </span>
+              <span class="sidebar-nav-end">
+                <i data-feather="chevron-right" class="nav-collapse-icon"></i>
+              </span>
+            </a>
+
+            <ul class="sidebar-sub-nav collapse" id="menu">
+              <li class="sidebar-nav-item">
+               @if (SessionHelper.GetValue(User, "submenu2_1") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                    
+                     <a class="nav-link" asp-controller="MDMenus" asp-action="Index">Programacion Menu</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu2_2") == "S")
+               {
+                 <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                     
+                    <a class="nav-link" asp-controller="MDTipo_pago" asp-action="Index">Tipo de pago</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu2_3") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                     
+                    <a class="nav-link" asp-controller="MDDeliveries" asp-action="Index">Reparto</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu2_4") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                     
+                    <a class="nav-link" asp-controller="MDMenus" asp-action="Calendar">Calendario</a>
+                  </span>
+                </a> 
+               }
+               @if (SessionHelper.GetValue(User, "submenu2_5") == "S")
+               {
+                  <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                     
+                    <a class="nav-link" asp-controller="MDMesas" asp-action="Index">Mesas</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu2_6") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                     
+                    <a class="nav-link" asp-controller="MDEgresos" asp-action="Index">Egresos</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu2_7") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                     
+                    <a class="nav-link" asp-controller="MDIngresos" asp-action="Index">Ingresos</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu2_8") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                     
+                    <a class="nav-link" asp-controller="MDInicials" asp-action="Index">Saldo Inicial</a>
+                  </span>
+                </a>  
+               }
+              </li>
+            </ul>
+          </li>
+        }
+        @if (SessionHelper.GetValue(User, "menu3") == "S")
+        {
+          <li class="sidebar-nav-item">
+            <a class="sidebar-nav-link collapsed" data-toggle="collapse" href="#caja" aria-expanded="false" aria-controls="example">
+              <span class="sidebar-nav-icon">
+                <i data-feather="bar-chart"></i>
+              </span>
+              <span class="sidebar-nav-name">
+                Caja
+              </span>
+              <span class="sidebar-nav-end">
+                <i data-feather="chevron-right" class="nav-collapse-icon"></i>
+              </span>
+            </a>
+             <ul class="sidebar-sub-nav collapse" id="caja">
+              <li class="sidebar-nav-item">
+               @if (SessionHelper.GetValue(User, "submenu3_1") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                    
+                     <a class="nav-link" asp-controller="MDCajas" asp-action="Create">Generar Ticket</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu3_2") == "S")
+               {
+                 <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                    
+                     <a class="nav-link" asp-controller="MDCajas" asp-action="Index">Cuadre caja</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu3_3") == "S")
+               {
+                 <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                    
+                     <a class="nav-link" asp-controller="MDCajas" asp-action="Cajadiaria">Lista de Tickets</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu3_4") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                    
+                     <a class="nav-link" asp-controller="MDCajas" asp-action="RptListpagos">Reporte resumen por tipo de pago</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu3_5") == "S")
+               {
+                 <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                    
+                     <a class="nav-link" asp-controller="MDCajas" asp-action="Rpttipodepago">Reporte ventas tipo de pago</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu3_6") == "S")
+               {
+                 <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                    
+                     <a class="nav-link" asp-controller="MDCajas" asp-action="Rptporplato">Reporte resumen por plato</a>
+                  </span>
+                </a>
+               }
+               @if (SessionHelper.GetValue(User, "submenu3_7") == "S")
+               {
+                 <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">                    
+                     <a class="nav-link" asp-controller="MDCajas" asp-action="Rptcantplato">Reporte ventas por plato</a>
+                  </span>
+                </a>
+               }
+              </li>
+            </ul>
+
+          </li>
+        }
+        </ul>
+      </div><!-- Sidebar End -->
+
+      <!-- adminx-content-aside -->
+      <div class="adminx-content">
+        <!-- <div class="adminx-aside">
+
+        </div> -->
+
+        <div class="adminx-main-content">
+          <div class="container-fluid">
+				@RenderBody()
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+    <br />
+
+    <!-- If you prefer jQuery these are the required scripts -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+    <script src="~/AdminX-master/dist/js/vendor.js"></script>
+    <script src="~/AdminX-master/dist/js/adminx.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+  </body>
+</html>

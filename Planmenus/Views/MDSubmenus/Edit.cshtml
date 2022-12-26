@@ -1,0 +1,55 @@
+﻿@model Planmenus.Data.Entities.MDSubmenu
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+             <div class="div-title">
+				<h2 class="text-center">EDITAR MENU PRINCIPAL</h2>
+			 </div>
+        </div>
+        <div class="card-body">
+             <div class="row">
+                <div class="col-5">
+                     <form asp-action="Edit">
+                       <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="id_submenu" />
+                        <div class="form-group">
+                                 <label class="control-label">Menu principal: </label>
+                                 <select class="form-control" asp-for="id_menprin" asp-items="@(new SelectList(ViewBag.menuprin, "id_menprin", "menuprin_desc"))">
+                                    <option>Seleccione menu</option>
+                                 </select>
+                         </div>
+                        <div class="form-group">
+                            <label asp-for="submenu_desc" class="control-label"></label>
+                            <input asp-for="submenu_desc" class="form-control" />
+                            <span asp-validation-for="submenu_desc" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="submenu_nro" class="control-label"></label>
+                            <input asp-for="submenu_nro" class="form-control" />
+                            <span asp-validation-for="submenu_nro" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Grabar" class="btn btn-sm btn-primary" />
+                             <a class="btn btn-sm btn-primary" asp-action="Index">Regresar</a>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-7">
+                    <img src="~/AdminX-master/demo/img/menueditar.jpg" width="580" height="400" />
+                </div>
+            </div> 
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+

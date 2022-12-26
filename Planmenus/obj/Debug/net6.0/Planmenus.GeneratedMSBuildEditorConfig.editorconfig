@@ -1,0 +1,380 @@
+is_global = true
+build_property.TargetFramework = net6.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = Planmenus
+build_property.RootNamespace = Planmenus
+build_property.ProjectDir = D:\Proyectos Personales\PlanMenus\Planmenus_Soluciones\Planmenus\
+build_property.RazorLangVersion = 6.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = D:\Proyectos Personales\PlanMenus\Planmenus_Soluciones\Planmenus
+build_property._RazorSourceGeneratorDebug = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/Crearpdf/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlYXJwZGZcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/Crearpdf/RptCuadre.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3JlYXJwZGZcUnB0Q3VhZHJlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Cajadiaria.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xDYWphZGlhcmlhLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Cuadre.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xDdWFkcmUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Rptcantplato.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xScHRjYW50cGxhdG8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/RptListpagos.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xScHRMaXN0cGFnb3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Rptporplato.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xScHRwb3JwbGF0by5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDCajas/Rpttipodepago.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURDYWphc1xScHR0aXBvZGVwYWdvLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDDeliveries/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTUREZWxpdmVyaWVzXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDDeliveries/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTUREZWxpdmVyaWVzXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDDeliveries/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTUREZWxpdmVyaWVzXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDDeliveries/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTUREZWxpdmVyaWVzXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDDeliveries/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTUREZWxpdmVyaWVzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDEgresos/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURFZ3Jlc29zXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDEgresos/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURFZ3Jlc29zXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDEgresos/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURFZ3Jlc29zXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDEgresos/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURFZ3Jlc29zXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDEgresos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURFZ3Jlc29zXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDGenerales/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURHZW5lcmFsZXNcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDGenerales/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURHZW5lcmFsZXNcRGVsZXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDGenerales/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURHZW5lcmFsZXNcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDGenerales/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURHZW5lcmFsZXNcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDGenerales/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURHZW5lcmFsZXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDIngresos/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmdyZXNvc1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDIngresos/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmdyZXNvc1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDIngresos/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmdyZXNvc1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDIngresos/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmdyZXNvc1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDIngresos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmdyZXNvc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDInicials/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmljaWFsc1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDInicials/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmljaWFsc1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDInicials/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmljaWFsc1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDInicials/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmljaWFsc1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDInicials/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURJbmljaWFsc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenuprins/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51cHJpbnNcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenuprins/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51cHJpbnNcRGVsZXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenuprins/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51cHJpbnNcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenuprins/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51cHJpbnNcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenuprins/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51cHJpbnNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenus/Calendar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51c1xDYWxlbmRhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenus/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51c1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenus/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51c1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenus/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51c1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenus/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51c1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMenus/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZW51c1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMesas/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZXNhc1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMesas/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZXNhc1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMesas/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZXNhc1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMesas/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZXNhc1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDMesas/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURNZXNhc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRols/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xzXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRols/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xzXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRols/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xzXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRols/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xzXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRols/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Permisos/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfUGVybWlzb3NcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Permisos/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfUGVybWlzb3NcRGVsZXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Permisos/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfUGVybWlzb3NcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Permisos/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfUGVybWlzb3NcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Permisos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfUGVybWlzb3NcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Usuario/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfVXN1YXJpb1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Usuario/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfVXN1YXJpb1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Usuario/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfVXN1YXJpb1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Usuario/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfVXN1YXJpb1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDRol_Usuario/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURSb2xfVXN1YXJpb1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDSubmenus/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURTdWJtZW51c1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDSubmenus/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURTdWJtZW51c1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDSubmenus/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURTdWJtZW51c1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDSubmenus/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURTdWJtZW51c1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDSubmenus/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURTdWJtZW51c1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDTipo_pago/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURUaXBvX3BhZ29cQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDTipo_pago/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURUaXBvX3BhZ29cRGVsZXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDTipo_pago/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURUaXBvX3BhZ29cRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDTipo_pago/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURUaXBvX3BhZ29cRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDTipo_pago/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURUaXBvX3BhZ29cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDUsuarios/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURVc3Vhcmlvc1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDUsuarios/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURVc3Vhcmlvc1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDUsuarios/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURVc3Vhcmlvc1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDUsuarios/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURVc3Vhcmlvc1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/MDUsuarios/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTURVc3Vhcmlvc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Proyectos Personales/PlanMenus/Planmenus_Soluciones/Planmenus/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-rwpj87d70j

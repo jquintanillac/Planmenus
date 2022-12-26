@@ -1,0 +1,132 @@
+﻿@{
+    ViewData["Title"] = "Rptporplato";
+}
+<head>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.7.0/css/buttons.bootstrap4.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+</head>
+
+<div class="container-fluid">
+	<div class="card">
+		<div class="card-header">
+			 <div class="div-title">
+				<h2 class="text-center">REPORTE RESUMEN POR PLATO</h2>
+			 </div>
+			 <hr />
+			 <br />	
+             <form asp-action="Rptporplato" asp-controller="MDCajas">
+             <div class="row">
+                   <div class="form-group col">
+						<label class="control-label">Fecha Inicio: </label>
+						<input id="Fecini" name="Fecini" type="date" class="form-control" />						
+					</div>
+					<div class="form-group col">
+						<label class="control-label">Fecha Fin: </label>
+						<input id="Fecfin" name="Fecfin" type="date" class="form-control" />						
+					</div>
+             </div> 
+             <div class="row">
+					 <div class="col-md-6">
+						<button type="submit" id="btnbuscar" class="btn btn-success btn-sm">Buscar</button>
+					</div>	
+		    </div>
+            </form>    
+		</div>
+	    <div class="card-body">
+			<table id="tblq03" class="table table-striped table-bordered" style="width: 100%">
+                <thead>
+                    <tr>                       
+                        <th class="d-none">
+                            id_menu
+                        </th>
+                        <th>
+                            MENU
+                        </th>
+                         <th>
+                            CANTIDAD
+                        </th>
+                        <th>
+                            NONTO S/.
+                        </th>
+                        <th>
+                            FECHA
+                        </th>  
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in ViewBag.reporteQ03) {
+                 <tr>    
+                    <td class="d-none">
+                       @item.id_menu
+                    </td>
+                    <td>
+                        @item.menu_desc
+                    </td>
+                    <td>
+                        @item.cant_menu
+                    </td>             
+                    <td>
+                        @item.caja_monto
+                    </td> 
+                    <td>
+                        @item.caja_fecha
+                    </td>
+                </tr>
+                }
+                </tbody>
+            </table>
+	   </div>
+	</div>
+</div>
+@section Scripts {
+	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css"></script>
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>    
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.bootstrap4.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.print.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			 $('#tblq03').DataTable({
+                "pageLength": 20,
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros por pagina",
+                    "zeroRecords": "No se encontraron registros",
+                    "info": "Mostrar pagina _PAGE_ de _PAGES_",
+                    "infoEmpty": "No se encontraron registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "search": "Buscar:",
+                    "paginate": {
+                        "next": "siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                "scrollX": true,
+                "responsive": true,
+                "dom": 'Bfrtilp',
+                "buttons": [
+                    {
+                        "extend": 'excelHtml5',
+                        "text": '<i class="bi bi-file-earmark-excel"></i>',
+                        "titleAttr": 'Exportar a excel',
+                        "className": 'btn btn-success'
+                    },
+                    {
+                        "extend": 'pdfHtml5',
+                        "text": '<i class="bi bi-file-earmark-pdf"></i>',
+                        "titleAttr": 'Exportar a PDF',
+                        "className": 'btn btn-danger'
+                    },
+                ]
+            });
+        });
+	</script>
+}

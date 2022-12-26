@@ -1,0 +1,56 @@
+﻿@model Planmenus.Data.Entities.MDMenu
+
+@{
+    ViewData["Title"] = "Editar";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+             <div class="div-title">
+				<h2 class="text-center">EDITAR MENU</h2>
+			 </div>
+        </div>
+        <div class="card-body">
+             <div class="row">
+                <div class="col-5">
+                     <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="id_menu" />
+                        <div class="form-group">
+                            <label asp-for="menu_desc" class="control-label">Descripcion</label>
+                            <input asp-for="menu_desc" class="form-control" />
+                            <span asp-validation-for="menu_desc" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="menu_precio" class="control-label">Precio</label>
+                            <input asp-for="menu_precio" class="form-control" />
+                            <span asp-validation-for="menu_precio" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="menu_observ" class="control-label">Observacion</label>
+                            <input asp-for="menu_observ" class="form-control" />
+                            <span asp-validation-for="menu_observ" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="menu_fecha" class="control-label">Fecha</label>
+                            <input asp-for="menu_fecha" class="form-control" />
+                            <span asp-validation-for="menu_fecha" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Grabar" class="btn btn-sm btn-primary" />
+                             <a class="btn btn-sm btn-primary" asp-action="Index">Regresar</a>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-7">
+                    <img src="~/AdminX-master/demo/img/menueditar.jpg" width="580" height="400" />
+                </div>
+            </div> 
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

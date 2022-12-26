@@ -1,0 +1,90 @@
+﻿@model IEnumerable<Planmenus.Data.Entities.MDDelivery>
+
+@{
+    ViewData["Title"] = "Delivery";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+</head>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <div class="div-title">
+				<h3 class="text-center">REPARTO</h3>
+			 </div>
+            <p> <a class="btn btn-sm btn-success" asp-action="Create">Agregar Reparto</a></p>
+        </div>
+        <div class="card-body">          
+            <table id="tbldelivery" class="table table-striped table-bordered" style="width: 100%">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.deliv_codig)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.deliv_nombcom)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.deliv_desc)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.deliv_act)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model) {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.deliv_codig)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.deliv_nombcom)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.deliv_desc)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.deliv_act)
+                    </td>
+                    <td>
+                        <a asp-action="Edit" class="btn btn-sm btn-primary" asp-route-id="@item.id_deliv">Editar</a> |                      
+                        <a asp-action="Delete"  class="btn btn-sm btn-danger" asp-route-id="@item.id_deliv">Eliminar</a>
+                    </td>
+                </tr>
+                }
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			 $('#tbldelivery').DataTable({
+                "pageLength": 50,
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros por pagina",
+                    "zeroRecords": "No se encontraron registros",
+                    "info": "Mostrar pagina _PAGE_ de _PAGES_",
+                    "infoEmpty": "No se encontraron registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "search": "Buscar:",
+                    "paginate": {
+                        "next": "siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                "scrollX": true,
+                "responsive": true
+            });
+        });
+	</script>
+}

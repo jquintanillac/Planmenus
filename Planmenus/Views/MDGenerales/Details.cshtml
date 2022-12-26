@@ -1,0 +1,49 @@
+﻿@model Planmenus.Data.Entities.MDGenerales
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>MDGenerales</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.gene_empre)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.gene_empre)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.gene_ruc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.gene_ruc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.gene_direc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.gene_direc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.gene_telef)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.gene_telef)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.gene_url)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.gene_url)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.id_gene">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

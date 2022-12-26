@@ -1,0 +1,37 @@
+﻿@model Planmenus.Data.Entities.MDRol_Permisos
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>MDRol_Permisos</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.id_menprin)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.id_menprin)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.id_submenu)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.id_submenu)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.rolper_act)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.rolper_act)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.id_rolper">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

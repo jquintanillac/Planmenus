@@ -1,0 +1,64 @@
+﻿@model Planmenus.Data.Entities.MDCaja
+
+@{
+    ViewData["Title"] = "Crear Ticket";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+             <div class="div-title">
+				<h2 class="text-center">IMPRIMIR TICKET</h2>
+			 </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                 <div class="col-md-5">
+                     <form asp-action="Create">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <div class="form-group">
+                                 <label class="control-label">Menu: </label>
+                                 <select class="form-control" asp-for="id_menu" asp-items="@(new SelectList(ViewBag.menu, "id_menu", "menu_desc"))">
+                                    <option>Seleccione menu</option>
+                                 </select>
+                            </div>
+                            <div class="form-group">
+                                 <label class="control-label">Tipo de pago: </label>
+                                 <select class="form-control" asp-for="id_tipago" asp-items="@(new SelectList(ViewBag.tipago, "id_tipago", "tipago_desc"))">
+                                    <option>Seleccione tipo pago</option>
+                                 </select>    
+                            </div>
+                            <div class="form-group">
+                                 <label class="control-label">Reparto: </label>
+                                 <select class="form-control" asp-for="id_deliv" asp-items="@(new SelectList(ViewBag.delivery, "id_deliv", "deliv_nombcom"))">
+                                    <option>Seleccione delivery</option>
+                                 </select>    
+                            </div>
+                             <div class="form-group">
+                                 <label class="control-label">Mesa: </label>
+                                 <select class="form-control" asp-for="id_mesa" asp-items="@(new SelectList(ViewBag.mesa, "id_mesa", "mesa_desc"))">
+                                    <option>Seleccione mesa</option>
+                                 </select>    
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="caja_monto" class="control-label">Monto</label>
+                                <input asp-for="caja_monto" class="form-control" />
+                                <span asp-validation-for="caja_monto" class="text-danger"></span>
+                            </div>                          
+                            <div class="form-group">
+                                 <input type="submit" value="Imprimir" formtarget="_blank" class="btn btn-sm btn-success" />                               
+                            </div>
+                    </form>
+                </div>  
+                <div class="col-md-7">
+                    <img src="~/AdminX-master/demo/img/Caja2.jpg" width="580" height="400" />
+                </div>
+            </div>           
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

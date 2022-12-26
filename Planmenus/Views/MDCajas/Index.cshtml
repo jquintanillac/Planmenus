@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Caja";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<head>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+</head>
+
+<div class="container-fluid">
+	<div class="card">
+		<div class="card-header">
+			 <div class="div-title">
+				<h2 class="text-center">CUADRE DIARIO DE CAJA</h2>
+			 </div>
+			 <hr />
+			 <br />
+            <form asp-action="RptCuadre" asp-controller="Crearpdf">
+             <div class="row">
+                   <div class="form-group col">
+						<label class="control-label">Fecha Inicio: </label>
+						<input id="Fecini" name="Fecini" type="date" class="form-control" />						
+					</div>
+					<div class="form-group col">
+						<label class="control-label">Fecha Fin: </label>
+						<input id="Fecfin" name="Fecfin" type="date" class="form-control" />						
+					</div>
+             </div>
+             <div class="row">
+					 <div class="col-md-6">
+						<button type="submit" id="btnbuscar" class="btn btn-success btn-sm" formtarget="_blank">Generar Reporte</button>			
+					</div>	
+				 </div>
+            </form>       
+		</div>
+	    <div class="card-body">
+		
+	   </div>
+	</div>
+</div>
+@section Scripts {
+	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			 $('#tblcaja').DataTable({
+                "pageLength": 20,
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros por pagina",
+                    "zeroRecords": "No se encontraron registros",
+                    "info": "Mostrar pagina _PAGE_ de _PAGES_",
+                    "infoEmpty": "No se encontraron registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "search": "Buscar:",
+                    "paginate": {
+                        "next": "siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                "scrollX": true,
+                "responsive": true
+            });
+        });
+	</script>
+}
+
+
+

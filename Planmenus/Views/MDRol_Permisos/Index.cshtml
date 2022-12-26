@@ -1,0 +1,302 @@
+﻿@model IEnumerable<Planmenus.Data.Entities.MDRol_Permisos>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+</head>
+
+<div class="container">
+    <div class="card">
+      <div class="card-header">
+			 <div class="div-title">
+				<h3 class="text-center">ROL PERMISOS</h3>
+			 </div>
+			 <hr />
+			 <br />	
+            @using (Html.BeginForm())
+            {
+				<div class="row">					
+					<div class="form-group col">
+						<input type="hidden" name="Idrol2" id="Idrol2" value="@ViewData["Idrol2"]" />
+						<label class="control-label">Roles: </label>
+						<select class="form-control" id="id_rol" name="id_rol" asp-items="@(new SelectList(ViewBag.rol, "id_rol", "rol_desc"))">
+                            <option>Seleccione rol</option>
+                        </select>					
+					</div>
+				</div>	
+				<div class="row">
+					 <div class="col-md-6">					
+						<input type="submit" value="Buscar" class="btn btn-primary btn-sm" formaction="@Url.Action("Index","MDRol_Permisos")" />
+						<input type="submit" id="asignar" value="Asignar" class="btn btn-primary btn-sm"/>
+					</div>	
+				</div>
+			}
+		</div>
+        <div id="checkid" class="card-body">
+            <div class="col">
+                 <nav>
+                     <div class="nav nav-tabs nav-fill" role="tablist">
+                        <a class="nav-item nav-link active" data-toggle="tab" href="#nav-admin" role="tab" aria-selected="true">Administracion</a>
+                        <a class="nav-item nav-link" data-toggle="tab" href="#nav-plani" role="tab" aria-controls="nav-plani" aria-selected="false">Planificacion</a>
+                        <a class="nav-item nav-link" data-toggle="tab" href="#nav-caja" role="tab" aria-controls="nav-caja"  aria-selected="false">Caja</a>
+                    </div>
+                 </nav>
+                 <div id="checkid" class="tab-content">
+                     <div class="tab-pane fade show active" id="nav-admin" role="tabpanel">
+						<table  id="tbladmin" class="table table-striped table-bordered" style="width: 100%">
+							<thead>
+								<tr>
+									<th class="d-none">
+										id_rolper
+									</th>
+									<th>
+										Rol
+									</th>
+									<th>
+										Menu
+									</th>
+									<th>
+										Submenu
+									</th>
+									<th>
+										Activo / Inactivo
+									</th>
+								</tr>	
+							</thead>														
+							<tbody>
+								@foreach (var item in ViewBag.admin)
+								{
+									<tr>
+										<td class="d-none check">
+											@item.id_rolper
+										</td>
+										<td>
+											@item.rol_desc
+										</td>
+										<td>
+											@item.menuprin_desc
+										</td>
+										<td>
+											@item.submenu_desc
+										</td>
+										<td>
+											@if(item.rolper_act)
+											{
+												<input name="check" type="checkbox" value=@item.id_rolper checked="checked" />
+											}
+											else
+											{
+												<input name="check" type="checkbox" value=@item.id_rolper />
+											}										
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+					<div class="tab-pane fade" id="nav-plani" role="tabpanel">
+						<table id="tblplani" class="table table-striped table-bordered" style="width: 100%">
+							<thead>
+								<tr>
+									<th class="d-none">
+										id_rolper
+									</th>
+									<th>
+										Rol
+									</th>
+									<th>
+										Menu
+									</th>
+									<th>
+										Submenu
+									</th>
+									<th>
+										Activo / Inactivo
+									</th>
+								</tr>
+							</thead>							
+							<tbody>
+								@foreach (var item in ViewBag.plani)
+								{
+									<tr>
+										<td class="d-none check">
+											@item.id_rolper
+										</td>
+										<td>
+											@item.rol_desc
+										</td>
+										<td>
+											@item.menuprin_desc
+										</td>
+										<td>
+											@item.submenu_desc
+										</td>
+										<td>
+											@if(item.rolper_act)
+											{
+												<input name="check"  type="checkbox" value=@item.id_rolper checked="checked" />
+											}
+											else
+											{
+												<input name="check" type="checkbox" value=@item.id_rolper />
+											}										
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+					<div class="tab-pane fade" id="nav-caja" role="tabpanel">
+						<table id="tblcaja" class="table table-striped table-bordered" style="width: 100%">
+							<thead>
+								<tr>
+									<th class="d-none">
+										id_rolper
+									</th>
+									<th>
+										Rol
+									</th>
+									<th>
+										Menu
+									</th>
+									<th>
+										Submenu
+									</th>
+									<th>
+										Activo / Inactivo
+									</th>
+								</tr>
+							</thead>							
+							<tbody>
+								@foreach (var item in ViewBag.caja)
+								{
+									<tr>
+										<td class="d-none check">
+											@item.id_rolper
+										</td>
+										<td>
+											@item.rol_desc
+										</td>
+										<td>
+											@item.menuprin_desc
+										</td>
+										<td>
+											@item.submenu_desc
+										</td>
+										<td>
+											@if(item.rolper_act)
+											{
+												<input name="check"  type="checkbox" value=@item.id_rolper checked="checked" />
+											}
+											else
+											{
+												<input name="check" type="checkbox" value=@item.id_rolper />
+											}										
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			 $('#tbladmin').DataTable({
+                "pageLength": 20,
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros por pagina",
+                    "zeroRecords": "No se encontraron registros",
+                    "info": "Mostrar pagina _PAGE_ de _PAGES_",
+                    "infoEmpty": "No se encontraron registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "search": "Buscar:",
+                    "paginate": {
+                        "next": "siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                "scrollX": true,
+                "responsive": true
+             });
+
+			 $('#tblplani').DataTable({
+                "pageLength": 20,
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros por pagina",
+                    "zeroRecords": "No se encontraron registros",
+                    "info": "Mostrar pagina _PAGE_ de _PAGES_",
+                    "infoEmpty": "No se encontraron registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "search": "Buscar:",
+                    "paginate": {
+                        "next": "siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                "scrollX": true,
+                "responsive": true
+             });
+
+			 $('#tblcaja').DataTable({
+                "pageLength": 20,
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros por pagina",
+                    "zeroRecords": "No se encontraron registros",
+                    "info": "Mostrar pagina _PAGE_ de _PAGES_",
+                    "infoEmpty": "No se encontraron registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "search": "Buscar:",
+                    "paginate": {
+                        "next": "siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                "scrollX": true,
+                "responsive": true
+             });
+			 
+			 
+			 $("#asignar").click(function(){
+				var menus = new Array();    
+				var Idrol = $("#Idrol2").val() 
+				$('#checkid input[type=checkbox]').each(function(){
+					if (this.checked) {
+						menus.push($(this).val());
+					}
+				}); 
+				if (menus != ''){
+					 var menulist = {
+						 oMenus: menus
+					}					
+					$.ajax({
+						url: "@Url.Action("otorgar", "MDRol_Permisos")",
+						traditional: true,
+						data: { 'menus': menus, 'Idrol': Idrol },
+						success: function(result){										 
+							swal('Mensaje de confirmacion', 'Carga eliminada', 'success');
+							
+						}
+					});			
+				}					  
+				else{
+					alert('Debes seleccionar al menos una opción.');
+				}
+					
+				return false;
+			 });         	
+        });
+	</script>
+}
+

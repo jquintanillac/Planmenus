@@ -1,0 +1,62 @@
+﻿@model Planmenus.Data.Entities.MDUsuarios
+
+@{
+    ViewData["Title"] = "Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+             <div class="div-title">
+				<h2 class="text-center">ELIMINAR USUARIO</h2>
+			 </div>
+        </div>
+        <div class="card-body">
+             <div class="row">
+                <div class="col-5">                    
+                     <div class="form-group">
+                            <label asp-for="Usua_user" class="control-label"></label>
+                            <input asp-for="Usua_user" class="form-control" readonly />
+                            <span asp-validation-for="Usua_user" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Usua_nombres" class="control-label"></label>
+                            <input asp-for="Usua_nombres" class="form-control" readonly />
+                            <span asp-validation-for="Usua_nombres" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Usua_apellidos" class="control-label"></label>
+                            <input asp-for="Usua_apellidos" class="form-control" readonly />
+                            <span asp-validation-for="Usua_apellidos" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Usua_email" class="control-label"></label>
+                            <input asp-for="Usua_email" class="form-control" readonly />
+                            <span asp-validation-for="Usua_email" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Usua_pass" class="control-label"></label>
+                            <input asp-for="Usua_pass" class="form-control" readonly />
+                            <span asp-validation-for="Usua_pass" class="text-danger"></span>
+                        </div>
+                        <div class="form-group form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="Usua_act"  readonly /> @Html.DisplayNameFor(model => model.Usua_act)
+                            </label>
+                        </div>
+                </div>
+                <div class="col-md-7">
+                    <img src="~/AdminX-master/demo/img/usuario2.jpg" width="580" height="400" />
+                </div>
+            </div> 
+            <form asp-action="Delete">
+                <div class="form-group">
+                    <input type="hidden" asp-for="IdUsuario" />
+                    <input type="submit" value="Eliminar" class="btn btn-sm btn-danger" /> |
+                    <a class="btn btn-sm btn-primary" asp-action="Index">Regresar</a>
+                </div>               
+            </form>
+        </div>
+    </div>
+</div>

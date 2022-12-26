@@ -1,0 +1,36 @@
+﻿@model Planmenus.Data.Entities.MDEgresos
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>MDEgresos</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.egre_descr)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.egre_descr)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.egre_costo)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.egre_costo)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.egre_fecha)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.egre_fecha)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.id_egre">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

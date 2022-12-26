@@ -1,0 +1,132 @@
+﻿@{
+    ViewData["Title"] = "Cajadiaria";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+	<div class="card">
+		<div class="card-header">
+			 <div class="div-title">
+				<h2 class="text-center">LISTADO DE TICKETS</h2>
+			 </div>
+			 <hr />
+			 <br />	
+              <form asp-action="Cajadiaria" asp-controller="MDCajas">
+             <div class="row">
+                   <div class="form-group col">
+						<label class="control-label">Fecha Inicio: </label>
+						<input id="Fecini" name="Fecini" type="date" class="form-control" />						
+					</div>
+					<div class="form-group col">
+						<label class="control-label">Fecha Fin: </label>
+						<input id="Fecfin" name="Fecfin" type="date" class="form-control" />						
+					</div>
+             </div>
+             <div class="row">
+					 <div class="col-md-6">
+						<button type="submit" id="btnbuscar" class="btn btn-success btn-sm">Buscar</button>			
+					</div>	
+				 </div>
+            </form>       
+		</div>
+	    <div class="card-body">			
+            <table  id="tblcajas" class="table table-striped table-bordered" style="width: 100%">
+                <thead>
+                    <tr>
+                        <th>
+                            Nro. Ticket
+                        </th>
+                        <th>
+                            Tipo de pago
+                        </th>
+                        <th>
+                            Delivery
+                        </th>
+                        <th>
+                            Mesa
+                        </th>
+                        <th>
+                           Observacion
+                        </th>
+                        <th>
+                           Monto
+                        </th>
+                        <th>
+                            Fecha
+                        </th>
+                        <th>
+                            Estado
+                        </th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in ViewBag.cajas) {
+                <tr>
+                    <td>
+                        @item.id_caja
+                    </td>
+                    <td>
+                        @item.tipago_desc
+                    </td>
+                    <td>
+                        @item.deliv_desc
+                    </td>
+                    <td>
+                        @item.mesa_desc
+                    </td>
+                    <td>
+                        @item.caja_obs
+                    </td>
+                    <td>
+                        @item.caja_monto
+                    </td>
+                    <td>
+                        @item.caja_fecha
+                    </td>
+                     <td>                        
+                        @if (item.caja_act)
+                        {
+                           <label>Activo</label>
+                        }
+                        else
+                        {
+                            <label class="text-danger">Anulado</label>
+                        }
+                    </td>
+                    <td>
+                        <a class="btn btn-sm btn-danger" asp-action="Edit" asp-route-id="@item.id_caja">Anular</a> |
+                        <a class="btn btn-sm btn-primary"  asp-action="Imprimir" asp-route-id="@item.id_caja" target="_blank" >Imprimir</a>
+                    </td>
+                </tr>
+                }
+                </tbody>
+            </table>
+	   </div>
+	</div>
+</div>
+@section Scripts {
+	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css"></script>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			 $('#tblcajas').DataTable({
+                "pageLength": 20,
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros por pagina",
+                    "zeroRecords": "No se encontraron registros",
+                    "info": "Mostrar pagina _PAGE_ de _PAGES_",
+                    "infoEmpty": "No se encontraron registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "search": "Buscar:",
+                    "paginate": {
+                        "next": "siguiente",
+                        "previous": "Anterior"
+                    }
+                },
+                "scrollX": true,
+                "responsive": true
+            });
+        });
+	</script>
+}

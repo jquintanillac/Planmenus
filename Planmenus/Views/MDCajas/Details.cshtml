@@ -1,0 +1,43 @@
+﻿@model Planmenus.Data.Entities.MDCaja
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>MDCaja</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.id_menu)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.id_menu)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.id_tipago)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.id_tipago)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.caja_monto)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.caja_monto)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.caja_fecha)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.caja_fecha)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.id_caja">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

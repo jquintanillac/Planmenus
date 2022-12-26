@@ -1,0 +1,89 @@
+﻿@model Planmenus.Data.Entities.MDMenu
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+             <div class="div-title">
+				<h2 class="text-center">DETALLES MENU</h2>
+			 </div>
+        </div>
+        <div class="card-body">
+             <div class="row">
+                <div class="col-5">
+                     <div class="form-group">
+                        <label asp-for="menu_desc" class="control-label">Descripcion</label>
+                        <input asp-for="menu_desc" class="form-control"/>
+                        <span asp-validation-for="menu_desc" class="text-danger"></span>
+                     </div>
+                     <div class="form-group">
+                        <label asp-for="menu_precio" class="control-label">Precio</label>
+                        <input asp-for="menu_precio" class="form-control"/>
+                        <span asp-validation-for="menu_precio" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="menu_observ" class="control-label">Observacion</label>
+                        <input asp-for="menu_observ" class="form-control"/>
+                        <span asp-validation-for="menu_observ" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="menu_fecha" class="control-label">Fecha</label>
+                        <input asp-for="menu_fecha" class="form-control"/>
+                        <span asp-validation-for="menu_fecha" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <img src="~/AdminX-master/demo/img/menudel.jpg" width="580" height="400" />
+                </div>
+            </div> 
+            <form asp-action="Delete">
+                <div class="form-group">
+                   <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@Model?.id_menu">Editar</a> |
+                    <a class="btn btn-sm btn-primary" asp-action="Index">Regresar</a>
+                </div>               
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@*<h1>Details</h1>
+
+<div>
+    <h4>MDMenu</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.menu_desc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.menu_desc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.menu_precio)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.menu_precio)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.menu_observ)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.menu_observ)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.menu_fecha)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.menu_fecha)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.id_menu">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>*@

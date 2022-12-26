@@ -1,0 +1,55 @@
+﻿@model Planmenus.Data.Entities.MDDelivery
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+             <div class="div-title">
+				<h2 class="text-center">EDITAR REPARTO</h2>
+			 </div>
+        </div>
+        <div class="card-body">
+             <div class="row">
+                <div class="col-5">
+                     <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="id_deliv" />
+                        <div class="form-group">
+                            <label asp-for="deliv_codig" class="control-label"></label>
+                            <input asp-for="deliv_codig" class="form-control" />
+                            <span asp-validation-for="deliv_codig" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="deliv_nombcom" class="control-label"></label>
+                            <input asp-for="deliv_nombcom" class="form-control" />
+                            <span asp-validation-for="deliv_nombcom" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="deliv_desc" class="control-label"></label>
+                            <input asp-for="deliv_desc" class="form-control" />
+                            <span asp-validation-for="deliv_desc" class="text-danger"></span>
+                        </div>
+                        <div class="form-group form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="deliv_act" /> @Html.DisplayNameFor(model => model.deliv_act)
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Grabar" class="btn btn-sm btn-primary" />
+                             <a class="btn btn-sm btn-primary" asp-action="Index">Regresar</a>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-7">
+                    <img src="~/AdminX-master/demo/img/Delivery2.jpg" width="580" height="400" />
+                </div>
+            </div> 
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

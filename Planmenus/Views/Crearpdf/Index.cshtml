@@ -1,0 +1,41 @@
+﻿@model Planmenus.Models.VMCaja
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Ticket</title>
+</head>
+<body>
+      <div class="card text-center">
+          <div class="card-body">
+                <div class="align-content-lg-center">
+             <div class="row">
+                 <div class="col">
+                     <b>Nro. TICKET: </b>  @Model.ticket <br />
+                 </div>
+             </div>
+             <div class="row">
+                 <div class="col">
+                      <b>Fecha: </b>  @Model.fecha <br />
+                 </div>
+             </div>
+             <div class="row">
+                 <div class="col">
+                      <b>Menu: </b> @Model.menu <br />
+                 </div>
+             </div>
+             <div class="row">
+                 <div class="col">
+                    <b>Monto: </b>S/. @Model.monto <br />
+                 </div>
+             </div>                                   
+         </div>
+          </div>       
+    </div>
+</body>
+</html>
