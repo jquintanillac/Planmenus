@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
+using Planmenus.Helpers;
 using Planmenus.Data.Entities;
 using Planmenus.Models;
 
 namespace Planmenus.Controllers
 {
+    [Permiso("submenu1_7")]
     public class MDRol_PermisosController : Controller
     {
         private readonly Datacontext _context;
@@ -235,9 +237,9 @@ namespace Planmenus.Controllers
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
 
             return View();

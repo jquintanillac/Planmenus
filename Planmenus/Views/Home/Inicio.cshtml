@@ -1,0 +1,10 @@
+@using Planmenus.Helpers
+@{
+    ViewData["Title"] = "Inicio";
+}
+<div class="card">
+    <div class="card-body">
+        <h2>Bienvenido(a), @SessionHelper.GetName(User)</h2>
+        <p class="mb-0">Seleccione una opción del menú lateral para comenzar.</p>
+    </div>
+</div>

@@ -12,6 +12,7 @@ using Planmenus.Helpers;
 
 namespace Planmenus.Controllers
 {
+    [Permiso("submenu1_2")]
     public class MDUsuariosController : Controller
     {
         private readonly Datacontext _context;
@@ -56,19 +57,27 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("IdUsuario,Usua_user,Usua_nombres,Usua_apellidos,Usua_email,Usua_pass,Usua_Hash,Usua_act")] MDUsuarios mDUsuarios)
+        public async Task<IActionResult> Create([Bind("Usua_user,Usua_nombres,Usua_apellidos,Usua_email,Usua_pass,Usua_act")] MDUsuarios mDUsuarios)
         {
+            if (string.IsNullOrWhiteSpace(mDUsuarios.Usua_pass))
+            {
+                ModelState.AddModelError(nameof(MDUsuarios.Usua_pass), "Ingrese una contraseña.");
+            }
+            if (await _context.Usuarios.AnyAsync(u => u.Usua_user == mDUsuarios.Usua_user))
+            {
+                ModelState.AddModelError(nameof(MDUsuarios.Usua_user), "El usuario ya existe.");
+            }
+
             if (ModelState.IsValid)
             {
                 var hash = HashHelper.Hash(mDUsuarios.Usua_pass);
                 MDUsuarios oUsuarios = new MDUsuarios
                 {
-                    IdUsuario = mDUsuarios.IdUsuario,
                     Usua_user = mDUsuarios.Usua_user,
                     Usua_nombres = mDUsuarios.Usua_nombres,
                     Usua_apellidos = mDUsuarios.Usua_apellidos,
                     Usua_email = mDUsuarios.Usua_email,
-                    Usua_pass = mDUsuarios.Usua_pass,
+                    Usua_pass = hash.Password,
                     Usua_Hash = hash.Salt,
                     Usua_act = mDUsuarios.Usua_act
                 };
@@ -93,6 +102,8 @@ namespace Planmenus.Controllers
             {
                 return NotFound();
             }
+            // Nunca se envia el hash al formulario; en blanco = mantener la contraseña actual
+            mDUsuarios.Usua_pass = "";
             return View(mDUsuarios);
         }
 
@@ -101,7 +112,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdUsuario,Usua_user,Usua_nombres,Usua_apellidos,Usua_email,Usua_pass,Usua_Hash,Usua_act")] MDUsuarios mDUsuarios)
+        public async Task<IActionResult> Edit(int id, [Bind("IdUsuario,Usua_user,Usua_nombres,Usua_apellidos,Usua_email,Usua_pass,Usua_act")] MDUsuarios mDUsuarios)
         {
             if (id != mDUsuarios.IdUsuario)
             {
@@ -110,9 +121,26 @@ namespace Planmenus.Controllers
 
             if (ModelState.IsValid)
             {
+                var usuario = await _context.Usuarios.FindAsync(id);
+                if (usuario == null)
+                {
+                    return NotFound();
+                }
+
+                usuario.Usua_user = mDUsuarios.Usua_user;
+                usuario.Usua_nombres = mDUsuarios.Usua_nombres;
+                usuario.Usua_apellidos = mDUsuarios.Usua_apellidos;
+                usuario.Usua_email = mDUsuarios.Usua_email;
+                usuario.Usua_act = mDUsuarios.Usua_act;
+                if (!string.IsNullOrWhiteSpace(mDUsuarios.Usua_pass))
+                {
+                    var hash = HashHelper.Hash(mDUsuarios.Usua_pass);
+                    usuario.Usua_pass = hash.Password;
+                    usuario.Usua_Hash = hash.Salt;
+                }
+
                 try
                 {
-                    _context.Update(mDUsuarios);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

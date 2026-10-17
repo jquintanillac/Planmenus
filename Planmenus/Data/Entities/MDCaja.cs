@@ -19,7 +19,7 @@ namespace Planmenus.Data.Entities
         [Display(Name = "Mesa")]
         public int? id_mesa { get; set; }
         [Display(Name = "Observacion")]
-        public string? caja_obs { get; set; }
+        public string caja_obs { get; set; }
         [Display(Name = "Monto")]
         public decimal caja_monto { get; set; }
         [Display(Name = "Fecha")]

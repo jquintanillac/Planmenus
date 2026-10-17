@@ -14,11 +14,11 @@ namespace Planmenus.Data.Entities
         [Display(Name = "Ruc")]
         public string gene_ruc { get; set; }
         [Display(Name = "Direccion")]
-        public string? gene_direc { get; set; }
+        public string gene_direc { get; set; }
         [Display(Name = "Telefono")]
-        public string? gene_telef { get; set; }
+        public string gene_telef { get; set; }
         [Display(Name = "Direccion web")]
-        public string? gene_url { get; set; }
+        public string gene_url { get; set; }
         
     }
 }

@@ -17,10 +17,10 @@ namespace Planmenus.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.2")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDCaja", b =>
                 {
@@ -28,7 +28,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_caja"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_caja"));
 
                     b.Property<bool>("caja_act")
                         .HasColumnType("bit");
@@ -65,7 +65,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_deliv"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_deliv"));
 
                     b.Property<bool>("deliv_act")
                         .HasColumnType("bit");
@@ -90,7 +90,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_egre"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_egre"));
 
                     b.Property<decimal>("egre_costo")
                         .HasColumnType("decimal(18,2)");
@@ -112,7 +112,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -143,7 +143,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_gene"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_gene"));
 
                     b.Property<string>("gene_direc")
                         .HasColumnType("nvarchar(max)");
@@ -171,7 +171,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ingre"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ingre"));
 
                     b.Property<string>("ingre_desc")
                         .HasColumnType("nvarchar(max)");
@@ -193,7 +193,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ini"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ini"));
 
                     b.Property<string>("ini_desc")
                         .HasColumnType("nvarchar(max)");
@@ -215,7 +215,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menu"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menu"));
 
                     b.Property<string>("menu_desc")
                         .HasColumnType("nvarchar(max)");
@@ -240,7 +240,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menprin"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menprin"));
 
                     b.Property<bool>("menuprin_act")
                         .HasColumnType("bit");
@@ -259,7 +259,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_mesa"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_mesa"));
 
                     b.Property<bool>("mesa_act")
                         .HasColumnType("bit");
@@ -281,7 +281,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rol"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rol"));
 
                     b.Property<bool>("rol_act")
                         .HasColumnType("bit");
@@ -300,7 +300,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rolper"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rolper"));
 
                     b.Property<int>("id_menprin")
                         .HasColumnType("int");
@@ -325,7 +325,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_roluser"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_roluser"));
 
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
@@ -344,7 +344,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_submenu"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_submenu"));
 
                     b.Property<int>("id_menprin")
                         .HasColumnType("int");
@@ -366,7 +366,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_tipago"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_tipago"));
 
                     b.Property<bool>("tipago_act")
                         .HasColumnType("bit");
@@ -385,7 +385,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdUsuario"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdUsuario"));
 
                     b.Property<string>("Usua_Hash")
                         .HasColumnType("nvarchar(max)");

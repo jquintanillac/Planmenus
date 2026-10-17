@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
+using Planmenus.Helpers;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Planmenus.Controllers
 {   
+    [Permiso("submenu2_4")]
     [Route("api/[controller]")]
     [ApiController]
     public class WSCalendarController : ControllerBase

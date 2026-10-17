@@ -11,6 +11,7 @@ using Planmenus.Data;
 using Planmenus.Data.Entities;
 using Planmenus.Models;
 using Planmenus.Data.DataSql;
+using Planmenus.Helpers;
 
 namespace Planmenus.Controllers
 {
@@ -19,13 +20,14 @@ namespace Planmenus.Controllers
         private readonly Datacontext _context;
         private readonly SP_Menus _menus;
         
-        public MDCajasController(Datacontext context)
+        public MDCajasController(Datacontext context, SP_Menus menus)
         {
             _context = context;
-            _menus = new SP_Menus();
+            _menus = menus;
         }
 
         // GET: MDCajas
+        [Permiso("submenu3_2")]
         public async Task<IActionResult> Index(DateTime Fecini, DateTime Fecfin)
         {
             DateTime fecha1 = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "SA Pacific Standard Time");
@@ -40,31 +42,31 @@ namespace Planmenus.Controllers
         }
 
         // GET: MDCajas
+        [Permiso("submenu3_2")]
         public async Task<IActionResult> Cuadre()
         {
             return View();
         }
 
-        public async Task<IActionResult> Anular(int id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Permiso("submenu3_3")]
+        public async Task<IActionResult> Anular(int id, string caja_obs)
         {
-            try
+            var mDCaja = await _context.Cajas.FindAsync(id);
+            if (mDCaja == null)
             {
-                if (id == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                _menus.mUpdateCaja(id);
-                return RedirectToAction("Cajadiaria", "MDCajas");
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-       
+            mDCaja.caja_act = false;
+            mDCaja.caja_obs = caja_obs;
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Cajadiaria", "MDCajas");
         }
 
         // GET: MDCajas
+        [Permiso("submenu3_3")]
         public async Task<IActionResult> Cajadiaria(DateTime Fecini, DateTime Fecfin)
         {
 
@@ -80,11 +82,13 @@ namespace Planmenus.Controllers
             return View();
         }
 
+        [Permiso("submenu3_3")]
         public async Task<IActionResult> Imprimir(int? id)
         {
             return RedirectToAction("Index", "Crearpdf", new { id_caja = id });
         }
 
+        [Permiso("submenu3_4")]
         public async Task<IActionResult> RptListpagos(DateTime Fecini, DateTime Fecfin)
         {
             DateTime fecha1 = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "SA Pacific Standard Time");
@@ -100,6 +104,7 @@ namespace Planmenus.Controllers
             return View();
         }
 
+        [Permiso("submenu3_5")]
         public async Task<IActionResult> Rpttipodepago(DateTime Fecini, DateTime Fecfin)
         {
             DateTime fecha1 = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "SA Pacific Standard Time");
@@ -113,6 +118,7 @@ namespace Planmenus.Controllers
             return View();
         }
 
+        [Permiso("submenu3_6")]
         public async Task<IActionResult> Rptporplato(DateTime Fecini, DateTime Fecfin)
         {
             DateTime fecha1 = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "SA Pacific Standard Time");
@@ -125,6 +131,7 @@ namespace Planmenus.Controllers
             ViewBag.reporteQ03 = await _menus.mReporteQ03(Fecini, Fecfin);
             return View();
         }
+        [Permiso("submenu3_7")]
         public async Task<IActionResult> Rptcantplato(DateTime Fecini, DateTime Fecfin)
         {
             DateTime fecha1 = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "SA Pacific Standard Time");
@@ -139,6 +146,7 @@ namespace Planmenus.Controllers
         }
 
         // GET: MDCajas/Details/5
+        [Permiso("submenu3_3")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -157,6 +165,7 @@ namespace Planmenus.Controllers
         }
 
         // GET: MDCajas/Create
+        [Permiso("submenu3_1")]
         public async Task<IActionResult> Create()
         {
             DateTime fecha = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "SA Pacific Standard Time");
@@ -172,14 +181,14 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id_caja,id_menu,caja_desc,caja_monto,caja_fecha,id_tipago,id_mesa")] MDCaja mDCaja)
+        [Permiso("submenu3_1")]
+        public async Task<IActionResult> Create([Bind("id_menu,caja_monto,id_tipago,id_mesa,id_deliv,caja_obs")] MDCaja mDCaja)
         {
             DateTime fecha = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "SA Pacific Standard Time");
             try
             {
                 MDCaja oCaja = new MDCaja
                 {
-                    id_caja = mDCaja.id_caja,
                     id_menu = mDCaja.id_menu,
                     id_mesa = mDCaja.id_mesa,
                     id_tipago = mDCaja.id_tipago,
@@ -194,15 +203,16 @@ namespace Planmenus.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index", "Crearpdf", new { id_caja = oCaja.id_caja });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;              
+                throw;              
             }
 
            // return RedirectToAction("Create", "MDCajas")
         }
 
         // GET: MDCajas/Edit/5
+        [Permiso("submenu3_3")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -218,42 +228,8 @@ namespace Planmenus.Controllers
             return View(mDCaja);
         }
 
-        // POST: MDCajas/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id_caja,id_menu,caja_desc,caja_monto,caja_fecha")] MDCaja mDCaja)
-        {
-            if (id != mDCaja.id_caja)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(mDCaja);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!MDCajaExists(mDCaja.id_caja))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(mDCaja);
-        }
-
         // GET: MDCajas/Delete/5
+        [Permiso("submenu3_3")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -274,17 +250,13 @@ namespace Planmenus.Controllers
         // POST: MDCajas/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Permiso("submenu3_3")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var mDCaja = await _context.Cajas.FindAsync(id);
             _context.Cajas.Remove(mDCaja);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool MDCajaExists(int id)
-        {
-            return _context.Cajas.Any(e => e.id_caja == id);
         }
     }
 }

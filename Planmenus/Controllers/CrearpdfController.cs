@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Planmenus.Data;
+using Planmenus.Helpers;
 using Planmenus.Data.DataSql;
 using Planmenus.Data.Entities;
 using Planmenus.Models;
@@ -16,11 +17,12 @@ namespace Planmenus.Controllers
         private readonly Datacontext _context;
         private readonly SP_Menus _menus;
 
-        public CrearpdfController (Datacontext context)
+        public CrearpdfController(Datacontext context, SP_Menus menus)
         {
             _context = context;
-            _menus = new SP_Menus();
+            _menus = menus;
         }
+        [Permiso("submenu3_1", "submenu3_3")]
         public IActionResult Index(int id_caja)
         {
             var vcaja =  (from caj in _context.Cajas
@@ -39,6 +41,7 @@ namespace Planmenus.Controllers
             };
         }
 
+        [Permiso("submenu3_2")]
         public async Task<IActionResult> RptCuadre(DateTime Fecini, DateTime Fecfin)
         {
             List<VMCaja_Q05> listQ05 = new List<VMCaja_Q05>();
