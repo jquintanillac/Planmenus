@@ -28,9 +28,49 @@ namespace Planmenus.Controllers
             return View();
         }
 
-        public IActionResult Inicio()
+        public async Task<IActionResult> Inicio()
         {
-            return View();
+            // Las cifras de venta solo se muestran a quien puede ver el cuadre o la lista de tickets
+            if (!User.HasClaim("submenu3_2", "S") && !User.HasClaim("submenu3_3", "S"))
+            {
+                return View();
+            }
+
+            var hoy = Fechas.HoyPeru();
+            var manana = hoy.AddDays(1);
+            var ayer = hoy.AddDays(-1);
+            var cajasHoy = _contex.Cajas.Where(c => c.caja_fecha >= hoy && c.caja_fecha < manana);
+            var activasHoy = cajasHoy.Where(c => c.caja_act);
+
+            var dashboard = new VMDashboard
+            {
+                ventas = await activasHoy.SumAsync(c => (decimal?)c.caja_monto) ?? 0,
+                tickets = await activasHoy.CountAsync(),
+                anulados = await cajasHoy.CountAsync(c => !c.caja_act),
+                ventas_ayer = await _contex.Cajas.Where(c => c.caja_act && c.caja_fecha >= ayer && c.caja_fecha < hoy).SumAsync(c => (decimal?)c.caja_monto) ?? 0,
+                platos_programados = await _contex.Menus.CountAsync(m => m.menu_fecha >= hoy && m.menu_fecha < manana),
+                top_platos = await (from c in activasHoy
+                                    join d in _contex.Caja_Detalles on c.id_caja equals d.id_caja
+                                    join m in _contex.Menus on d.id_menu equals m.id_menu
+                                    group d by m.menu_desc into g
+                                    orderby g.Sum(x => x.det_cant) descending
+                                    select new VMDashboardFila { etiqueta = g.Key, cantidad = g.Sum(x => x.det_cant), monto = g.Sum(x => x.det_subtotal) })
+                                   .Take(5).ToListAsync(),
+                por_tipo_pago = await (from c in activasHoy
+                                       join t in _contex.Tipo_Pagos on c.id_tipago equals t.id_tipago
+                                       group c by t.tipago_desc into g
+                                       orderby g.Sum(x => x.caja_monto) descending
+                                       select new VMDashboardFila { etiqueta = g.Key, cantidad = g.Count(), monto = g.Sum(x => x.caja_monto) })
+                                      .ToListAsync(),
+                por_hora = (await activasHoy
+                                .GroupBy(c => c.caja_fecha.Hour)
+                                .Select(g => new { hora = g.Key, cantidad = g.Count(), monto = g.Sum(x => x.caja_monto) })
+                                .ToListAsync())
+                            .OrderBy(x => x.hora)
+                            .Select(x => new VMDashboardFila { etiqueta = $"{x.hora:00}:00", cantidad = x.cantidad, monto = x.monto })
+                            .ToList()
+            };
+            return View(dashboard);
         }
 
         public IActionResult AccesoDenegado()

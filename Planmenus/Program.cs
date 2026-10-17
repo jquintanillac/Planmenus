@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
 using Planmenus.Data.DataSql;
+using Planmenus.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 
@@ -11,6 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<Datacontext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<SP_Menus>();
+builder.Services.AddScoped<TicketService>();
+builder.Services.AddSingleton<PdfService>();
+builder.Services.AddSingleton<EscPosService>();
+
+// QuestPDF es gratuito con licencia Community para empresas con ingresos anuales menores a 1 millon USD
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -61,6 +68,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-Rotativa.AspNetCore.RotativaConfiguration.Setup(app.Environment.WebRootPath, "Rotativa");
 
 app.Run();

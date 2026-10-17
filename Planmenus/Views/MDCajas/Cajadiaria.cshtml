@@ -37,6 +37,9 @@
                             Nro. Ticket
                         </th>
                         <th>
+                            Pedido
+                        </th>
+                        <th>
                             Tipo de pago
                         </th>
                         <th>
@@ -57,6 +60,9 @@
                         <th>
                             Estado
                         </th>
+                        <th>
+                            Usuario
+                        </th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -65,6 +71,9 @@
                 <tr>
                     <td>
                         @item.id_caja
+                    </td>
+                    <td>
+                        @item.detalle
                     </td>
                     <td>
                         @item.tipago_desc
@@ -95,8 +104,14 @@
                         }
                     </td>
                     <td>
-                        <a class="btn btn-sm btn-danger" asp-action="Edit" asp-route-id="@item.id_caja">Anular</a> |
-                        <a class="btn btn-sm btn-primary"  asp-action="Imprimir" asp-route-id="@item.id_caja" target="_blank" >Imprimir</a>
+                        @item.caja_usuario
+                    </td>
+                    <td>
+                        @if (item.caja_act)
+                        {
+                            <a class="btn btn-sm btn-danger" asp-action="Edit" asp-route-id="@item.id_caja">Anular</a>
+                        }
+                        <a class="btn btn-sm btn-primary"  asp-action="Ticket" asp-route-id="@item.id_caja" target="_blank" >Imprimir</a>
                     </td>
                 </tr>
                 }

@@ -188,6 +188,15 @@ namespace Planmenus.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var mDMenu = await _context.Menus.FindAsync(id);
+            if (mDMenu == null)
+            {
+                return NotFound();
+            }
+            if (await _context.Caja_Detalles.AnyAsync(d => d.id_menu == id) || await _context.Cajas.AnyAsync(c => c.id_menu == id))
+            {
+                TempData["error"] = "No se puede eliminar un plato que ya tiene ventas registradas.";
+                return RedirectToAction(nameof(Index));
+            }
             _context.Menus.Remove(mDMenu);
             await _context.SaveChangesAsync();
             _Menu.mEliminarEvento(id);

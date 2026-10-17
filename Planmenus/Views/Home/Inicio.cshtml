@@ -1,10 +1,112 @@
 @using Planmenus.Helpers
+@model Planmenus.Models.VMDashboard
 @{
     ViewData["Title"] = "Inicio";
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    string Soles(decimal m) => "S/ " + m.ToString("N2", peru);
 }
-<div class="card">
-    <div class="card-body">
-        <h2>Bienvenido(a), @SessionHelper.GetName(User)</h2>
-        <p class="mb-0">Seleccione una opción del menú lateral para comenzar.</p>
-    </div>
+
+<style>
+    .kpi { font-size: 26px; font-weight: 700; line-height: 1.1; }
+    .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #6c757d; }
+    .barra-fila { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
+    .barra-fila .nombre { flex: 0 0 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .barra-fila .pista { flex: 1; background: #eef1f5; border-radius: 4px; height: 14px; }
+    .barra-fila .relleno { background: #3b6fd8; border-radius: 4px; height: 14px; }
+    .barra-fila .valor { flex: 0 0 auto; min-width: 86px; text-align: right; font-variant-numeric: tabular-nums; }
+    .horas { display: flex; align-items: flex-end; gap: 6px; height: 140px; }
+    .horas .col-h { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-size: 11px; }
+    .horas .col-h .b { width: 100%; max-width: 36px; background: #3b6fd8; border-radius: 4px 4px 0 0; }
+</style>
+
+<div class="mb-3">
+    <h2 class="mb-0">Bienvenido(a), @SessionHelper.GetName(User)</h2>
+    <span class="text-muted">@Fechas.HoyPeru().ToString("dddd d 'de' MMMM 'de' yyyy", peru)</span>
 </div>
+
+@if (Model == null)
+{
+    <div class="card"><div class="card-body">Seleccione una opción del menú lateral para comenzar.</div></div>
+}
+else
+{
+    var variacion = Model.ventas_ayer == 0 ? (decimal?)null : Math.Round((Model.ventas - Model.ventas_ayer) / Model.ventas_ayer * 100, 0);
+    <div class="row">
+        <div class="col-sm-6 col-xl-3 mb-3"><div class="card h-100"><div class="card-body">
+            <div class="kpi-label">Ventas de hoy</div>
+            <div class="kpi">@Soles(Model.ventas)</div>
+            <small class="text-muted">
+                @if (variacion == null) { <text>Sin ventas ayer</text> }
+                else { <span class="@(variacion >= 0 ? "text-success" : "text-danger")">@(variacion >= 0 ? "▲" : "▼") @Math.Abs(variacion.Value)%</span> <text>vs. ayer (@Soles(Model.ventas_ayer))</text> }
+            </small>
+        </div></div></div>
+        <div class="col-sm-6 col-xl-3 mb-3"><div class="card h-100"><div class="card-body">
+            <div class="kpi-label">Tickets</div>
+            <div class="kpi">@Model.tickets</div>
+            <small class="text-muted">@Model.anulados anulado(s)</small>
+        </div></div></div>
+        <div class="col-sm-6 col-xl-3 mb-3"><div class="card h-100"><div class="card-body">
+            <div class="kpi-label">Ticket promedio</div>
+            <div class="kpi">@Soles(Model.ticket_promedio)</div>
+        </div></div></div>
+        <div class="col-sm-6 col-xl-3 mb-3"><div class="card h-100"><div class="card-body">
+            <div class="kpi-label">Platos programados hoy</div>
+            <div class="kpi">@Model.platos_programados</div>
+            @if (Model.platos_programados == 0) { <small class="text-danger">Programe el menú del día</small> }
+            else if (User.HasClaim("submenu3_1", "S")) { <a class="btn btn-sm btn-success mt-1" asp-controller="MDCajas" asp-action="Create">Nueva venta</a> }
+        </div></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-3"><div class="card h-100">
+            <div class="card-header"><strong>Platos más vendidos hoy</strong></div>
+            <div class="card-body">
+                @if (Model.top_platos.Count == 0) { <span class="text-muted">Aún no hay ventas.</span> }
+                @{ var maxPlato = Model.top_platos.Count == 0 ? 1 : Model.top_platos.Max(x => x.cantidad); }
+                @foreach (var f in Model.top_platos)
+                {
+                    <div class="barra-fila" title="@f.etiqueta: @f.cantidad unid. - @Soles(f.monto)">
+                        <span class="nombre">@f.etiqueta</span>
+                        <span class="pista"><span class="relleno d-block" style="width:@(f.cantidad * 100 / maxPlato)%"></span></span>
+                        <span class="valor">@f.cantidad unid.</span>
+                    </div>
+                }
+            </div>
+        </div></div>
+        <div class="col-lg-6 mb-3"><div class="card h-100">
+            <div class="card-header"><strong>Ventas por tipo de pago</strong></div>
+            <div class="card-body">
+                @if (Model.por_tipo_pago.Count == 0) { <span class="text-muted">Aún no hay ventas.</span> }
+                @{ var maxPago = Model.por_tipo_pago.Count == 0 ? 1 : Math.Max(1, Model.por_tipo_pago.Max(x => x.monto)); }
+                @foreach (var f in Model.por_tipo_pago)
+                {
+                    <div class="barra-fila" title="@f.etiqueta: @f.cantidad ticket(s)">
+                        <span class="nombre">@f.etiqueta</span>
+                        <span class="pista"><span class="relleno d-block" style="width:@((int)(f.monto * 100 / maxPago))%"></span></span>
+                        <span class="valor">@Soles(f.monto)</span>
+                    </div>
+                }
+            </div>
+        </div></div>
+    </div>
+
+    @if (Model.por_hora.Count > 0)
+    {
+        var maxHora = Math.Max(1, Model.por_hora.Max(x => x.monto));
+        <div class="card mb-3">
+            <div class="card-header"><strong>Ventas por hora</strong></div>
+            <div class="card-body">
+                <div class="horas">
+                    @foreach (var f in Model.por_hora)
+                    {
+                        <div class="col-h" title="@f.etiqueta: @Soles(f.monto) en @f.cantidad ticket(s)">
+                            <span>@f.monto.ToString("N0", peru)</span>
+                            <span class="b" style="height:@((int)(f.monto * 100 / maxHora))%"></span>
+                            <span>@f.etiqueta</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}

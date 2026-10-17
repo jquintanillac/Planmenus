@@ -37,15 +37,20 @@ namespace Planmenus.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("caja_monto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("caja_obs")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("caja_usuario")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<int?>("id_deliv")
                         .HasColumnType("int");
 
-                    b.Property<int>("id_menu")
+                    b.Property<int?>("id_menu")
                         .HasColumnType("int");
 
                     b.Property<int?>("id_mesa")
@@ -56,7 +61,51 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_caja");
 
+                    b.HasIndex("caja_fecha");
+
+                    b.HasIndex("id_deliv");
+
+                    b.HasIndex("id_menu");
+
+                    b.HasIndex("id_mesa");
+
+                    b.HasIndex("id_tipago");
+
                     b.ToTable("Caja");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDCaja_Detalle", b =>
+                {
+                    b.Property<int>("id_detalle")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_detalle"));
+
+                    b.Property<int>("det_cant")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("det_precio")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("det_subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("id_caja")
+                        .HasColumnType("int");
+
+                    b.Property<int>("id_menu")
+                        .HasColumnType("int");
+
+                    b.HasKey("id_detalle");
+
+                    b.HasIndex("id_caja");
+
+                    b.HasIndex("id_menu");
+
+                    b.ToTable("Caja_Detalle");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDDelivery", b =>
@@ -93,6 +142,7 @@ namespace Planmenus.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_egre"));
 
                     b.Property<decimal>("egre_costo")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("egre_descr")
@@ -134,6 +184,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id");
 
+                    b.HasIndex("id_menu");
+
                     b.ToTable("Eventos");
                 });
 
@@ -151,10 +203,22 @@ namespace Planmenus.Migrations
                     b.Property<string>("gene_empre")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("gene_impresora_ip")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("gene_impresora_puerto")
+                        .HasColumnType("int");
+
                     b.Property<string>("gene_ruc")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("gene_telef")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("gene_ticket_ancho")
+                        .HasColumnType("int");
+
+                    b.Property<string>("gene_ticket_pie")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("gene_url")
@@ -180,6 +244,7 @@ namespace Planmenus.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("ingre_monto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("id_ingre");
@@ -202,6 +267,7 @@ namespace Planmenus.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("ini_monto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("id_ini");
@@ -227,6 +293,7 @@ namespace Planmenus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("menu_precio")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("id_menu");
@@ -316,6 +383,12 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_rolper");
 
+                    b.HasIndex("id_menprin");
+
+                    b.HasIndex("id_rol");
+
+                    b.HasIndex("id_submenu");
+
                     b.ToTable("Rol_Permisos");
                 });
 
@@ -334,6 +407,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("id_roluser");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.HasIndex("id_rol");
 
                     b.ToTable("Rol_Usuario");
                 });
@@ -356,6 +433,8 @@ namespace Planmenus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id_submenu");
+
+                    b.HasIndex("id_menprin");
 
                     b.ToTable("Submenu");
                 });
@@ -406,11 +485,109 @@ namespace Planmenus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Usua_user")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("IdUsuario");
 
+                    b.HasIndex("Usua_user")
+                        .IsUnique();
+
                     b.ToTable("Usuarios");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDCaja", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDDelivery", null)
+                        .WithMany()
+                        .HasForeignKey("id_deliv")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Planmenus.Data.Entities.MDMenu", null)
+                        .WithMany()
+                        .HasForeignKey("id_menu")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Planmenus.Data.Entities.MDMesas", null)
+                        .WithMany()
+                        .HasForeignKey("id_mesa")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Planmenus.Data.Entities.MDTipo_pago", null)
+                        .WithMany()
+                        .HasForeignKey("id_tipago")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDCaja_Detalle", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDCaja", null)
+                        .WithMany()
+                        .HasForeignKey("id_caja")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDMenu", null)
+                        .WithMany()
+                        .HasForeignKey("id_menu")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDEventos", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDMenu", null)
+                        .WithMany()
+                        .HasForeignKey("id_menu")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDRol_Permisos", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDMenuprin", null)
+                        .WithMany()
+                        .HasForeignKey("id_menprin")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDRol", null)
+                        .WithMany()
+                        .HasForeignKey("id_rol")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDSubmenu", null)
+                        .WithMany()
+                        .HasForeignKey("id_submenu")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDRol_Usuario", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDUsuarios", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDRol", null)
+                        .WithMany()
+                        .HasForeignKey("id_rol")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDSubmenu", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDMenuprin", null)
+                        .WithMany()
+                        .HasForeignKey("id_menprin")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -11,7 +11,7 @@ namespace Planmenus.Data.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_caja { get; set; }
         [Display(Name ="Menu")]
-        public int id_menu { get; set; }
+        public int? id_menu { get; set; }
         [Display(Name = "Tipo de pago")]
         public int id_tipago { get; set; }
         [Display(Name = "Delivery")]
@@ -26,5 +26,8 @@ namespace Planmenus.Data.Entities
         public DateTime caja_fecha { get; set; }
         [Display(Name = "Activo")]
         public bool caja_act { get; set; }
+        [Display(Name = "Usuario")]
+        [StringLength(50)]
+        public string caja_usuario { get; set; }
     }
 }

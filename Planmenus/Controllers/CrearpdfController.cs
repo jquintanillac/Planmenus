@@ -1,56 +1,44 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Planmenus.Data;
-using Planmenus.Helpers;
 using Planmenus.Data.DataSql;
-using Planmenus.Data.Entities;
-using Planmenus.Models;
-using Rotativa.AspNetCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Planmenus.Helpers;
+using Planmenus.Services;
 
 namespace Planmenus.Controllers
 {
     public class CrearpdfController : Controller
     {
-        private readonly Datacontext _context;
         private readonly SP_Menus _menus;
+        private readonly TicketService _tickets;
+        private readonly PdfService _pdf;
 
-        public CrearpdfController(Datacontext context, SP_Menus menus)
+        public CrearpdfController(SP_Menus menus, TicketService tickets, PdfService pdf)
         {
-            _context = context;
             _menus = menus;
+            _tickets = tickets;
+            _pdf = pdf;
         }
+
         [Permiso("submenu3_1", "submenu3_3")]
-        public IActionResult Index(int id_caja)
+        public async Task<IActionResult> Index(int id_caja)
         {
-            var vcaja =  (from caj in _context.Cajas
-                         join men in _context.Menus on caj.id_menu equals men.id_menu
-                         where caj.id_caja == id_caja
-                         select new VMCaja
-                         {
-                            ticket = caj.id_caja,
-                            menu = men.menu_desc,
-                            monto = caj.caja_monto,
-                            fecha = caj.caja_fecha
-                         }).FirstOrDefault();
-            return new ViewAsPdf("Index", vcaja)
+            var ticket = await _tickets.ObtenerAsync(id_caja);
+            if (ticket == null)
             {
-                PageSize= Rotativa.AspNetCore.Options.Size.A8
-            };
+                return NotFound();
+            }
+            return File(_pdf.Ticket(ticket), "application/pdf");
         }
 
         [Permiso("submenu3_2")]
         public async Task<IActionResult> RptCuadre(DateTime Fecini, DateTime Fecfin)
         {
-            List<VMCaja_Q05> listQ05 = new List<VMCaja_Q05>();
-            listQ05 = await _menus.mReporteQ05(Fecini, Fecfin);
-            return new ViewAsPdf("RptCuadre", listQ05)
+            if (Fecini == DateTime.MinValue && Fecfin == DateTime.MinValue)
             {
-                PageSize = Rotativa.AspNetCore.Options.Size.A4
-            };
+                Fecini = Fecfin = Fechas.HoyPeru();
+            }
+            var dias = await _menus.mReporteQ05(Fecini, Fecfin);
+            var empresa = await _tickets.ObtenerEmpresaAsync();
+            return File(_pdf.Cuadre(empresa.gene_empre, Fecini, Fecfin, dias), "application/pdf");
         }
-
     }
 }

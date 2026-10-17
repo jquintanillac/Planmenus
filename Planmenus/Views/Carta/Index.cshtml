@@ -1,0 +1,65 @@
+@model List<Planmenus.Data.Entities.MDMenu>
+@{
+    Layout = null;
+    var empresa = (Planmenus.Data.Entities.MDGenerales)ViewBag.empresa;
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    var fecha = ((DateTime)ViewBag.fecha).ToString("dddd d 'de' MMMM", peru);
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carta - @empresa.gene_empre</title>
+    <style>
+        :root { --fondo: #faf7f2; --texto: #2b2118; --suave: #7a6a5a; --acento: #b4532a; --tarjeta: #fff; --borde: #ece4d8; }
+        @@media (prefers-color-scheme: dark) {
+            :root { --fondo: #1c1814; --texto: #f1e9df; --suave: #b3a597; --acento: #e9875a; --tarjeta: #26211c; --borde: #3a332c; }
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--fondo); color: var(--texto); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+        header { padding: 32px 16px 16px; text-align: center; }
+        h1 { margin: 0; font-size: 26px; letter-spacing: .5px; }
+        .fecha { margin-top: 6px; color: var(--suave); text-transform: capitalize; }
+        main { max-width: 560px; margin: 0 auto; padding: 0 16px 32px; }
+        .seccion { margin: 18px 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--acento); font-weight: 700; }
+        .plato { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; margin-bottom: 10px; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 10px; }
+        .nombre { font-weight: 600; font-size: 16px; }
+        .obs { color: var(--suave); font-size: 14px; margin-top: 3px; }
+        .precio { font-weight: 700; color: var(--acento); white-space: nowrap; font-size: 16px; }
+        .vacio { text-align: center; color: var(--suave); padding: 40px 0; }
+        footer { text-align: center; color: var(--suave); font-size: 13px; padding: 0 16px 32px; }
+        footer a { color: var(--acento); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>@empresa.gene_empre</h1>
+        <div class="fecha">Menú del @fecha</div>
+    </header>
+    <main>
+        @if (Model.Count == 0)
+        {
+            <p class="vacio">Todavía no publicamos el menú de hoy. ¡Vuelve en un rato!</p>
+        }
+        else
+        {
+            <div class="seccion">Platos del día</div>
+            @foreach (var m in Model)
+            {
+                <div class="plato">
+                    <div>
+                        <div class="nombre">@m.menu_desc</div>
+                        @if (!string.IsNullOrWhiteSpace(m.menu_observ)) { <div class="obs">@m.menu_observ</div> }
+                    </div>
+                    <div class="precio">S/ @m.menu_precio.ToString("N2", peru)</div>
+                </div>
+            }
+        }
+    </main>
+    <footer>
+        @if (!string.IsNullOrWhiteSpace(empresa.gene_direc)) { <div>@empresa.gene_direc</div> }
+        @if (!string.IsNullOrWhiteSpace(empresa.gene_telef)) { <div>Pedidos: <a href="tel:@empresa.gene_telef">@empresa.gene_telef</a></div> }
+    </footer>
+</body>
+</html>

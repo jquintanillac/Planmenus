@@ -37,7 +37,9 @@ namespace Planmenus.Data.DataSql
                 caja_obs = Texto(rdr["caja_obs"]),
                 caja_monto = Texto(rdr["caja_monto"]),
                 caja_fecha = Texto(rdr["caja_fecha"]),
-                caja_act = Convert.ToBoolean(rdr["caja_act"])
+                caja_act = Convert.ToBoolean(rdr["caja_act"]),
+                detalle = Texto(rdr["detalle"]),
+                caja_usuario = Texto(rdr["caja_usuario"])
             });
 
         public Task<List<VMCaja_Q02>> mReporteQ02(DateTime fecini, DateTime fecfin) =>
