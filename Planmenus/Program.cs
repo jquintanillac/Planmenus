@@ -87,3 +87,6 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+// Permite que las pruebas de integracion (Planmenus.Tests) levanten la aplicacion
+public partial class Program { }

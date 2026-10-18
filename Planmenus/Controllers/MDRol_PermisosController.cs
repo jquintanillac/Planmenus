@@ -230,37 +230,24 @@ namespace Planmenus.Controllers
             return _context.Rol_Permisos.Any(e => e.id_rolper == id);
         }
 
-        public async Task<ActionResult> otorgar(IEnumerable<int> menus, int Idrol)
+        /// <summary>Deja activos solo los permisos marcados del rol (los demas se desactivan)</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> otorgar(List<int> menus, int Idrol)
         {
-            try
+            var permisos = await _context.Rol_Permisos.Where(x => x.id_rol == Idrol).ToListAsync();
+            if (permisos.Count == 0)
             {
-                var desact = await _context.Rol_Permisos.Where(x => x.id_rol == Idrol).ToListAsync();
-                foreach (var item in desact)
-                {
-                    var deschek = await _context.Rol_Permisos.Where(z => z.id_rolper == item.id_rolper).SingleOrDefaultAsync();
-                    if (deschek != null)
-                    {
-                        deschek.rolper_act = false;
-                        _context.SaveChanges();
-                    }
-                }
-                foreach (var item in menus)
-                {
-                    var update = await _context.Rol_Permisos.Where(x => x.id_rolper == item).SingleOrDefaultAsync();
-                    if (update != null)
-                    {
-                        update.rolper_act = true;
-                        _context.SaveChanges();
-                    }
-                }
-
+                return NotFound(new { ok = false, mensaje = "El rol no existe o no tiene permisos." });
             }
-            catch (Exception)
+            var marcados = (menus ?? new List<int>()).ToHashSet();
+            foreach (var p in permisos)
             {
-                throw;
+                // Solo se modifican filas de este rol, aunque lleguen ids de otros roles
+                p.rolper_act = marcados.Contains(p.id_rolper);
             }
-
-            return View();
+            await _context.SaveChangesAsync();
+            return Json(new { ok = true, activos = permisos.Count(p => p.rolper_act) });
         }
 
 

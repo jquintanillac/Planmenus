@@ -211,6 +211,7 @@
 @section Scripts {
 	<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css"></script>
+<div id="tokenPermisos" class="d-none">@Html.AntiForgeryToken()</div>
 	<script type="text/javascript">
 		$(document).ready(function () {
 			 $('#tbladmin').DataTable({
@@ -282,10 +283,14 @@
 					}					
 					$.ajax({
 						url: "@Url.Action("otorgar", "MDRol_Permisos")",
+						type: 'POST',
 						traditional: true,
-						data: { 'menus': menus, 'Idrol': Idrol },
+						data: { 'menus': menus, 'Idrol': Idrol, '__RequestVerificationToken': $('#tokenPermisos input').val() },
 						success: function(result){										 
-							swal('Mensaje de confirmacion', 'Carga eliminada', 'success');
+							swal('Permisos guardados', 'El rol tiene ' + result.activos + ' permiso(s) activo(s). Los usuarios deben volver a iniciar sesión para verlos.', 'success');
+						},
+						error: function () {
+							swal('No se pudo guardar', 'Recargue la página e intente nuevamente.', 'error');
 							
 						}
 					});			
