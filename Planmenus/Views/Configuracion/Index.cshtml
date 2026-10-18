@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Configuración";
     var tipos = (List<MDTipo_pago>)ViewBag.tipos_pago;
-    var tieneIp = !string.IsNullOrWhiteSpace(Model.gene_impresora_ip);
+    var formato = (MDTicketera)ViewBag.formato;
     var correo = (Planmenus.Services.CorreoOptions)ViewBag.correo;
 }
 <style>
@@ -66,53 +66,17 @@
         </section>
 
         <section class="tab-pane fade" id="t-ticket" role="tabpanel">
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="card"><div class="card-body">
-                        <h4 class="mb-3">Formato del ticket</h4>
-                        <label>Ancho del papel</label>
-                        <div class="opcion-ancho mb-3">
-                            <label><input type="radio" name="gene_ticket_ancho" value="80" @(Model.gene_ticket_ancho != 58 ? "checked" : "") /><span><span class="papel" style="width:70px"></span>80 mm<br /><small class="text-muted">el más común</small></span></label>
-                            <label><input type="radio" name="gene_ticket_ancho" value="58" @(Model.gene_ticket_ancho == 58 ? "checked" : "") /><span><span class="papel" style="width:50px"></span>58 mm<br /><small class="text-muted">portátiles</small></span></label>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="gene_ticket_pie">Mensaje al pie</label>
-                            <input asp-for="gene_ticket_pie" class="form-control" maxlength="80" placeholder="¡Gracias por su preferencia!" />
-                        </div>
-                        <a class="btn btn-light" asp-action="VistaPrevia" target="_blank"><i data-feather="eye" style="width:16px;height:16px"></i> Vista previa del ticket</a>
-                        <small class="form-text text-muted">Guarde primero para ver los cambios en la vista previa.</small>
-                    </div></div>
+            <div class="card"><div class="card-body d-flex flex-wrap align-items-center" style="gap:16px">
+                <div class="kpi-icono mb-0" style="--color-kpi:var(--aji)"><i data-feather="printer"></i></div>
+                <div class="flex-fill">
+                    <h4 class="mb-1">Ticketera</h4>
+                    <p class="text-muted mb-0">
+                        @(formato.tk_modo switch { ModoImpresion.Red => $"Ticketera de red en {formato.tk_ip}:{formato.tk_puerto}", ModoImpresion.Agente => $"Agente local · impresora {formato.tk_impresora ?? "sin elegir"}", _ => "Impresión desde el navegador" })
+                        · papel @formato.tk_ancho_mm mm · @(formato.tk_logo_raster != null ? "con logo" : "sin logo")
+                    </p>
                 </div>
-                <div class="col-lg-6">
-                    <div class="card"><div class="card-body">
-                        <h4 class="mb-1">Ticketera de red (opcional)</h4>
-                        <p class="text-muted small">Impresión directa ESC/POS (Epson, Xprinter, Bixolon…). Solo funciona si esta aplicación corre en una PC del mismo local que la ticketera. Si usa la app desde internet, deje la IP vacía e imprima desde el navegador.</p>
-                        <div class="estado-ticketera mb-3" style="background:@(tieneIp ? "var(--hierba-suave)" : "var(--crema)")">
-                            <i data-feather="@(tieneIp ? "check-circle" : "info")" style="color:@(tieneIp ? "var(--hierba)" : "var(--gris)")"></i>
-                            <span>@(tieneIp ? $"Configurada en {Model.gene_impresora_ip}:{Model.gene_impresora_puerto}" : "Sin ticketera de red: se imprime desde el navegador")</span>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-8">
-                                <label asp-for="gene_impresora_ip">Dirección IP</label>
-                                <input asp-for="gene_impresora_ip" class="form-control" placeholder="192.168.1.100" inputmode="decimal" />
-                                <span asp-validation-for="gene_impresora_ip" class="text-danger small"></span>
-                            </div>
-                            <div class="form-group col-4">
-                                <label asp-for="gene_impresora_puerto">Puerto</label>
-                                <input asp-for="gene_impresora_puerto" class="form-control" type="number" min="1" max="65535" />
-                            </div>
-                        </div>
-                        <details class="small text-muted">
-                            <summary>¿Cómo encuentro la IP de mi ticketera?</summary>
-                            <ol class="pl-3 mt-2 mb-0">
-                                <li>Apague la ticketera, mantenga presionado el botón FEED y enciéndala: imprimirá una hoja de configuración.</li>
-                                <li>Busque “IP Address” en esa hoja.</li>
-                                <li>El puerto casi siempre es 9100.</li>
-                            </ol>
-                        </details>
-                    </div></div>
-                </div>
-            </div>
+                <a class="btn btn-primary" asp-controller="Ticketera" asp-action="Index">Configurar ticketera y ticket</a>
+            </div></div>
         </section>
 
         <section class="tab-pane fade" id="t-pagos" role="tabpanel">
@@ -204,12 +168,6 @@
 </form>
 
 <form asp-action="ProbarCorreo" method="post" id="formPruebaCorreo"></form>
-
-@if (tieneIp)
-{
-    <form asp-action="ProbarTicketera" method="post" class="mt-3">
-        <button type="submit" class="btn btn-light"><i data-feather="printer" style="width:16px;height:16px"></i> Imprimir ticket de prueba</button>
-    </form>
 }
 
 @section Scripts {

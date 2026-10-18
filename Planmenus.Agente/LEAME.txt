@@ -1,0 +1,38 @@
+AGENTE DE IMPRESION - PLANMENUS
+===============================
+
+Imprime los tickets del sistema en la ticketera de esta PC (USB o red),
+sin dialogos, con corte de papel, logo y apertura de gaveta.
+
+1. En el sistema: Configuracion > Ticketera > "Generar clave del agente".
+2. Abra appsettings.json (en esta carpeta) y complete:
+     "Servidor": "https://la-direccion-de-su-sistema",
+     "Clave":    "la clave que copio"
+3. Haga doble clic en PlanmenusAgente.exe. Debe decir "Conectado" y listar
+   las impresoras del equipo.
+4. En el sistema elija el modo "Agente en la PC de caja" y la impresora.
+   Use "Imprimir prueba".
+
+INSTALAR COMO SERVICIO (arranca solo con Windows)
+Abra "Simbolo del sistema" como administrador y ejecute (cambie la ruta):
+
+  sc.exe create PlanmenusAgente binPath= "C:\PlanmenusAgente\PlanmenusAgente.exe" start= auto
+  sc.exe start PlanmenusAgente
+
+Para desinstalar:
+  sc.exe stop PlanmenusAgente
+  sc.exe delete PlanmenusAgente
+
+PROBLEMAS FRECUENTES
+- "No se encontro la impresora": el nombre debe ser igual al de Windows
+  (Configuracion de Windows > Impresoras). Eligalo de la lista en el sistema.
+- Salen simbolos raros en vez de tildes: cambie "Juego de caracteres".
+- No corta el papel: algunas ticketeras no tienen cortador; elija "Sin corte".
+- Con el driver "Generic / Text Only" no se imprime el logo:
+  instale el driver del fabricante de la ticketera.
+
+PARA EL DESARROLLADOR
+  Publicar el .exe:  dotnet publish Planmenus.Agente -c Release
+  (queda en Planmenus.Agente\bin\Release\net8.0-windows\win-x64\publish)
+  Modo prueba: en appsettings.json ponga "CarpetaPrueba": "C:\\ruta" y los
+  tickets se guardan como archivos .bin en lugar de imprimirse.

@@ -20,7 +20,13 @@ namespace Planmenus.Services
         public async Task<MDGenerales> ObtenerEmpresaAsync()
         {
             return await _context.Generales.AsNoTracking().OrderBy(g => g.id_gene).FirstOrDefaultAsync()
-                   ?? new MDGenerales { gene_empre = "MENU", gene_ticket_ancho = 80, gene_impresora_puerto = 9100 };
+                   ?? new MDGenerales { gene_empre = "MENU" };
+        }
+
+        /// <summary>Configuracion de la ticketera (o la predeterminada si aun no se guardo)</summary>
+        public async Task<MDTicketera> ObtenerFormatoAsync()
+        {
+            return await _context.Ticketeras.AsNoTracking().OrderBy(t => t.id_ticketera).FirstOrDefaultAsync() ?? new MDTicketera();
         }
 
         public async Task<VMTicket> ObtenerAsync(int id_caja)
@@ -52,6 +58,7 @@ namespace Planmenus.Services
             }
 
             var empresa = await ObtenerEmpresaAsync();
+            var formato = await ObtenerFormatoAsync();
             return new VMTicket
             {
                 ticket = caja.id_caja,
@@ -69,8 +76,9 @@ namespace Planmenus.Services
                 ruc = empresa.gene_ruc,
                 direccion = empresa.gene_direc,
                 telefono = empresa.gene_telef,
-                pie = string.IsNullOrWhiteSpace(empresa.gene_ticket_pie) ? "¡Gracias por su preferencia!" : empresa.gene_ticket_pie,
-                ancho_mm = empresa.gene_ticket_ancho == 58 ? 58 : 80
+                pie = string.IsNullOrWhiteSpace(formato.tk_pie) ? "¡Gracias por su preferencia!" : formato.tk_pie,
+                ancho_mm = formato.tk_ancho_mm == 58 ? 58 : 80,
+                formato = formato
             };
         }
     }

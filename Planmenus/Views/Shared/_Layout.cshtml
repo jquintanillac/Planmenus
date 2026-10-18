@@ -97,6 +97,7 @@
             {
                 <li class="app-nav-titulo">Administración</li>
                 @if (Puede("submenu1_1")) { <li><a asp-controller="Configuracion" asp-action="Index" class="@(Activo("Configuracion", null) || Activo("MDGenerales", null) ? "activo" : "")"><i data-feather="settings"></i> Configuración</a></li> }
+                @if (Puede("submenu1_1")) { <li><a asp-controller="Ticketera" asp-action="Index" class="@(Activo("Ticketera", null) ? "activo" : "")"><i data-feather="printer"></i> Ticketera</a></li> }
                 @if (Puede("submenu1_2")) { <li><a asp-controller="MDUsuarios" asp-action="Index" class="@(Activo("MDUsuarios", null) ? "activo" : "")"><i data-feather="users"></i> Usuarios</a></li> }
 
                     var segActivo = GrupoActivo("MDRols", "MDRol_Usuario", "MDRol_Permisos", "MDMenuprins", "MDSubmenus");

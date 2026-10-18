@@ -79,7 +79,7 @@ namespace Planmenus.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Permiso("submenu3_1")]
-        public async Task<IActionResult> Cobrar(int id, int? id_tipago)
+        public async Task<IActionResult> Cobrar(int id, int? id_tipago, [FromServices] ImpresionService impresion)
         {
             var r = await _ventas.CobrarAsync(id, id_tipago);
             if (!r.Ok)
@@ -87,8 +87,9 @@ namespace Planmenus.Controllers
                 TempData["error"] = r.Error;
                 return r.Caja == null ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(Pedido), new { id });
             }
-            TempData["success"] = $"Pedido N° {id:D6} cobrado.";
-            return RedirectToAction("Ticket", "MDCajas", new { id, imprimir = true });
+            var imp = await impresion.ImprimirVentaAsync(id, alCobrar: true);
+            TempData[imp.Ok ? "success" : "error"] = imp.Mensaje ?? $"Pedido N° {id:D6} cobrado.";
+            return RedirectToAction("Ticket", "MDCajas", new { id, imprimir = imp.Navegador });
         }
 
         [HttpPost]

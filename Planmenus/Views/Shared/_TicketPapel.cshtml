@@ -1,0 +1,76 @@
+@using Planmenus.Data.Entities
+@model Planmenus.Models.VMTicket
+@{
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    string Soles(decimal m) => "S/ " + m.ToString("N2", peru);
+    var f = Model.formato ?? new MDTicketera();
+    string qr = string.IsNullOrWhiteSpace(Model.qr) ? null
+        : Convert.ToBase64String(new QRCoder.PngByteQRCode(new QRCoder.QRCodeGenerator().CreateQrCode(Model.qr, QRCoder.QRCodeGenerator.ECCLevel.M)).GetGraphic(6));
+}
+<style>
+    .tkp { width: @(Model.ancho_mm)mm; padding: 3mm; background: #fff; color: #000; font-family: "Courier New", Consolas, monospace; font-size: @(Model.ancho_mm == 58 ? "11px" : "12.5px"); line-height: 1.35; text-align: left; }
+    .tkp .c { text-align: center; } .tkp .r { text-align: right; } .tkp .b { font-weight: bold; } .tkp .grande { font-size: 1.35em; }
+    .tkp .sep { border-top: 1px dashed #000; margin: 4px 0; }
+    .tkp .logo { display: block; margin: 0 auto 4px; max-width: 70%; max-height: 90px; }
+    .tkp table { width: 100%; border-collapse: collapse; } .tkp td { vertical-align: top; padding: 1px 0; border: 0; }
+    .tkp .sub { font-size: .85em; color: #333; }
+    .tkp .anulado { border: 2px solid #000; padding: 2px; margin: 4px 0; }
+    .tkp .qr { display: block; margin: 6px auto; width: 40%; image-rendering: pixelated; }
+    .tkp .corte { margin: 10px -3mm -3mm; border-top: 2px dashed #9c8f83; position: relative; height: 8px; }
+    .tkp .corte span { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 6px; font: 10px system-ui, sans-serif; color: #7a6e64; }
+</style>
+<div class="tkp">
+    @if (f.tk_logo_mostrar && f.tk_logo_png?.Length > 0)
+    {
+        <img class="logo" src="data:image/png;base64,@Convert.ToBase64String(f.tk_logo_png)" alt="" />
+    }
+    <div class="c b grande">@Model.empresa</div>
+    @if (f.tk_mostrar_ruc && !string.IsNullOrWhiteSpace(Model.ruc)) { <div class="c">RUC: @Model.ruc</div> }
+    @if (f.tk_mostrar_direccion && !string.IsNullOrWhiteSpace(Model.direccion)) { <div class="c">@Model.direccion</div> }
+    @if (f.tk_mostrar_telefono && !string.IsNullOrWhiteSpace(Model.telefono)) { <div class="c">Tel: @Model.telefono</div> }
+    @if (!string.IsNullOrWhiteSpace(Model.comprobante)) { <div class="sep"></div><div class="c b">@Model.comprobante</div> }
+    <div class="sep"></div>
+    @if (string.IsNullOrWhiteSpace(Model.comprobante))
+    {
+        <div><span class="b">@(Model.pagado ? "TICKET" : "PRE-CUENTA") N° @Model.ticket.ToString("D6")</span></div>
+    }
+    <div>Fecha: @Model.fecha.ToString("dd/MM/yyyy HH:mm")</div>
+    @if (!string.IsNullOrWhiteSpace(Model.cliente)) { <div>Cliente: @Model.cliente</div> }
+    @if (!string.IsNullOrWhiteSpace(Model.cliente_doc)) { <div>@Model.cliente_doc</div> }
+    @if (f.tk_mostrar_mesa && !string.IsNullOrWhiteSpace(Model.mesa)) { <div>Mesa: @Model.mesa</div> }
+    @if (f.tk_mostrar_mesa && !string.IsNullOrWhiteSpace(Model.delivery)) { <div>Reparto: @Model.delivery</div> }
+    @if (f.tk_mostrar_mozo && !string.IsNullOrWhiteSpace(Model.usuario)) { <div>Atendió: @Model.usuario</div> }
+    @if (Model.anulado) { <div class="c b anulado">*** ANULADO ***</div> }
+    <div class="sep"></div>
+    <table>
+        @foreach (var item in Model.items)
+        {
+            <tr>
+                <td style="width:2.2em">@item.cantidad</td>
+                <td>
+                    @item.descripcion
+                    @if (item.cantidad > 1) { <div class="sub">@item.cantidad x @Soles(item.precio)</div> }
+                </td>
+                <td class="r" style="white-space:nowrap">@Soles(item.subtotal)</td>
+            </tr>
+        }
+    </table>
+    <div class="sep"></div>
+    <table>
+        @foreach (var s in Model.subtotales) { <tr><td>@s.etiqueta</td><td class="r">@Soles(s.monto)</td></tr> }
+        <tr class="b @(f.tk_total_grande ? "grande" : "")"><td>TOTAL</td><td class="r">@Soles(Model.total)</td></tr>
+    </table>
+    @if (Model.pagado && !string.IsNullOrWhiteSpace(Model.tipo_pago)) { <div>Pago: @Model.tipo_pago</div> }
+    @if (!Model.pagado) { <div class="c b">PENDIENTE DE PAGO</div> }
+    @if (f.tk_mostrar_obs && !string.IsNullOrWhiteSpace(Model.observacion)) { <div>Obs: @Model.observacion</div> }
+    @if (qr != null) { <img class="qr" src="data:image/png;base64,@qr" alt="Código QR del comprobante" /> }
+    @foreach (var l in Model.leyendas) { <div class="c sub">@l</div> }
+    <div class="sep"></div>
+    <div class="c">@Model.pie</div>
+    @if (string.IsNullOrWhiteSpace(Model.comprobante)) { <div class="c sub">Comprobante interno, no válido como boleta</div> }
+    @if (ViewData["mostrar_corte"] as bool? == true && f.tk_corte != TipoCorte.Ninguno)
+    {
+        <div style="height:@(Math.Clamp(f.tk_avance, 0, 10) * 0.9)em"></div>
+        <div class="corte"><span>✂ corte @(f.tk_corte == TipoCorte.Total ? "total" : "parcial")</span></div>
+    }
+</div>

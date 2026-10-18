@@ -291,12 +291,6 @@ namespace Planmenus.Migrations
                     b.Property<string>("gene_empre")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("gene_impresora_ip")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("gene_impresora_puerto")
-                        .HasColumnType("int");
-
                     b.Property<int>("gene_recordatorio_horas")
                         .HasColumnType("int");
 
@@ -309,18 +303,60 @@ namespace Planmenus.Migrations
                     b.Property<string>("gene_telef")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("gene_ticket_ancho")
-                        .HasColumnType("int");
-
-                    b.Property<string>("gene_ticket_pie")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("gene_url")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id_gene");
 
                     b.ToTable("Generales");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDImpresion_Cola", b =>
+                {
+                    b.Property<int>("id_trabajo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_trabajo"));
+
+                    b.Property<int?>("id_caja")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("imp_creado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("imp_datos")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("imp_error")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<byte>("imp_estado")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("imp_impresora")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("imp_intentos")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("imp_terminado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("imp_tipo")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("imp_tomado")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("id_trabajo");
+
+                    b.HasIndex("imp_estado", "imp_creado");
+
+                    b.ToTable("Impresion_Cola");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDIngresos", b =>
@@ -646,6 +682,112 @@ namespace Planmenus.Migrations
                     b.HasIndex("id_menprin");
 
                     b.ToTable("Submenu");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDTicketera", b =>
+                {
+                    b.Property<int>("id_ticketera")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ticketera"));
+
+                    b.Property<string>("tk_agente_clave_hash")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("tk_agente_contacto")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("tk_agente_equipo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("tk_agente_impresoras")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("tk_ancho_mm")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("tk_auto")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("tk_avance")
+                        .HasColumnType("int");
+
+                    b.Property<int>("tk_codepage")
+                        .HasColumnType("int");
+
+                    b.Property<int>("tk_columnas")
+                        .HasColumnType("int");
+
+                    b.Property<int>("tk_copias")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("tk_corte")
+                        .HasColumnType("tinyint");
+
+                    b.Property<bool>("tk_gaveta")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("tk_impresora")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("tk_ip")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("tk_logo_alto")
+                        .HasColumnType("int");
+
+                    b.Property<int>("tk_logo_ancho")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("tk_logo_mostrar")
+                        .HasColumnType("bit");
+
+                    b.Property<byte[]>("tk_logo_png")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("tk_logo_raster")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte>("tk_modo")
+                        .HasColumnType("tinyint");
+
+                    b.Property<bool>("tk_mostrar_direccion")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_mesa")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_mozo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_obs")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_ruc")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_telefono")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("tk_pie")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("tk_puerto")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("tk_total_grande")
+                        .HasColumnType("bit");
+
+                    b.HasKey("id_ticketera");
+
+                    b.ToTable("Ticketera");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDTipo_pago", b =>

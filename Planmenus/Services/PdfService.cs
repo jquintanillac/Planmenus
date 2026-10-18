@@ -16,11 +16,47 @@ namespace Planmenus.Services
         private static string Soles(decimal monto) => "S/ " + monto.ToString("N2", Peru);
 
         /// <summary>
+        /// Deja solo caracteres que la fuente del PDF (Lato) puede dibujar: latinos con tildes y ñ, signos comunes y €.
+        /// QuestPDF falla si encuentra un caracter sin glifo (por ejemplo un emoji escrito en un plato).
+        /// </summary>
+        public static string Limpio(string texto)
+        {
+            if (string.IsNullOrEmpty(texto))
+            {
+                return texto;
+            }
+            var sb = new System.Text.StringBuilder(texto.Length);
+            foreach (var c in texto)
+            {
+                if (c == '\n' || (c >= 0x20 && c <= 0x7E) || (c >= 0xA0 && c <= 0x17F) || (c >= 0x2010 && c <= 0x2027) || c == '€' || c == '™')
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString().Trim();
+        }
+
+        private static void Limpiar(VMTicket t)
+        {
+            t.empresa = Limpio(t.empresa); t.ruc = Limpio(t.ruc); t.direccion = Limpio(t.direccion); t.telefono = Limpio(t.telefono);
+            t.comprobante = Limpio(t.comprobante); t.cliente = Limpio(t.cliente); t.cliente_doc = Limpio(t.cliente_doc);
+            t.mesa = Limpio(t.mesa); t.delivery = Limpio(t.delivery); t.usuario = Limpio(t.usuario); t.tipo_pago = Limpio(t.tipo_pago);
+            t.observacion = Limpio(t.observacion); t.pie = Limpio(t.pie);
+            t.items.ForEach(i => i.descripcion = Limpio(i.descripcion));
+            t.leyendas = t.leyendas.Select(Limpio).ToList();
+            t.subtotales = t.subtotales.Select(s => (Limpio(s.etiqueta), s.monto)).ToList();
+        }
+
+        /// <summary>
         /// Ticket de venta en papel continuo de 58 u 80 mm
         /// </summary>
         public byte[] Ticket(VMTicket t)
         {
+            Limpiar(t);
+            var f = t.formato ?? new Data.Entities.MDTicketera();
             float fuente = t.ancho_mm == 58 ? 7 : 8.5f;
+            byte[] qr = string.IsNullOrWhiteSpace(t.qr) ? null
+                : new QRCoder.PngByteQRCode(new QRCoder.QRCodeGenerator().CreateQrCode(t.qr, QRCoder.QRCodeGenerator.ECCLevel.M)).GetGraphic(8);
 
             return Document.Create(doc =>
             {
@@ -33,17 +69,30 @@ namespace Planmenus.Services
                     page.Content().Column(col =>
                     {
                         col.Spacing(2);
+                        if (f.tk_logo_mostrar && f.tk_logo_png?.Length > 0)
+                        {
+                            col.Item().AlignCenter().MaxWidth(t.ancho_mm == 58 ? 110 : 150).MaxHeight(80).Image(f.tk_logo_png).FitArea();
+                        }
                         col.Item().AlignCenter().Text(t.empresa).Bold().FontSize(fuente + 2.5f);
-                        if (!string.IsNullOrWhiteSpace(t.ruc)) col.Item().AlignCenter().Text($"RUC: {t.ruc}");
-                        if (!string.IsNullOrWhiteSpace(t.direccion)) col.Item().AlignCenter().Text(t.direccion);
-                        if (!string.IsNullOrWhiteSpace(t.telefono)) col.Item().AlignCenter().Text($"Tel: {t.telefono}");
+                        if (f.tk_mostrar_ruc && !string.IsNullOrWhiteSpace(t.ruc)) col.Item().AlignCenter().Text($"RUC: {t.ruc}");
+                        if (f.tk_mostrar_direccion && !string.IsNullOrWhiteSpace(t.direccion)) col.Item().AlignCenter().Text(t.direccion);
+                        if (f.tk_mostrar_telefono && !string.IsNullOrWhiteSpace(t.telefono)) col.Item().AlignCenter().Text($"Tel: {t.telefono}");
+                        if (!string.IsNullOrWhiteSpace(t.comprobante))
+                        {
+                            col.Item().PaddingTop(2).AlignCenter().Text(t.comprobante).Bold();
+                        }
 
                         col.Item().PaddingVertical(2).LineHorizontal(0.5f);
-                        col.Item().Text(txt => { txt.Span(t.pagado ? "TICKET N° " : "PRE-CUENTA N° ").Bold(); txt.Span(t.ticket.ToString("D6")); });
+                        if (string.IsNullOrWhiteSpace(t.comprobante))
+                        {
+                            col.Item().Text(txt => { txt.Span(t.pagado ? "TICKET N° " : "PRE-CUENTA N° ").Bold(); txt.Span(t.ticket.ToString("D6")); });
+                        }
                         col.Item().Text($"Fecha: {t.fecha:dd/MM/yyyy HH:mm}");
-                        if (!string.IsNullOrWhiteSpace(t.mesa)) col.Item().Text($"Mesa: {t.mesa}");
-                        if (!string.IsNullOrWhiteSpace(t.delivery)) col.Item().Text($"Reparto: {t.delivery}");
-                        if (!string.IsNullOrWhiteSpace(t.usuario)) col.Item().Text($"Atendió: {t.usuario}");
+                        if (!string.IsNullOrWhiteSpace(t.cliente)) col.Item().Text($"Cliente: {t.cliente}");
+                        if (!string.IsNullOrWhiteSpace(t.cliente_doc)) col.Item().Text(t.cliente_doc);
+                        if (f.tk_mostrar_mesa && !string.IsNullOrWhiteSpace(t.mesa)) col.Item().Text($"Mesa: {t.mesa}");
+                        if (f.tk_mostrar_mesa && !string.IsNullOrWhiteSpace(t.delivery)) col.Item().Text($"Reparto: {t.delivery}");
+                        if (f.tk_mostrar_mozo && !string.IsNullOrWhiteSpace(t.usuario)) col.Item().Text($"Atendió: {t.usuario}");
                         if (t.anulado) col.Item().AlignCenter().Text("*** ANULADO ***").Bold().FontColor(Colors.Red.Medium);
 
                         col.Item().PaddingVertical(2).LineHorizontal(0.5f);
@@ -74,17 +123,37 @@ namespace Planmenus.Services
                         });
 
                         col.Item().PaddingVertical(2).LineHorizontal(0.5f);
+                        foreach (var (etiqueta, monto) in t.subtotales)
+                        {
+                            col.Item().Row(row =>
+                            {
+                                row.RelativeItem().Text(etiqueta);
+                                row.AutoItem().Text(Soles(monto));
+                            });
+                        }
                         col.Item().Row(row =>
                         {
-                            row.RelativeItem().Text("TOTAL").Bold().FontSize(fuente + 2);
-                            row.AutoItem().Text(Soles(t.total)).Bold().FontSize(fuente + 2);
+                            var tam = f.tk_total_grande ? fuente + 2 : fuente;
+                            row.RelativeItem().Text("TOTAL").Bold().FontSize(tam);
+                            row.AutoItem().Text(Soles(t.total)).Bold().FontSize(tam);
                         });
                         if (t.pagado && !string.IsNullOrWhiteSpace(t.tipo_pago)) col.Item().Text($"Pago: {t.tipo_pago}");
                         if (!t.pagado) col.Item().AlignCenter().Text("Pendiente de pago").Bold();
-                        if (!string.IsNullOrWhiteSpace(t.observacion)) col.Item().Text($"Obs: {t.observacion}").Italic();
+                        if (f.tk_mostrar_obs && !string.IsNullOrWhiteSpace(t.observacion)) col.Item().Text($"Obs: {t.observacion}").Italic();
 
+                        if (qr != null)
+                        {
+                            col.Item().PaddingTop(4).AlignCenter().Width(t.ancho_mm == 58 ? 70 : 85).Image(qr);
+                        }
+                        foreach (var leyenda in t.leyendas)
+                        {
+                            col.Item().AlignCenter().Text(leyenda).FontSize(fuente - 1);
+                        }
                         col.Item().PaddingTop(4).AlignCenter().Text(t.pie);
-                        col.Item().AlignCenter().Text("Comprobante interno, no válido como boleta").FontSize(fuente - 1.5f).FontColor(Colors.Grey.Darken1);
+                        if (string.IsNullOrWhiteSpace(t.comprobante))
+                        {
+                            col.Item().AlignCenter().Text("Comprobante interno, no válido como boleta").FontSize(fuente - 1.5f).FontColor(Colors.Grey.Darken1);
+                        }
                     });
                 });
             }).GeneratePdf();
@@ -106,7 +175,7 @@ namespace Planmenus.Services
                     page.Header().Column(col =>
                     {
                         col.Item().AlignCenter().Text("CUADRE DE CAJA").Bold().FontSize(16);
-                        col.Item().AlignCenter().Text(empresa).FontSize(12);
+                        col.Item().AlignCenter().Text(Limpio(empresa) ?? "").FontSize(12);
                         col.Item().AlignCenter().Text($"Del {desde:dd/MM/yyyy} al {hasta:dd/MM/yyyy}").FontColor(Colors.Grey.Darken2);
                         col.Item().PaddingTop(8).LineHorizontal(1);
                     });

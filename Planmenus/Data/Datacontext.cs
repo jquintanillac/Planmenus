@@ -31,6 +31,8 @@ namespace Planmenus.Data
         public virtual DbSet<MDReserva> Reservas { get; set; }
         public virtual DbSet<MDReserva_Mesa> Reserva_Mesas { get; set; }
         public virtual DbSet<MDCorreo_Log> Correos { get; set; }
+        public virtual DbSet<MDTicketera> Ticketeras { get; set; }
+        public virtual DbSet<MDImpresion_Cola> Impresiones { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -75,6 +77,7 @@ namespace Planmenus.Data
             modelBuilder.Entity<MDReserva_Mesa>().HasIndex(x => new { x.id_reserva, x.id_mesa }).IsUnique();
             modelBuilder.Entity<MDReserva>().HasIndex(x => new { x.res_inicio, x.res_estado });
             modelBuilder.Entity<MDCorreo_Log>().HasIndex(x => x.cor_fecha);
+            modelBuilder.Entity<MDImpresion_Cola>().HasIndex(x => new { x.imp_estado, x.imp_creado });
         }
     }
 }

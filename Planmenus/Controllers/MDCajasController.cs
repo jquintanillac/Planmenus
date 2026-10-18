@@ -13,7 +13,7 @@ using Planmenus.Models;
 using Planmenus.Data.DataSql;
 using Planmenus.Helpers;
 using Planmenus.Services;
-using System.Net.Sockets;
+
 
 namespace Planmenus.Controllers
 {
@@ -84,12 +84,6 @@ namespace Planmenus.Controllers
             }
             ViewBag.cajas = await _menus.mSPcajas(Fecini, Fecfin);
             return View();
-        }
-
-        [Permiso("submenu3_3")]
-        public IActionResult Imprimir(int? id)
-        {
-            return RedirectToAction(nameof(Ticket), new { id, imprimir = true });
         }
 
         [Permiso("submenu3_4")]
@@ -199,7 +193,7 @@ namespace Planmenus.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Permiso("submenu3_1")]
-        public async Task<IActionResult> Create(VMVenta venta, [FromServices] VentaService ventas)
+        public async Task<IActionResult> Create(VMVenta venta, [FromServices] VentaService ventas, [FromServices] ImpresionService impresion)
         {
             var resultado = await ventas.RegistrarAsync(venta, SessionHelper.GetNameIdentifier(User));
             if (!resultado.Ok)
@@ -208,13 +202,15 @@ namespace Planmenus.Controllers
             }
             if (venta.Cobrar && venta.id_caja == null)
             {
-                return RedirectToAction(nameof(Ticket), new { id = resultado.Caja.id_caja, imprimir = true });
+                var imp = await impresion.ImprimirVentaAsync(resultado.Caja.id_caja, alCobrar: true);
+                if (imp.Mensaje != null) TempData[imp.Ok ? "success" : "error"] = imp.Mensaje;
+                return RedirectToAction(nameof(Ticket), new { id = resultado.Caja.id_caja, imprimir = imp.Navegador });
             }
             TempData["success"] = $"Pedido N° {resultado.Caja.id_caja:D6} enviado a cocina.";
             return RedirectToAction("Pedido", "Salon", new { id = resultado.Caja.id_caja });
         }
 
-        // GET: MDCajas/Ticket/5 - ticket en HTML listo para la ticketera (impresion desde el navegador)
+        // GET: MDCajas/Ticket/5 - ticket en HTML (vista previa e impresion desde el navegador)
         [Permiso("submenu3_1", "submenu3_3")]
         public async Task<IActionResult> Ticket(int id, bool imprimir = false)
         {
@@ -223,42 +219,25 @@ namespace Planmenus.Controllers
             {
                 return NotFound();
             }
-            var empresa = await _tickets.ObtenerEmpresaAsync();
             ViewBag.imprimir = imprimir;
-            ViewBag.termica = !string.IsNullOrWhiteSpace(empresa.gene_impresora_ip);
             return View(ticket);
         }
 
-        // POST: MDCajas/ImprimirTermica/5 - envia el ticket por red a la ticketera ESC/POS configurada
+        // POST: MDCajas/Imprimir/5 - (re)imprime el ticket en la ticketera configurada
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Permiso("submenu3_1", "submenu3_3")]
-        public async Task<IActionResult> ImprimirTermica(int id, [FromServices] EscPosService escpos, [FromServices] ILogger<MDCajasController> logger)
+        public async Task<IActionResult> Imprimir(int id, [FromServices] ImpresionService impresion)
         {
-            var ticket = await _tickets.ObtenerAsync(id);
-            if (ticket == null)
+            var imp = await impresion.ImprimirVentaAsync(id, alCobrar: false);
+            if (imp.Navegador)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Ticket), new { id, imprimir = true });
             }
-            var empresa = await _tickets.ObtenerEmpresaAsync();
-            if (string.IsNullOrWhiteSpace(empresa.gene_impresora_ip))
-            {
-                TempData["error"] = "No hay una ticketera de red configurada en Generales.";
-                return RedirectToAction(nameof(Ticket), new { id });
-            }
-
-            try
-            {
-                await escpos.ImprimirAsync(ticket, empresa.gene_impresora_ip, empresa.gene_impresora_puerto);
-                TempData["success"] = "Ticket enviado a la ticketera.";
-            }
-            catch (Exception ex) when (ex is SocketException or OperationCanceledException or IOException)
-            {
-                logger.LogWarning(ex, "No se pudo imprimir en {Ip}:{Puerto}", empresa.gene_impresora_ip, empresa.gene_impresora_puerto);
-                TempData["error"] = $"No se pudo conectar con la ticketera {empresa.gene_impresora_ip}:{empresa.gene_impresora_puerto}.";
-            }
+            TempData[imp.Ok ? "success" : "error"] = imp.Mensaje;
             return RedirectToAction(nameof(Ticket), new { id });
         }
+
 
         // GET: MDCajas/Edit/5
         [Permiso("submenu3_3")]

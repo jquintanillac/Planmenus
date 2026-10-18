@@ -17,6 +17,7 @@ builder.Services.AddScoped<PlanoService>();
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<TurnoService>();
 builder.Services.AddScoped<CorreoService>();
+builder.Services.AddScoped<ImpresionService>();
 builder.Services.AddScoped<ReservaService>();
 builder.Services.Configure<CorreoOptions>(builder.Configuration.GetSection("Correo"));
 builder.Services.AddHostedService<RecordatorioWorker>();

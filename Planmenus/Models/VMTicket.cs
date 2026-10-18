@@ -16,6 +16,19 @@ namespace Planmenus.Models
         /// <summary>false = pre-cuenta de un pedido abierto</summary>
         public bool pagado { get; set; } = true;
         public decimal total { get; set; }
+
+        // ---- Comprobante electronico (vacio = ticket interno) ----
+        /// <summary>Ej.: "BOLETA DE VENTA ELECTRÓNICA B001-00000123"</summary>
+        public string comprobante { get; set; }
+        public string cliente { get; set; }
+        /// <summary>Ej.: "DNI: 12345678" o "RUC: 20123456789"</summary>
+        public string cliente_doc { get; set; }
+        /// <summary>Lineas antes del total: Op. gravada, IGV...</summary>
+        public List<(string etiqueta, decimal monto)> subtotales { get; set; } = new();
+        /// <summary>Texto del codigo QR (comprobante electronico)</summary>
+        public string qr { get; set; }
+        /// <summary>Textos legales al pie (representacion impresa, monto en letras...)</summary>
+        public List<string> leyendas { get; set; } = new();
         public List<VMTicketItem> items { get; set; } = new();
 
         public string empresa { get; set; }
@@ -24,6 +37,8 @@ namespace Planmenus.Models
         public string telefono { get; set; }
         public string pie { get; set; }
         public int ancho_mm { get; set; } = 80;
+        /// <summary>Formato configurado en la pantalla Ticketera (secciones visibles, logo, corte...)</summary>
+        public Planmenus.Data.Entities.MDTicketera formato { get; set; } = new();
     }
 
     public class VMTicketItem

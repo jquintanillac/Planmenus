@@ -1,0 +1,403 @@
+@using Planmenus.Data.Entities
+@using Planmenus.Services
+@model MDTicketera
+@{
+    ViewData["Title"] = "Ticketera";
+    var impresoras = (string[])ViewBag.impresoras;
+    var cola = (List<MDImpresion_Cola>)ViewBag.cola;
+    bool conectado = ViewBag.conectado;
+    var clave = TempData["clave_agente"] as string;
+    string servidor = ViewBag.url_servidor;
+}
+<style>
+    .modo-op { display: block; border: 2px solid var(--borde); border-radius: 14px; padding: 14px; cursor: pointer; height: 100%; transition: border-color .15s, background .15s; margin: 0; }
+    .modo-op input { position: absolute; opacity: 0; }
+    .modo-op:has(input:checked) { border-color: var(--aji); background: var(--aji-suave); }
+    .modo-op strong { display: block; font-size: 15px; }
+    .modo-op small { color: var(--gris); }
+    .modo-op svg { color: var(--aji); margin-bottom: 6px; }
+    .seccion-modo { display: none; }
+    .vista-papel { position: sticky; top: calc(var(--barra-alto) + 16px); }
+    .vista-fondo { background: #e9e4dc; border-radius: 14px; padding: 16px; display: flex; justify-content: center; max-height: 70vh; overflow: auto; }
+    .vista-fondo .tkp { box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+    .logo-caja { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .logo-lienzo { background: #fff; border: 1px dashed var(--borde); border-radius: 10px; padding: 8px; min-width: 160px; min-height: 80px; display: grid; place-items: center; }
+    .logo-lienzo canvas, .logo-lienzo img { max-width: 260px; max-height: 140px; image-rendering: pixelated; }
+    .estado-agente { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 12px; }
+    .clave { font-family: Consolas, monospace; background: var(--carbon); color: #f2a541; padding: 10px 12px; border-radius: 10px; word-break: break-all; }
+    pre.config { background: var(--carbon); color: #e9e1d8; padding: 12px; border-radius: 10px; font-size: 12.5px; white-space: pre-wrap; }
+</style>
+
+<div class="row">
+    <div class="col-xl-7">
+        <form asp-action="Index" method="post" id="formTicketera">
+            <div asp-validation-summary="All" class="alert alert-danger" style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+            <div class="card">
+                <div class="card-header"><strong>1. ¿Cómo se conecta la ticketera?</strong></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <label class="modo-op"><input type="radio" asp-for="tk_modo" value="@ModoImpresion.Navegador" />
+                                <i data-feather="monitor"></i><strong>Desde el navegador</strong><small>Funciona con cualquier impresora instalada. Se abre el diálogo de impresión.</small></label>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="modo-op"><input type="radio" asp-for="tk_modo" value="@ModoImpresion.Agente" />
+                                <i data-feather="cpu"></i><strong>Agente en la PC de caja</strong><small>Imprime directo en la impresora de Windows que elija por nombre (USB o red). Recomendado.</small></label>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="modo-op"><input type="radio" asp-for="tk_modo" value="@ModoImpresion.Red" />
+                                <i data-feather="wifi"></i><strong>Ticketera de red (IP)</strong><small>Solo si la aplicación corre en el mismo local que la ticketera.</small></label>
+                        </div>
+                    </div>
+
+                    <div class="seccion-modo mt-3" data-modo="@ModoImpresion.Agente">
+                        <div class="form-group mb-1">
+                            <label asp-for="tk_impresora">Impresora</label>
+                            <input asp-for="tk_impresora" class="form-control" list="listaImpresoras" maxlength="150" placeholder="Ej.: EPSON TM-T20III Receipt" autocomplete="off" />
+                            <datalist id="listaImpresoras">@foreach (var i in impresoras) { <option value="@i"></option> }</datalist>
+                            <span asp-validation-for="tk_impresora" class="text-danger small"></span>
+                        </div>
+                        <small class="text-muted">@(impresoras.Length > 0 ? $"El agente detectó {impresoras.Length} impresora(s): elija de la lista." : "Cuando el agente se conecte, aquí aparecerán las impresoras instaladas en la PC.") Vea la sección <a href="#agente">Agente de impresión</a>.</small>
+                    </div>
+
+                    <div class="seccion-modo mt-3" data-modo="@ModoImpresion.Red">
+                        <div class="form-row">
+                            <div class="form-group col-8 mb-1">
+                                <label asp-for="tk_ip">Dirección IP</label>
+                                <input asp-for="tk_ip" class="form-control" placeholder="192.168.1.100" inputmode="decimal" />
+                                <span asp-validation-for="tk_ip" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group col-4 mb-1">
+                                <label asp-for="tk_puerto">Puerto</label>
+                                <input asp-for="tk_puerto" class="form-control" type="number" min="1" max="65535" />
+                            </div>
+                        </div>
+                        <details class="small text-muted">
+                            <summary>¿Cómo encuentro la IP?</summary>
+                            Apague la ticketera, mantenga presionado FEED y enciéndala: imprimirá su configuración con la “IP Address”. El puerto casi siempre es 9100.
+                        </details>
+                    </div>
+
+                    <div class="seccion-modo mt-3" data-modo="@ModoImpresion.Navegador">
+                        <p class="small text-muted mb-0">Para imprimir sin ver el diálogo, abra Chrome o Edge con <code>--kiosk-printing</code> y deje la ticketera como impresora predeterminada de Windows.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><strong>2. Papel y caracteres</strong></div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label asp-for="tk_ancho_mm">Ancho del papel</label>
+                            <select asp-for="tk_ancho_mm" class="form-control" id="ancho">
+                                <option value="80">80 mm (el más común)</option>
+                                <option value="58">58 mm (portátiles)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="tk_columnas">Caracteres por línea</label>
+                            <input asp-for="tk_columnas" class="form-control" type="number" min="24" max="64" id="columnas" />
+                            <small class="form-text text-muted">80 mm: 48 (algunas 42). 58 mm: 32.</small>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="tk_codepage">Juego de caracteres</label>
+                            <select asp-for="tk_codepage" class="form-control">
+                                @foreach (var p in EscPosService.PaginasCodigo) { <option value="@p.Key">@p.Value.nombre</option> }
+                            </select>
+                            <small class="form-text text-muted">Si salen mal las tildes o la ñ, pruebe otro.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex align-items-center"><strong class="flex-fill">3. Logo de la empresa</strong>
+                    <div class="custom-control custom-switch"><input asp-for="tk_logo_mostrar" class="custom-control-input" /><label class="custom-control-label" asp-for="tk_logo_mostrar">Imprimir logo</label></div>
+                </div>
+                <div class="card-body">
+                    <div class="logo-caja">
+                        <div class="logo-lienzo" id="logoLienzo">
+                            @if (Model.tk_logo_png != null) { <img src="data:image/png;base64,@Convert.ToBase64String(Model.tk_logo_png)" alt="Logo actual" /> }
+                            else { <span class="text-muted small">Sin logo</span> }
+                        </div>
+                        <div class="flex-fill" style="min-width:240px">
+                            <input type="file" id="logoArchivo" accept="image/png,image/jpeg,image/webp" class="form-control-file mb-2" aria-label="Elegir logo" />
+                            <div id="logoAjustes" hidden>
+                                <label for="logoAncho">Tamaño: <span id="logoAnchoTxt"></span></label>
+                                <input type="range" id="logoAncho" class="custom-range" min="128" max="576" step="8" />
+                                <label for="logoUmbral">Contraste</label>
+                                <input type="range" id="logoUmbral" class="custom-range" min="60" max="200" value="128" />
+                                <div class="custom-control custom-checkbox mb-2"><input type="checkbox" class="custom-control-input" id="logoTramado" checked /><label class="custom-control-label" for="logoTramado">Tramado (mejor para fotos y degradados)</label></div>
+                                <button type="button" class="btn btn-primary btn-sm" id="logoSubir">Guardar logo</button>
+                            </div>
+                            <small class="form-text text-muted">Use una imagen con fondo blanco. Se convierte a blanco y negro tal como la imprime una ticketera térmica.</small>
+                            @if (Model.tk_logo_png != null) { <button type="submit" form="formQuitarLogo" class="btn btn-link btn-sm text-danger p-0 mt-1" onclick="return confirm('¿Quitar el logo?')">Quitar logo</button> }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><strong>4. Qué lleva el ticket</strong></div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var (campo, texto) in new[] { ("tk_mostrar_ruc", "RUC"), ("tk_mostrar_direccion", "Dirección"), ("tk_mostrar_telefono", "Teléfono"), ("tk_mostrar_mesa", "Mesa y reparto"), ("tk_mostrar_mozo", "Mozo que atendió"), ("tk_mostrar_obs", "Observación del pedido"), ("tk_total_grande", "Total en letra grande") })
+                        {
+                            <div class="col-sm-6 col-lg-4 mb-2">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="@campo" name="@campo" value="true" checked="@((bool)typeof(MDTicketera).GetProperty(campo).GetValue(Model))" />
+                                    <input type="hidden" name="@campo" value="false" />
+                                    <label class="custom-control-label" for="@campo">@texto</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="form-group mb-0 mt-2">
+                        <label asp-for="tk_pie">Mensaje al pie</label>
+                        <input asp-for="tk_pie" class="form-control" maxlength="120" placeholder="¡Gracias por su preferencia!" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><strong>5. Corte, copias y gaveta</strong></div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label asp-for="tk_corte">Corte de papel</label>
+                            <select asp-for="tk_corte" class="form-control">
+                                <option value="@TipoCorte.Parcial">Parcial (deja una pestaña)</option>
+                                <option value="@TipoCorte.Total">Total</option>
+                                <option value="@TipoCorte.Ninguno">Sin corte (cortar a mano)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-6 col-md-4">
+                            <label asp-for="tk_avance">Líneas antes del corte</label>
+                            <input asp-for="tk_avance" class="form-control" type="number" min="0" max="10" />
+                        </div>
+                        <div class="form-group col-6 col-md-4">
+                            <label asp-for="tk_copias">Copias</label>
+                            <input asp-for="tk_copias" class="form-control" type="number" min="1" max="5" />
+                        </div>
+                    </div>
+                    <div class="custom-control custom-switch mb-2"><input asp-for="tk_auto" class="custom-control-input" /><label class="custom-control-label" asp-for="tk_auto">Imprimir automáticamente al cobrar</label></div>
+                    <div class="custom-control custom-switch"><input asp-for="tk_gaveta" class="custom-control-input" /><label class="custom-control-label" asp-for="tk_gaveta">Abrir la gaveta de dinero al cobrar en efectivo</label></div>
+                    <small class="form-text text-muted">La gaveta debe estar conectada a la ticketera (cable RJ11). No aplica al imprimir desde el navegador.</small>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap mb-4" style="gap:10px">
+                <button type="submit" class="btn btn-primary btn-lg"><i data-feather="save" style="width:18px;height:18px"></i> Guardar</button>
+                <span class="text-muted small align-self-center">La vista previa se actualiza mientras edita; guarde para aplicar los cambios.</span>
+            </div>
+        </form>
+        <form asp-action="QuitarLogo" method="post" id="formQuitarLogo"></form>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="vista-papel">
+            <div class="card">
+                <div class="card-header d-flex align-items-center"><strong class="flex-fill">Vista previa</strong><small class="text-muted" id="vistaEstado"></small></div>
+                <div class="card-body">
+                    <div class="vista-fondo" id="vista"><span class="text-muted">Cargando…</span></div>
+                    <div class="d-flex flex-wrap mt-3" style="gap:8px">
+                        <form asp-action="Prueba" method="post" target="@(Model.tk_modo == ModoImpresion.Navegador ? "_blank" : "")" class="flex-fill">
+                            <button class="btn btn-mostaza btn-block"><i data-feather="printer" style="width:16px;height:16px"></i> Imprimir prueba</button>
+                        </form>
+                        <a class="btn btn-light flex-fill" asp-action="MuestraPdf" target="_blank">Ver PDF</a>
+                    </div>
+                    <small class="form-text text-muted">La prueba usa la configuración guardada.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" id="agente">
+    <div class="card-header"><strong>Agente de impresión</strong></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="estado-agente mb-3" style="background:@(conectado ? "var(--hierba-suave)" : "var(--crema)")">
+                    <i data-feather="@(conectado ? "check-circle" : "alert-circle")" style="color:@(conectado ? "var(--hierba)" : "var(--gris)")"></i>
+                    <div>
+                        <strong>@(conectado ? "Conectado" : Model.tk_agente_contacto == null ? "Nunca se conectó" : "Desconectado")</strong>
+                        <div class="small text-muted">
+                            @(Model.tk_agente_equipo != null ? $"Equipo {Model.tk_agente_equipo}" : "")
+                            @(Model.tk_agente_contacto != null ? $"· último contacto {Model.tk_agente_contacto:dd/MM HH:mm:ss}" : "")
+                        </div>
+                    </div>
+                </div>
+                <p class="small">El agente es un programa pequeño para Windows que se instala en la PC de caja. Recibe los tickets desde esta aplicación y los imprime en la impresora elegida, sin diálogos, con corte y apertura de gaveta.</p>
+                <ol class="small pl-3">
+                    <li>Genere una clave (abajo) y cópiela.</li>
+                    <li>Copie la carpeta del agente en la PC de caja y edite su <code>appsettings.json</code> con la dirección del sistema y la clave.</li>
+                    <li>Ejecute <code>PlanmenusAgente.exe</code> (o instálelo como servicio para que arranque con Windows).</li>
+                    <li>Al conectarse, elija la impresora arriba en “Agente en la PC de caja”.</li>
+                </ol>
+                @if (clave != null)
+                {
+                    <div class="alert alert-warning small mb-2">Copie la clave ahora: por seguridad no se volverá a mostrar.</div>
+                    <div class="clave mb-2" id="claveAgente">@clave</div>
+                    <pre class="config">{
+  "Servidor": "@servidor",
+  "Clave": "@clave",
+  "IntervaloSegundos": 3
+}</pre>
+                }
+                <form asp-action="GenerarClave" method="post" onsubmit="return @(Model.tk_agente_clave_hash == null ? "true" : "confirm('Se generará una clave nueva y el agente actual dejará de funcionar hasta actualizar su configuración. ¿Continuar?')")">
+                    <button class="btn btn-light btn-sm"><i data-feather="key" style="width:15px;height:15px"></i> @(Model.tk_agente_clave_hash == null ? "Generar clave del agente" : "Generar nueva clave")</button>
+                </form>
+            </div>
+            <div class="col-lg-6">
+                <div class="d-flex align-items-center mb-2"><strong class="flex-fill">Últimos trabajos</strong>
+                    @if (cola.Any(c => c.imp_estado != EstadoImpresion.Impreso))
+                    {
+                        <form asp-action="VaciarCola" method="post" onsubmit="return confirm('¿Descartar los trabajos pendientes y con error?')"><button class="btn btn-link btn-sm text-danger p-0">Vaciar pendientes</button></form>
+                    }
+                </div>
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Hora</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var t in cola)
+                        {
+                            <tr>
+                                <td>@t.imp_creado.ToString("dd/MM HH:mm")</td>
+                                <td>@t.imp_tipo @(t.id_caja != null ? $"N° {t.id_caja:D6}" : "")</td>
+                                <td>
+                                    @if (t.imp_estado == EstadoImpresion.Impreso) { <span class="badge badge-ok">Impreso</span> }
+                                    else if (t.imp_estado == EstadoImpresion.Error) { <span class="badge badge-anul" title="@t.imp_error">Error</span> }
+                                    else { <span class="badge badge-pend" title="@t.imp_error">Pendiente@(t.imp_intentos > 0 ? $" ({t.imp_intentos})" : "")</span> }
+                                </td>
+                                <td class="text-right">
+                                    @if (t.imp_estado == EstadoImpresion.Error)
+                                    {
+                                        <form asp-action="Reintentar" method="post" class="d-inline"><input type="hidden" name="id" value="@t.id_trabajo" /><button class="btn btn-link btn-sm p-0">Reintentar</button></form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @if (cola.Count == 0) { <tr><td colspan="4" class="text-muted">Todavía no hay trabajos.</td></tr> }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    var form = document.getElementById('formTicketera');
+    var token = form.querySelector('input[name=__RequestVerificationToken]').value;
+    var vista = document.getElementById('vista'), estado = document.getElementById('vistaEstado');
+
+    // ---- Mostrar los campos del modo elegido ----
+    function modo() {
+        var m = form.querySelector('input[name=tk_modo]:checked');
+        document.querySelectorAll('.seccion-modo').forEach(function (s) { s.style.display = m && s.dataset.modo === m.value ? 'block' : 'none'; });
+    }
+    form.querySelectorAll('input[name=tk_modo]').forEach(function (r) { r.addEventListener('change', modo); });
+    modo();
+
+    // ---- Columnas sugeridas al cambiar el ancho ----
+    document.getElementById('ancho').addEventListener('change', function () {
+        document.getElementById('columnas').value = this.value === '58' ? 32 : 48;
+    });
+
+    // ---- Vista previa en vivo (sin guardar) ----
+    var espera;
+    function actualizar() {
+        clearTimeout(espera);
+        espera = setTimeout(function () {
+            estado.textContent = 'actualizando…';
+            fetch('@Url.Action("Vista")', { method: 'POST', credentials: 'same-origin', body: new FormData(form) })
+                .then(function (r) { if (!r.ok) throw new Error(); return r.text(); })
+                .then(function (html) { vista.innerHTML = html; estado.textContent = ''; })
+                .catch(function () { estado.textContent = 'sin vista previa'; });
+        }, 250);
+    }
+    form.addEventListener('input', actualizar);
+    form.addEventListener('change', actualizar);
+    actualizar();
+
+    // ---- Logo: escala, blanco y negro (umbral o tramado Floyd–Steinberg) y empaquetado a 1 bit ----
+    var archivo = document.getElementById('logoArchivo'), ajustes = document.getElementById('logoAjustes');
+    var anchoIn = document.getElementById('logoAncho'), umbralIn = document.getElementById('logoUmbral'), tramadoIn = document.getElementById('logoTramado');
+    var lienzoCaja = document.getElementById('logoLienzo'), imagen = null, resultado = null;
+
+    function maxPuntos() { return document.getElementById('ancho').value === '58' ? 384 : 576; }
+
+    function procesar() {
+        if (!imagen) return;
+        var max = maxPuntos();
+        anchoIn.max = max;
+        var w = Math.min(parseInt(anchoIn.value, 10), max);
+        w = Math.max(8, Math.round(w / 8) * 8);
+        var h = Math.min(400, Math.max(8, Math.round(imagen.height * w / imagen.width)));
+        document.getElementById('logoAnchoTxt').textContent = w + ' puntos (' + Math.round(w / 8) + ' mm aprox.)';
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(imagen, 0, 0, w, h);
+        var px = ctx.getImageData(0, 0, w, h), d = px.data, gris = new Float32Array(w * h);
+        for (var i = 0; i < w * h; i++) {
+            var a = d[i * 4 + 3] / 255;
+            gris[i] = (0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]) * a + 255 * (1 - a);
+        }
+        var umbral = parseInt(umbralIn.value, 10), tramar = tramadoIn.checked, bytesFila = Math.ceil(w / 8);
+        var raster = new Uint8Array(bytesFila * h);
+        for (var y = 0; y < h; y++) {
+            for (var x = 0; x < w; x++) {
+                var k = y * w + x, v = gris[k], negro = v < umbral, err = v - (negro ? 0 : 255);
+                if (negro) raster[y * bytesFila + (x >> 3)] |= 0x80 >> (x & 7);
+                var o = negro ? 0 : 255;
+                d[k * 4] = d[k * 4 + 1] = d[k * 4 + 2] = o; d[k * 4 + 3] = 255;
+                if (tramar) {
+                    if (x + 1 < w) gris[k + 1] += err * 7 / 16;
+                    if (y + 1 < h) {
+                        if (x > 0) gris[k + w - 1] += err * 3 / 16;
+                        gris[k + w] += err * 5 / 16;
+                        if (x + 1 < w) gris[k + w + 1] += err * 1 / 16;
+                    }
+                }
+            }
+        }
+        ctx.putImageData(px, 0, 0);
+        lienzoCaja.innerHTML = '';
+        lienzoCaja.appendChild(c);
+        var bin = ''; for (var j = 0; j < raster.length; j++) bin += String.fromCharCode(raster[j]);
+        resultado = { png: c.toDataURL('image/png').split(',')[1], raster: btoa(bin), ancho: w, alto: h };
+    }
+
+    archivo.addEventListener('change', function () {
+        var f = archivo.files[0];
+        if (!f) return;
+        if (f.size > 5 * 1024 * 1024) { alert('La imagen es muy grande (máximo 5 MB).'); return; }
+        var img = new Image();
+        img.onload = function () {
+            imagen = img;
+            ajustes.hidden = false;
+            anchoIn.value = Math.min(maxPuntos() === 384 ? 320 : 384, Math.round(img.width / 8) * 8 || 320);
+            procesar();
+        };
+        img.onerror = function () { alert('No se pudo leer la imagen.'); };
+        img.src = URL.createObjectURL(f);
+    });
+    [anchoIn, umbralIn, tramadoIn].forEach(function (el) { el.addEventListener('input', procesar); });
+
+    document.getElementById('logoSubir').addEventListener('click', function () {
+        if (!resultado) return;
+        var b = this; b.disabled = true; b.textContent = 'Guardando…';
+        fetch('@Url.Action("Logo")', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+            body: JSON.stringify(resultado)
+        }).then(function (r) { if (!r.ok) return r.text().then(function (t) { throw new Error(t); }); location.reload(); })
+          .catch(function (e) { alert(e.message || 'No se pudo guardar el logo.'); b.disabled = false; b.textContent = 'Guardar logo'; });
+    });
+})();
+</script>
+}

@@ -1,3 +1,4 @@
+using Planmenus.Data.Entities;
 using Planmenus.Models;
 using System.Globalization;
 using System.Net.Sockets;
@@ -6,32 +7,34 @@ using System.Text;
 namespace Planmenus.Services
 {
     /// <summary>
-    /// Impresion directa en ticketeras termicas compatibles con ESC/POS (Epson, Xprinter, Bixolon...)
-    /// a traves de la red (puerto RAW 9100). Solo funciona si el servidor web tiene acceso a la
-    /// impresora, por ejemplo cuando la aplicacion corre en una PC del mismo local.
+    /// Genera tickets con comandos ESC/POS (Epson, Xprinter, Bixolon, 3nStar y compatibles)
+    /// segun el formato configurado en la pantalla Ticketera, y los envia por red (puerto RAW 9100).
     /// </summary>
     public class EscPosService
     {
         private static readonly CultureInfo Peru = CultureInfo.GetCultureInfo("es-PE");
-        private static readonly byte[] Inicializar = { 0x1B, 0x40 };
-        private static readonly byte[] PaginaPc850 = { 0x1B, 0x74, 0x02 };
-        private static readonly byte[] Cortar = { 0x1D, 0x56, 0x42, 0x00 };
-
-        private readonly Encoding _pc850;
+        private const int FilasPorBanda = 128;
 
         static EscPosService()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
 
-        public EscPosService()
+        /// <summary>Paginas de codigos soportadas: codigo .NET y numero ESC t de la impresora</summary>
+        public static readonly IReadOnlyDictionary<int, (byte escT, string nombre)> PaginasCodigo = new Dictionary<int, (byte, string)>
         {
-            _pc850 = Encoding.GetEncoding(850);
+            [850] = (2, "PC850 Multilingüe (recomendada)"),
+            [858] = (19, "PC858 (con símbolo €)"),
+            [1252] = (16, "WPC1252 Windows Latin"),
+        };
+
+        public async Task ImprimirAsync(VMTicket t, string ip, int puerto, bool abrirGaveta = false, CancellationToken ct = default)
+        {
+            await EnviarAsync(Generar(t, abrirGaveta), ip, puerto, ct);
         }
 
-        public async Task ImprimirAsync(VMTicket t, string ip, int puerto, CancellationToken ct = default)
+        public async Task EnviarAsync(byte[] datos, string ip, int puerto, CancellationToken ct = default)
         {
-            var datos = Generar(t);
             using var cliente = new TcpClient();
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
             timeout.CancelAfter(TimeSpan.FromSeconds(5));
@@ -42,84 +45,127 @@ namespace Planmenus.Services
         }
 
         /// <summary>
-        /// Construye los bytes ESC/POS del ticket (48 columnas en 80 mm, 32 en 58 mm)
+        /// Construye los bytes del ticket (todas las copias) con el formato de t.formato
         /// </summary>
-        public byte[] Generar(VMTicket t)
+        public byte[] Generar(VMTicket t, bool abrirGaveta = false)
         {
-            int cols = t.ancho_mm == 58 ? 32 : 48;
-            var b = new List<byte>();
-            b.AddRange(Inicializar);
-            b.AddRange(PaginaPc850);
+            var f = t.formato ?? new MDTicketera();
+            var b = new Escritor(f);
+            if (abrirGaveta)
+            {
+                b.Bytes(0x1B, 0x70, 0x00, 0x19, 0xFA); // pulso al conector de la gaveta
+            }
+            for (int copia = 0; copia < Math.Clamp(f.tk_copias, 1, 5); copia++)
+            {
+                Ticket(b, t, f);
+            }
+            return b.ToArray();
+        }
 
-            Alinear(b, 1);
-            Negrita(b, true);
-            Tamano(b, 0x11);
-            Linea(b, t.empresa);
-            Tamano(b, 0x00);
-            Negrita(b, false);
-            if (!string.IsNullOrWhiteSpace(t.ruc)) Linea(b, $"RUC: {t.ruc}");
-            if (!string.IsNullOrWhiteSpace(t.direccion)) Linea(b, t.direccion);
-            if (!string.IsNullOrWhiteSpace(t.telefono)) Linea(b, $"Tel: {t.telefono}");
+        private static void Ticket(Escritor b, VMTicket t, MDTicketera f)
+        {
+            int cols = Math.Clamp(f.tk_columnas, 24, 64);
+            b.Inicializar();
 
-            Alinear(b, 0);
-            Linea(b, new string('-', cols));
-            Negrita(b, true);
-            Linea(b, $"{(t.pagado ? "TICKET" : "PRE-CUENTA")} N° {t.ticket:D6}");
-            Negrita(b, false);
-            Linea(b, $"Fecha: {t.fecha:dd/MM/yyyy HH:mm}");
-            if (!string.IsNullOrWhiteSpace(t.mesa)) Linea(b, $"Mesa: {t.mesa}");
-            if (!string.IsNullOrWhiteSpace(t.delivery)) Linea(b, $"Reparto: {t.delivery}");
-            if (!string.IsNullOrWhiteSpace(t.usuario)) Linea(b, $"Atendió: {t.usuario}");
+            // ---- Cabecera ----
+            b.Alinear(1);
+            if (f.tk_logo_mostrar && f.tk_logo_raster?.Length > 0 && f.tk_logo_ancho > 0)
+            {
+                b.Logo(f.tk_logo_raster, f.tk_logo_ancho, f.tk_logo_alto);
+            }
+            b.Negrita(true);
+            b.Tamano(0x11);
+            b.Linea(t.empresa);
+            b.Tamano(0x00);
+            b.Negrita(false);
+            if (f.tk_mostrar_ruc && !string.IsNullOrWhiteSpace(t.ruc)) b.Linea($"RUC: {t.ruc}");
+            if (f.tk_mostrar_direccion && !string.IsNullOrWhiteSpace(t.direccion)) b.Envolver(t.direccion, cols);
+            if (f.tk_mostrar_telefono && !string.IsNullOrWhiteSpace(t.telefono)) b.Linea($"Tel: {t.telefono}");
+
+            if (!string.IsNullOrWhiteSpace(t.comprobante))
+            {
+                b.Linea(new string('-', cols));
+                b.Negrita(true);
+                b.Envolver(t.comprobante, cols);
+                b.Negrita(false);
+            }
+
+            b.Alinear(0);
+            b.Linea(new string('-', cols));
+            b.Negrita(true);
+            b.Linea(string.IsNullOrWhiteSpace(t.comprobante) ? $"{(t.pagado ? "TICKET" : "PRE-CUENTA")} N° {t.ticket:D6}" : $"Pedido N° {t.ticket:D6}");
+            b.Negrita(false);
+            b.Linea($"Fecha: {t.fecha:dd/MM/yyyy HH:mm}");
+            if (!string.IsNullOrWhiteSpace(t.cliente)) b.Envolver($"Cliente: {t.cliente}", cols);
+            if (!string.IsNullOrWhiteSpace(t.cliente_doc)) b.Linea(t.cliente_doc);
+            if (f.tk_mostrar_mesa && !string.IsNullOrWhiteSpace(t.mesa)) b.Linea($"Mesa: {t.mesa}");
+            if (f.tk_mostrar_mesa && !string.IsNullOrWhiteSpace(t.delivery)) b.Linea($"Reparto: {t.delivery}");
+            if (f.tk_mostrar_mozo && !string.IsNullOrWhiteSpace(t.usuario)) b.Linea($"Atendió: {t.usuario}");
             if (t.anulado)
             {
-                Alinear(b, 1);
-                Negrita(b, true);
-                Linea(b, "*** ANULADO ***");
-                Negrita(b, false);
-                Alinear(b, 0);
+                b.Alinear(1);
+                b.Negrita(true);
+                b.Linea("*** ANULADO ***");
+                b.Negrita(false);
+                b.Alinear(0);
             }
-            Linea(b, new string('-', cols));
 
+            // ---- Detalle ----
+            b.Linea(new string('-', cols));
+            b.Linea(Columnas("CANT DESCRIPCION", "IMPORTE", cols));
+            b.Linea(new string('-', cols));
             foreach (var item in t.items)
             {
-                string importe = Soles(item.subtotal);
-                string izquierda = $"{item.cantidad} {item.descripcion}";
-                Linea(b, Columnas(izquierda, importe, cols));
-                if (item.cantidad > 1) Linea(b, $"   {item.cantidad} x {Soles(item.precio)}");
+                b.Linea(Columnas($"{item.cantidad,3} {item.descripcion}", Soles(item.subtotal), cols));
+                if (item.cantidad > 1) b.Linea($"     {item.cantidad} x {Soles(item.precio)}");
             }
+            b.Linea(new string('-', cols));
 
-            Linea(b, new string('-', cols));
-            Negrita(b, true);
-            Tamano(b, 0x01);
-            Linea(b, Columnas("TOTAL", Soles(t.total), cols));
-            Tamano(b, 0x00);
-            Negrita(b, false);
-            if (t.pagado && !string.IsNullOrWhiteSpace(t.tipo_pago)) Linea(b, $"Pago: {t.tipo_pago}");
-            if (!t.pagado) Linea(b, "PENDIENTE DE PAGO");
-            if (!string.IsNullOrWhiteSpace(t.observacion)) Linea(b, $"Obs: {t.observacion}");
+            // ---- Totales ----
+            foreach (var (etiqueta, monto) in t.subtotales)
+            {
+                b.Linea(Columnas(etiqueta, Soles(monto), cols));
+            }
+            b.Negrita(true);
+            if (f.tk_total_grande) b.Tamano(0x01); // doble alto, mismo ancho de columnas
+            b.Linea(Columnas("TOTAL", Soles(t.total), cols));
+            b.Tamano(0x00);
+            b.Negrita(false);
+            if (t.pagado && !string.IsNullOrWhiteSpace(t.tipo_pago)) b.Linea($"Pago: {t.tipo_pago}");
+            if (!t.pagado) b.Linea("PENDIENTE DE PAGO");
+            if (f.tk_mostrar_obs && !string.IsNullOrWhiteSpace(t.observacion)) b.Envolver($"Obs: {t.observacion}", cols);
 
-            Alinear(b, 1);
-            b.Add(0x0A);
-            Linea(b, t.pie);
-            Linea(b, "Comprobante interno");
-            b.AddRange(new byte[] { 0x1B, 0x64, 0x04 }); // avanzar 4 lineas
-            b.AddRange(Cortar);
-            return b.ToArray();
+            // ---- Pie ----
+            b.Alinear(1);
+            if (!string.IsNullOrWhiteSpace(t.qr))
+            {
+                b.Linea("");
+                b.Qr(t.qr);
+            }
+            foreach (var leyenda in t.leyendas)
+            {
+                b.Envolver(leyenda, cols);
+            }
+            b.Linea("");
+            b.Envolver(t.pie, cols);
+            if (string.IsNullOrWhiteSpace(t.comprobante)) b.Linea("Comprobante interno");
+
+            b.Avanzar(Math.Clamp(f.tk_avance, 0, 10));
+            if (f.tk_corte == TipoCorte.Total) b.Bytes(0x1D, 0x56, 0x41, 0x00);
+            else if (f.tk_corte == TipoCorte.Parcial) b.Bytes(0x1D, 0x56, 0x42, 0x00);
         }
 
         private static string Soles(decimal monto) => "S/ " + monto.ToString("N2", Peru);
 
-        /// <summary>
-        /// Texto a la izquierda e importe a la derecha; si no entra, el texto pasa a varias lineas
-        /// </summary>
-        private static string Columnas(string izquierda, string derecha, int cols)
+        /// <summary>Texto a la izquierda e importe a la derecha; si no entra, el texto pasa a varias lineas</summary>
+        public static string Columnas(string izquierda, string derecha, int cols)
         {
             int espacio = cols - derecha.Length - 1;
             var lineas = new List<string>();
             while (izquierda.Length > cols)
             {
                 lineas.Add(izquierda[..cols]);
-                izquierda = izquierda[cols..];
+                izquierda = "    " + izquierda[cols..];
             }
             if (izquierda.Length <= espacio)
             {
@@ -133,16 +179,81 @@ namespace Planmenus.Services
             return string.Join('\n', lineas);
         }
 
-        private void Linea(List<byte> b, string texto)
+        /// <summary>Acumula los bytes ESC/POS del ticket</summary>
+        private sealed class Escritor
         {
-            b.AddRange(_pc850.GetBytes(texto ?? ""));
-            b.Add(0x0A);
+            private readonly List<byte> _b = new();
+            private readonly Encoding _encoding;
+            private readonly byte _escT;
+
+            public Escritor(MDTicketera f)
+            {
+                var codigo = PaginasCodigo.ContainsKey(f.tk_codepage) ? f.tk_codepage : 850;
+                _encoding = Encoding.GetEncoding(codigo);
+                _escT = PaginasCodigo[codigo].escT;
+            }
+
+            public byte[] ToArray() => _b.ToArray();
+            public void Bytes(params byte[] datos) => _b.AddRange(datos);
+            public void Inicializar() { Bytes(0x1B, 0x40); Bytes(0x1B, 0x74, _escT); }
+            public void Alinear(byte modo) => Bytes(0x1B, 0x61, modo);
+            public void Negrita(bool activa) => Bytes(0x1B, 0x45, (byte)(activa ? 1 : 0));
+            public void Tamano(byte n) => Bytes(0x1D, 0x21, n);
+            public void Avanzar(int lineas) => Bytes(0x1B, 0x64, (byte)lineas);
+
+            public void Linea(string texto)
+            {
+                _b.AddRange(_encoding.GetBytes(texto ?? ""));
+                _b.Add(0x0A);
+            }
+
+            /// <summary>Parte el texto en lineas sin cortar palabras</summary>
+            public void Envolver(string texto, int cols)
+            {
+                var linea = new StringBuilder();
+                foreach (var palabra in (texto ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (linea.Length > 0 && linea.Length + 1 + palabra.Length > cols)
+                    {
+                        Linea(linea.ToString());
+                        linea.Clear();
+                    }
+                    if (linea.Length > 0) linea.Append(' ');
+                    linea.Append(palabra.Length > cols ? palabra[..cols] : palabra);
+                }
+                Linea(linea.ToString());
+            }
+
+            /// <summary>Imagen de 1 bit con GS v 0, en bandas para no saturar el buffer de la impresora</summary>
+            public void Logo(byte[] raster, int ancho, int alto)
+            {
+                int bytesFila = (ancho + 7) / 8;
+                if (raster.Length < bytesFila * alto)
+                {
+                    return;
+                }
+                for (int y = 0; y < alto; y += FilasPorBanda)
+                {
+                    int filas = Math.Min(FilasPorBanda, alto - y);
+                    Bytes(0x1D, 0x76, 0x30, 0x00, (byte)(bytesFila & 0xFF), (byte)(bytesFila >> 8), (byte)(filas & 0xFF), (byte)(filas >> 8));
+                    _b.AddRange(new ArraySegment<byte>(raster, y * bytesFila, filas * bytesFila));
+                }
+                _b.Add(0x0A);
+            }
+
+            /// <summary>Codigo QR nativo de la impresora (GS ( k), modelo 2, correccion M</summary>
+            public void Qr(string texto)
+            {
+                var datos = Encoding.UTF8.GetBytes(texto);
+                int largo = datos.Length + 3;
+                Bytes(0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00);           // modelo 2
+                Bytes(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x05);                 // tamano del modulo
+                Bytes(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31);                 // correccion M
+                Bytes(0x1D, 0x28, 0x6B, (byte)(largo & 0xFF), (byte)(largo >> 8), 0x31, 0x50, 0x30);
+                _b.AddRange(datos);
+                Bytes(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30);                 // imprimir
+                _b.Add(0x0A);
+            }
         }
-
-        private static void Alinear(List<byte> b, byte modo) => b.AddRange(new byte[] { 0x1B, 0x61, modo });
-
-        private static void Negrita(List<byte> b, bool activa) => b.AddRange(new byte[] { 0x1B, 0x45, (byte)(activa ? 1 : 0) });
-
-        private static void Tamano(List<byte> b, byte n) => b.AddRange(new byte[] { 0x1D, 0x21, n });
     }
 }
