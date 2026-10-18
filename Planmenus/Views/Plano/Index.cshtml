@@ -1,0 +1,259 @@
+@model Planmenus.Services.PlanoService.Plano
+@{
+    ViewData["Title"] = "Plano del salón";
+    var zona = Model.zonas.FirstOrDefault(z => z.id_zona == Model.zona_actual);
+}
+<link rel="stylesheet" href="~/css/plano.css" asp-append-version="true" />
+
+<div class="pm-zonas">
+    @foreach (var z in Model.zonas)
+    {
+        <a asp-action="Index" asp-route-zona="@z.id_zona" class="@(z.id_zona == Model.zona_actual ? "activa" : "")">@z.zona_desc</a>
+    }
+    <a href="#" data-toggle="collapse" data-target="#nuevaZona" title="Agregar zona">+ Zona</a>
+</div>
+<form asp-action="GuardarZona" method="post" class="collapse mb-3" id="nuevaZona">
+    <div class="d-flex" style="gap:8px;max-width:420px">
+        <input name="nombre" class="form-control" placeholder="Ej.: Terraza, 2.º piso" maxlength="50" required />
+        <button class="btn btn-primary">Crear zona</button>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-xl-9 mb-3">
+        <div class="pm-scroll">
+            <div class="pm-lienzo pm-editor" id="lienzo" data-vacio="Agregue mesas con los botones de la derecha">
+                @foreach (var m in Model.MesasDeZona)
+                {
+                    <div class="pm-mesa forma-@m.forma" data-id="@m.id" data-nro="@m.nro" data-desc="@m.desc" data-cap="@m.cap" data-forma="@m.forma"
+                         data-x="@m.x" data-y="@m.y" data-w="@m.w" data-h="@m.h" data-rot="@m.rot" tabindex="0" role="button" aria-label="@m.desc">
+                        <div class="pm-tablero"><div class="pm-info"><span class="pm-num">@m.nro</span><span class="pm-sub">@m.cap pers.</span></div></div>
+                        <span class="pm-asa" aria-hidden="true"></span>
+                    </div>
+                }
+            </div>
+        </div>
+        <p class="small text-muted mt-2 mb-0">Arrastre las mesas para ubicarlas. Seleccione una para cambiar su tamaño (esquina naranja), forma, capacidad o giro.</p>
+    </div>
+
+    <div class="col-xl-3">
+        <div class="card">
+            <div class="card-body">
+                <button type="button" class="btn btn-primary btn-block" id="guardar"><i data-feather="save" style="width:16px;height:16px"></i> Guardar plano</button>
+                <div class="small text-center mt-2" id="estadoGuardado">Sin cambios</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Agregar mesa</strong></div>
+            <div class="card-body d-flex flex-wrap" style="gap:8px">
+                @foreach (var f in new[] { ("cuadrada", "Cuadrada"), ("redonda", "Redonda"), ("rectangular", "Rectangular") })
+                {
+                    <form asp-action="NuevaMesa" method="post" class="flex-fill">
+                        <input type="hidden" name="forma" value="@f.Item1" />
+                        <input type="hidden" name="zona" value="@Model.zona_actual" />
+                        <button class="btn btn-light btn-block btn-sm nueva-mesa">@f.Item2</button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <div class="card" id="panelMesa" hidden>
+            <div class="card-header"><strong>Mesa seleccionada</strong></div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-4"><label for="pNro">N.º</label><input id="pNro" type="number" min="1" class="form-control form-control-sm" /></div>
+                    <div class="form-group col-8"><label for="pDesc">Nombre</label><input id="pDesc" maxlength="50" class="form-control form-control-sm" /></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6"><label for="pCap">Capacidad</label><input id="pCap" type="number" min="1" max="24" class="form-control form-control-sm" /></div>
+                    <div class="form-group col-6">
+                        <label for="pForma">Forma</label>
+                        <select id="pForma" class="form-control form-control-sm">
+                            <option value="cuadrada">Cuadrada</option>
+                            <option value="redonda">Redonda</option>
+                            <option value="rectangular">Rectangular</option>
+                        </select>
+                    </div>
+                </div>
+                <label>Giro</label>
+                <div class="d-flex mb-3" style="gap:6px">
+                    <button type="button" class="btn btn-light btn-sm flex-fill" data-girar="-15">↺ 15°</button>
+                    <button type="button" class="btn btn-light btn-sm flex-fill" data-girar="0">0°</button>
+                    <button type="button" class="btn btn-light btn-sm flex-fill" data-girar="15">↻ 15°</button>
+                </div>
+                @if (Model.zonas.Count > 1)
+                {
+                    <form asp-action="MoverMesa" method="post" class="mb-2" id="formMover">
+                        <input type="hidden" name="id" />
+                        <div class="d-flex" style="gap:6px">
+                            <select name="zona" class="form-control form-control-sm" aria-label="Mover a zona">
+                                @foreach (var z in Model.zonas.Where(z => z.id_zona != Model.zona_actual)) { <option value="@z.id_zona">@z.zona_desc</option> }
+                            </select>
+                            <button class="btn btn-light btn-sm text-nowrap">Mover</button>
+                        </div>
+                    </form>
+                }
+                <form asp-action="QuitarMesa" method="post" id="formQuitar" onsubmit="return confirm('¿Quitar esta mesa del plano? Se conserva su historial de ventas.')">
+                    <input type="hidden" name="id" />
+                    <input type="hidden" name="zona" value="@Model.zona_actual" />
+                    <button class="btn btn-link text-danger btn-sm p-0">Quitar mesa</button>
+                </form>
+            </div>
+        </div>
+
+        @if (zona != null)
+        {
+            <div class="card">
+                <div class="card-header"><strong>Zona</strong></div>
+                <div class="card-body">
+                    <form asp-action="GuardarZona" method="post" class="d-flex mb-2" style="gap:6px">
+                        <input type="hidden" name="id" value="@zona.id_zona" />
+                        <input name="nombre" value="@zona.zona_desc" class="form-control form-control-sm" maxlength="50" aria-label="Nombre de la zona" />
+                        <button class="btn btn-light btn-sm">Renombrar</button>
+                    </form>
+                    <form asp-action="EliminarZona" method="post" onsubmit="return confirm('¿Eliminar la zona @zona.zona_desc?')">
+                        <input type="hidden" name="id" value="@zona.id_zona" />
+                        <button class="btn btn-link text-danger btn-sm p-0">Eliminar zona</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.27/dist/interact.min.js"></script>
+<script src="~/js/plano.js" asp-append-version="true"></script>
+<script>
+(function () {
+    var lienzo = document.getElementById('lienzo');
+    var token = document.querySelector('#formQuitar input[name=__RequestVerificationToken]').value;
+    var estado = document.getElementById('estadoGuardado');
+    var panel = document.getElementById('panelMesa');
+    var sel = null, sucio = false;
+
+    Plano.iniciar(lienzo);
+    // Las mesas ubicadas automaticamente cuentan como cambio pendiente
+    if (lienzo.querySelector('[data-pendiente]')) marcar();
+
+    function marcar() { sucio = true; estado.textContent = 'Cambios sin guardar'; estado.style.color = 'var(--aji-osc)'; }
+    function escala() { return Plano.ANCHO / lienzo.clientWidth; }
+    function limitar(el) {
+        var d = el.dataset, w = +d.w, h = +d.h;
+        d.x = Math.max(0, Math.min(Plano.ANCHO - w, Math.round(+d.x / 10) * 10));
+        d.y = Math.max(0, Math.min(Plano.ALTO - h, Math.round(+d.y / 10) * 10));
+    }
+
+    function seleccionar(el) {
+        if (sel) sel.classList.remove('seleccionada');
+        sel = el;
+        panel.hidden = !el;
+        if (!el) return;
+        el.classList.add('seleccionada');
+        document.getElementById('pNro').value = el.dataset.nro;
+        document.getElementById('pDesc').value = el.dataset.desc;
+        document.getElementById('pCap').value = el.dataset.cap;
+        document.getElementById('pForma').value = el.dataset.forma;
+        document.querySelectorAll('#formQuitar input[name=id], #formMover input[name=id]').forEach(function (i) { i.value = el.dataset.id; });
+    }
+
+    function refrescar(el) {
+        el.className = el.className.replace(/forma-\S+/, 'forma-' + el.dataset.forma);
+        el.querySelector('.pm-num').textContent = el.dataset.nro;
+        el.querySelector('.pm-sub').textContent = el.dataset.cap + ' pers.';
+        Plano.aplicar(el);
+        Plano.sillas(el);
+    }
+
+    interact('.pm-editor .pm-mesa')
+        .draggable({
+            listeners: {
+                start: function (e) { seleccionar(e.target); },
+                move: function (e) {
+                    var d = e.target.dataset, k = escala();
+                    d.x = +d.x + e.dx * k;
+                    d.y = +d.y + e.dy * k;
+                    Plano.aplicar(e.target);
+                },
+                end: function (e) { limitar(e.target); Plano.aplicar(e.target); marcar(); }
+            }
+        })
+        .resizable({
+            edges: { right: '.pm-asa', bottom: '.pm-asa' },
+            listeners: {
+                move: function (e) {
+                    var d = e.target.dataset, k = escala();
+                    d.w = Math.max(40, Math.min(400, Math.round(e.rect.width * k / 10) * 10));
+                    d.h = d.forma === 'redonda' ? d.w : Math.max(40, Math.min(400, Math.round(e.rect.height * k / 10) * 10));
+                    Plano.aplicar(e.target);
+                },
+                end: function (e) { limitar(e.target); refrescar(e.target); marcar(); }
+            }
+        })
+        .on('tap', function (e) { seleccionar(e.currentTarget); });
+
+    lienzo.addEventListener('pointerdown', function (e) { if (e.target === lienzo) seleccionar(null); });
+
+    // Teclado: flechas mueven la mesa seleccionada
+    lienzo.addEventListener('keydown', function (e) {
+        var el = e.target.closest('.pm-mesa');
+        if (!el) return;
+        var mov = { ArrowLeft: [-10, 0], ArrowRight: [10, 0], ArrowUp: [0, -10], ArrowDown: [0, 10] }[e.key];
+        if (e.key === 'Enter' || e.key === ' ') { seleccionar(el); e.preventDefault(); return; }
+        if (!mov) return;
+        e.preventDefault();
+        el.dataset.x = +el.dataset.x + mov[0];
+        el.dataset.y = +el.dataset.y + mov[1];
+        limitar(el); Plano.aplicar(el); seleccionar(el); marcar();
+    });
+
+    function enlazar(id, campo, transformar) {
+        document.getElementById(id).addEventListener('input', function () {
+            if (!sel) return;
+            sel.dataset[campo] = transformar ? transformar(this.value) : this.value;
+            if (campo === 'forma' && this.value === 'redonda') sel.dataset.h = sel.dataset.w;
+            refrescar(sel); marcar();
+        });
+    }
+    enlazar('pNro', 'nro', function (v) { return Math.max(1, parseInt(v, 10) || 1); });
+    enlazar('pDesc', 'desc');
+    enlazar('pCap', 'cap', function (v) { return Math.max(1, Math.min(24, parseInt(v, 10) || 1)); });
+    enlazar('pForma', 'forma');
+    document.querySelectorAll('[data-girar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            if (!sel) return;
+            var g = parseInt(b.dataset.girar, 10);
+            sel.dataset.rot = g === 0 ? 0 : ((+sel.dataset.rot + g) % 360 + 360) % 360;
+            refrescar(sel); marcar();
+        });
+    });
+
+    function guardar() {
+        var datos = Array.prototype.map.call(lienzo.querySelectorAll('.pm-mesa'), function (m) {
+            var d = m.dataset;
+            return { id: +d.id, nro: +d.nro, desc: d.desc, cap: +d.cap, forma: d.forma, x: Math.round(+d.x), y: Math.round(+d.y), w: +d.w, h: +d.h, rot: +d.rot };
+        });
+        estado.textContent = 'Guardando…';
+        return fetch('@Url.Action("Guardar")', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+            body: JSON.stringify(datos)
+        }).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+          .then(function () { sucio = false; estado.textContent = '✓ Plano guardado'; estado.style.color = 'var(--hierba)'; })
+          .catch(function (e) { estado.textContent = 'No se pudo guardar. Reintente.'; estado.style.color = 'var(--vino)'; throw e; });
+    }
+    document.getElementById('guardar').addEventListener('click', function () { guardar().catch(function () { }); });
+
+    // Agregar, quitar o mover mesas recarga la pagina: primero se guardan los cambios pendientes
+    document.querySelectorAll('form').forEach(function (f) {
+        f.addEventListener('submit', function (e) {
+            if (!sucio || e.defaultPrevented) return;
+            e.preventDefault();
+            guardar().then(function () { f.submit(); }).catch(function () { });
+        });
+    });
+    window.addEventListener('beforeunload', function (e) { if (sucio) { e.preventDefault(); e.returnValue = ''; } });
+})();
+</script>
+}

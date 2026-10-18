@@ -22,8 +22,11 @@ namespace Planmenus.Controllers
             _ventas = ventas;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? zona, [FromServices] PlanoService plano)
         {
+            ViewBag.plano = await plano.ObtenerAsync(zona, conEstado: true);
+            ViewBag.usuario = SessionHelper.GetNameIdentifier(User);
+
             var abiertos = await _context.Cajas.AsNoTracking()
                 .Where(c => c.caja_act && !c.caja_pagado)
                 .Select(c => new VMSalonPedido

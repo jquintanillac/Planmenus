@@ -29,12 +29,13 @@ namespace Planmenus.Controllers
                          ?? new MDGenerales { gene_ticket_ancho = 80, gene_impresora_puerto = 9100 };
             ViewBag.tipos_pago = await _context.Tipo_Pagos.OrderBy(t => t.tipago_desc).ToListAsync();
             ViewBag.url_carta = Url.Action("Index", "Carta", null, Request.Scheme);
+            ViewBag.correo = HttpContext.RequestServices.GetRequiredService<CorreoService>().Opciones;
             return View(config);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index([Bind("gene_empre,gene_ruc,gene_direc,gene_telef,gene_url,gene_ticket_ancho,gene_ticket_pie,gene_impresora_ip,gene_impresora_puerto")] MDGenerales datos, int[] efectivo)
+        public async Task<IActionResult> Index([Bind("gene_empre,gene_ruc,gene_direc,gene_telef,gene_url,gene_ticket_ancho,gene_ticket_pie,gene_impresora_ip,gene_impresora_puerto,gene_correo_avisos,gene_recordatorio_horas,gene_reserva_minutos")] MDGenerales datos, int[] efectivo)
         {
             if (string.IsNullOrWhiteSpace(datos.gene_empre))
             {
@@ -56,6 +57,7 @@ namespace Planmenus.Controllers
             {
                 ViewBag.tipos_pago = await _context.Tipo_Pagos.OrderBy(t => t.tipago_desc).ToListAsync();
                 ViewBag.url_carta = Url.Action("Index", "Carta", null, Request.Scheme);
+            ViewBag.correo = HttpContext.RequestServices.GetRequiredService<CorreoService>().Opciones;
                 return View(datos);
             }
 
@@ -74,6 +76,9 @@ namespace Planmenus.Controllers
             config.gene_ticket_pie = datos.gene_ticket_pie?.Trim();
             config.gene_impresora_ip = string.IsNullOrWhiteSpace(datos.gene_impresora_ip) ? null : datos.gene_impresora_ip.Trim();
             config.gene_impresora_puerto = datos.gene_impresora_puerto;
+            config.gene_correo_avisos = string.Join(", ", Correos.Normalizar(new[] { datos.gene_correo_avisos }));
+            config.gene_recordatorio_horas = Math.Clamp(datos.gene_recordatorio_horas, 1, 72);
+            config.gene_reserva_minutos = Math.Clamp(datos.gene_reserva_minutos, 30, 720);
 
             foreach (var tp in await _context.Tipo_Pagos.ToListAsync())
             {
@@ -82,6 +87,19 @@ namespace Planmenus.Controllers
 
             await _context.SaveChangesAsync();
             TempData["success"] = "Configuración guardada.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: Configuracion/ProbarCorreo - envia un correo de prueba con la configuracion de appsettings
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProbarCorreo(string destino, [FromServices] CorreoService correo, [FromServices] TicketService tickets)
+        {
+            var empresa = await tickets.ObtenerEmpresaAsync();
+            var error = await correo.EnviarAsync("prueba", new[] { destino }, $"Correo de prueba · {empresa.gene_empre}",
+                $"<p>¡Hola! Este es un correo de prueba de <strong>{System.Net.WebUtility.HtmlEncode(empresa.gene_empre)}</strong>.</p><p>Si lo recibió, los avisos de reservas funcionarán correctamente.</p>");
+            if (error == null) TempData["success"] = $"Correo de prueba enviado a {destino}.";
+            else TempData["error"] = "No se pudo enviar el correo de prueba: " + error;
             return RedirectToAction(nameof(Index));
         }
 

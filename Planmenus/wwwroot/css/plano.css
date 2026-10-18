@@ -1,0 +1,67 @@
+/* ==========================================================================
+   Plano del salón: lienzo con mesas posicionadas (unidades 1200 x 800).
+   ========================================================================== */
+.pm-scroll { overflow-x: auto; border-radius: 18px; }
+.pm-lienzo {
+    position: relative; width: 100%; min-width: 720px; aspect-ratio: 3 / 2;
+    border-radius: 18px; border: 1px solid var(--borde);
+    background-color: #fffdf9;
+    background-image:
+        linear-gradient(rgba(122, 110, 100, .07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(122, 110, 100, .07) 1px, transparent 1px);
+    background-size: calc(100% / 24) calc(100% / 16);
+    overflow: hidden; touch-action: none;
+}
+.pm-lienzo.vacio-plano::after {
+    content: attr(data-vacio); position: absolute; inset: 0; display: grid; place-items: center;
+    color: var(--gris); font-weight: 600;
+}
+
+.pm-mesa { position: absolute; box-sizing: border-box; user-select: none; }
+.pm-tablero {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    border-radius: 14px; border: 2px solid #cdbfae; background: #fff;
+    box-shadow: 0 2px 6px rgba(42, 33, 27, .08);
+    color: var(--tinta); text-decoration: none !important; overflow: hidden;
+    transition: box-shadow .15s, transform .12s;
+}
+.forma-redonda .pm-tablero { border-radius: 50%; }
+.pm-info { display: flex; flex-direction: column; align-items: center; line-height: 1.1; padding: 2px; pointer-events: none; }
+.pm-num { font-family: var(--fuente-titulo); font-weight: 700; font-size: clamp(14px, 1.7vw, 24px); }
+.pm-sub { font-size: clamp(9px, .85vw, 12px); color: var(--gris); font-weight: 600; white-space: nowrap; }
+.pm-silla {
+    position: absolute; z-index: 1; width: 22%; height: 22%; max-width: 26px; max-height: 26px; min-width: 10px; min-height: 10px;
+    border-radius: 7px; background: #e6dccf; border: 1px solid #d3c5b4; transform: translate(-50%, -50%);
+}
+.forma-redonda .pm-silla { border-radius: 50%; }
+
+/* Estados (vista de operación) */
+.estado-libre .pm-tablero { border-color: #9fd3b7; background: linear-gradient(180deg, #fff, var(--hierba-suave)); }
+.estado-ocupada .pm-tablero { border-color: var(--aji); background: linear-gradient(180deg, #fff, var(--aji-suave)); }
+.estado-ocupada .pm-silla { background: #f6c3ae; border-color: #eca486; }
+.estado-listo .pm-tablero { border-color: var(--mostaza); background: linear-gradient(180deg, #fff, var(--mostaza-suave)); box-shadow: 0 0 0 4px rgba(242, 165, 65, .25); }
+.estado-listo .pm-silla { background: #f8d9a6; border-color: #efc27a; }
+.estado-reservada .pm-tablero { border-color: #7b6ad8; border-style: dashed; background: linear-gradient(180deg, #fff, #efecfb); }
+a.pm-tablero:hover { box-shadow: 0 10px 22px rgba(42, 33, 27, .18); transform: scale(1.03); }
+.pm-mozo {
+    position: absolute; z-index: 3; top: -9px; right: -9px; width: 24px; height: 24px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 10px; font-weight: 800; color: #fff; background: var(--carbon-3);
+    border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+}
+.pm-mesa.mia .pm-mozo { background: var(--aji); }
+.pm-lienzo.solo-mias .pm-mesa:not(.mia) { opacity: .35; }
+
+/* Editor */
+.pm-editor .pm-mesa { cursor: grab; }
+.pm-editor .pm-mesa:active { cursor: grabbing; }
+.pm-editor .pm-mesa.seleccionada .pm-tablero { border-color: var(--aji); box-shadow: 0 0 0 4px rgba(228, 87, 46, .25); }
+.pm-asa { position: absolute; z-index: 4; right: -6px; bottom: -6px; width: 14px; height: 14px; border-radius: 4px; background: var(--aji); border: 2px solid #fff; cursor: nwse-resize; display: none; }
+.pm-editor .pm-mesa.seleccionada .pm-asa { display: block; }
+
+.pm-leyenda { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pm-leyenda .pill { background: var(--papel); border: 1px solid var(--borde); border-radius: 999px; padding: 5px 12px; font-weight: 600; font-size: 13px; }
+.pm-leyenda .pill i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+.pm-zonas { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.pm-zonas a { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--borde); background: var(--papel); color: var(--tinta); font-weight: 600; font-size: 14px; text-decoration: none; }
+.pm-zonas a.activa { background: var(--carbon); border-color: var(--carbon); color: #fff; }

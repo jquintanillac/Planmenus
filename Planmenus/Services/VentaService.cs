@@ -13,10 +13,12 @@ namespace Planmenus.Services
     public class VentaService
     {
         private readonly Datacontext _context;
+        private readonly PlanoService _plano;
 
-        public VentaService(Datacontext context)
+        public VentaService(Datacontext context, PlanoService plano)
         {
             _context = context;
+            _plano = plano;
         }
 
         public record Resultado(MDCaja Caja, string Error)
@@ -56,6 +58,7 @@ namespace Planmenus.Services
             }
 
             var ahora = Fechas.AhoraPeru();
+            var mozo = mesa != null ? await _plano.MozoAsignadoAsync(mesa.Value) ?? usuario : usuario;
             var caja = new MDCaja
             {
                 id_tipago = venta.Cobrar ? venta.id_tipago : null,
@@ -68,7 +71,8 @@ namespace Planmenus.Services
                 caja_act = true,
                 caja_pagado = venta.Cobrar,
                 caja_fecha_pago = venta.Cobrar ? ahora : null,
-                caja_cocina = EstadoCocina.EnCocina
+                caja_cocina = EstadoCocina.EnCocina,
+                caja_mozo = mozo
             };
 
             await using var tx = await _context.Database.BeginTransactionAsync();

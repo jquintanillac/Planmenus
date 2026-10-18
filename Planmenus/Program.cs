@@ -13,8 +13,13 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<Datacontext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<SP_Menus>();
 builder.Services.AddScoped<TicketService>();
+builder.Services.AddScoped<PlanoService>();
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<TurnoService>();
+builder.Services.AddScoped<CorreoService>();
+builder.Services.AddScoped<ReservaService>();
+builder.Services.Configure<CorreoOptions>(builder.Configuration.GetSection("Correo"));
+builder.Services.AddHostedService<RecordatorioWorker>();
 builder.Services.AddSingleton<PdfService>();
 builder.Services.AddSingleton<EscPosService>();
 

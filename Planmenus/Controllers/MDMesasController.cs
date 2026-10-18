@@ -56,7 +56,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id_mesa,mesa_desc,mesa_nro,mesa_act")] MDMesas mDMesas)
+        public async Task<IActionResult> Create([Bind("mesa_desc,mesa_nro,mesa_act,mesa_capacidad,id_zona")] MDMesas mDMesas)
         {
             if (ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id_mesa,mesa_desc,mesa_nro,mesa_act")] MDMesas mDMesas)
+        public async Task<IActionResult> Edit(int id, [Bind("id_mesa,mesa_desc,mesa_nro,mesa_act,mesa_capacidad,id_zona")] MDMesas mDMesas)
         {
             if (id != mDMesas.id_mesa)
             {
@@ -97,22 +97,23 @@ namespace Planmenus.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                // Solo se actualizan los datos del formulario: la ubicacion en el plano se conserva
+                var mesa = await _context.Mesas.FindAsync(id);
+                if (mesa == null)
                 {
-                    _context.Update(mDMesas);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+                if (mesa.id_zona != mDMesas.id_zona)
                 {
-                    if (!MDMesasExists(mDMesas.id_mesa))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    mesa.mesa_x = null;
+                    mesa.mesa_y = null;
                 }
+                mesa.mesa_desc = mDMesas.mesa_desc;
+                mesa.mesa_nro = mDMesas.mesa_nro;
+                mesa.mesa_act = mDMesas.mesa_act;
+                mesa.mesa_capacidad = mDMesas.mesa_capacidad;
+                mesa.id_zona = mDMesas.id_zona;
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(mDMesas);

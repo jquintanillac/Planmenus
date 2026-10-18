@@ -27,6 +27,15 @@ namespace Planmenus.Data.Entities
         public string gene_impresora_ip { get; set; }
         [Display(Name = "Puerto de ticketera")]
         public int gene_impresora_puerto { get; set; } = 9100;
+        [Display(Name = "Avisar también a")]
+        [StringLength(500)]
+        public string gene_correo_avisos { get; set; }
+        [Display(Name = "Recordatorio (horas antes)")]
+        [Range(1, 72)]
+        public int gene_recordatorio_horas { get; set; } = 2;
+        [Display(Name = "Duración de reserva (min)")]
+        [Range(30, 720)]
+        public int gene_reserva_minutos { get; set; } = 120;
         
     }
 }

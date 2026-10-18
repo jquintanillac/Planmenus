@@ -44,10 +44,12 @@
 
             @if (Puede("menu3"))
             {
-                @if (Puede("submenu3_1") || Puede("submenu3_8") || Puede("submenu3_9")) { <li class="app-nav-titulo">Atención</li> }
+                @if (Puede("submenu3_1") || Puede("submenu3_8") || Puede("submenu3_9") || Puede("submenu3_11") || Puede("submenu3_12")) { <li class="app-nav-titulo">Atención</li> }
                 @if (Puede("submenu3_1")) { <li><a asp-controller="MDCajas" asp-action="Create" class="@(Activo("MDCajas", "Create") ? "activo" : "")"><i data-feather="shopping-bag"></i> Nueva venta</a></li> }
                 @if (Puede("submenu3_8")) { <li><a asp-controller="Salon" asp-action="Index" class="@(Activo("Salon", null) ? "activo" : "")"><i data-feather="grid"></i> Salón y mesas</a></li> }
                 @if (Puede("submenu3_9")) { <li><a asp-controller="Cocina" asp-action="Index" class="@(Activo("Cocina", null) ? "activo" : "")"><i data-feather="bell"></i> Cocina</a></li> }
+                @if (Puede("submenu3_11")) { <li><a asp-controller="Reservas" asp-action="Index" class="@(Activo("Reservas", null) ? "activo" : "")"><i data-feather="calendar"></i> Reservas</a></li> }
+                @if (Puede("submenu3_12")) { <li><a asp-controller="Mozos" asp-action="Index" class="@(Activo("Mozos", null) ? "activo" : "")"><i data-feather="user-check"></i> Planificar mozos</a></li> }
 
                 @if (Puede("submenu3_10") || Puede("submenu3_3") || Puede("submenu3_2") || Puede("submenu3_4") || Puede("submenu3_5") || Puede("submenu3_6") || Puede("submenu3_7")) { <li class="app-nav-titulo">Caja</li> }
                 @if (Puede("submenu3_10")) { <li><a asp-controller="Turnos" asp-action="Index" class="@(Activo("Turnos", null) ? "activo" : "")"><i data-feather="lock"></i> Apertura y cierre</a></li> }
@@ -72,8 +74,9 @@
             {
                 <li class="app-nav-titulo">Carta y planificación</li>
                 @if (Puede("submenu2_1")) { <li><a asp-controller="MDMenus" asp-action="Index" class="@(Activo("MDMenus", null) && accion != "Calendar" ? "activo" : "")"><i data-feather="book-open"></i> Menú del día</a></li> }
-                @if (Puede("submenu2_4")) { <li><a asp-controller="MDMenus" asp-action="Calendar" class="@(Activo("MDMenus", "Calendar") ? "activo" : "")"><i data-feather="calendar"></i> Calendario</a></li> }
+                @if (Puede("submenu2_4")) { <li><a asp-controller="MDMenus" asp-action="Calendar" class="@(Activo("MDMenus", "Calendar") ? "activo" : "")"><i data-feather="calendar"></i> Calendario de menús</a></li> }
                 @if (Puede("submenu2_9")) { <li><a asp-controller="Carta" asp-action="Qr" class="@(Activo("Carta", null) ? "activo" : "")"><i data-feather="smartphone"></i> Carta digital (QR)</a></li> }
+                @if (Puede("submenu2_10")) { <li><a asp-controller="Plano" asp-action="Index" class="@(Activo("Plano", null) ? "activo" : "")"><i data-feather="layout"></i> Plano del salón</a></li> }
 
                     var catActivo = GrupoActivo("MDMesas", "MDTipo_pago", "MDDeliveries", "MDEgresos", "MDIngresos", "MDInicials");
 

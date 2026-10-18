@@ -4,6 +4,7 @@
     ViewData["Title"] = "Configuración";
     var tipos = (List<MDTipo_pago>)ViewBag.tipos_pago;
     var tieneIp = !string.IsNullOrWhiteSpace(Model.gene_impresora_ip);
+    var correo = (Planmenus.Services.CorreoOptions)ViewBag.correo;
 }
 <style>
     .conf-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--borde); margin-bottom: 20px; }
@@ -27,6 +28,7 @@
         <a class="active" data-toggle="tab" href="#t-negocio" role="tab"><i data-feather="briefcase"></i> Negocio</a>
         <a data-toggle="tab" href="#t-ticket" role="tab"><i data-feather="printer"></i> Ticket y ticketera</a>
         <a data-toggle="tab" href="#t-pagos" role="tab"><i data-feather="credit-card"></i> Pagos</a>
+        <a data-toggle="tab" href="#t-correo" role="tab"><i data-feather="mail"></i> Correo y reservas</a>
         <a data-toggle="tab" href="#t-carta" role="tab"><i data-feather="smartphone"></i> Carta digital</a>
     </nav>
 
@@ -128,6 +130,60 @@
             </div></div>
         </section>
 
+        <section class="tab-pane fade" id="t-correo" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card"><div class="card-body">
+                        <h4 class="mb-1">Servidor de correo</h4>
+                        <p class="text-muted small">Las credenciales se configuran en <code>appsettings.json</code> (sección <code>Correo</code>) o como variables de entorno del hosting (<code>Correo__Host</code>, <code>Correo__Clave</code>…). Por seguridad no se muestran ni se editan aquí.</p>
+                        <div class="estado-ticketera mb-3" style="background:@(correo.Configurado ? "var(--hierba-suave)" : "var(--mostaza-suave)")">
+                            <i data-feather="@(correo.Configurado ? "check-circle" : "alert-triangle")" style="color:@(correo.Configurado ? "var(--hierba)" : "#8a5a0b")"></i>
+                            <span>@(correo.Configurado ? $"Configurado: {correo.Host}:{correo.Puerto} · envía como {correo.Remitente}" : "Sin configurar: las reservas se guardan pero no se envían avisos")</span>
+                        </div>
+                        <label for="destinoPrueba">Enviar correo de prueba a</label>
+                        <div class="d-flex" style="gap:8px">
+                            <input id="destinoPrueba" name="destino" form="formPruebaCorreo" type="email" class="form-control" placeholder="su-correo@ejemplo.com" />
+                            <button type="submit" form="formPruebaCorreo" class="btn btn-light text-nowrap" @(correo.Configurado ? "" : "disabled")>Probar</button>
+                        </div>
+                        <details class="small text-muted mt-3">
+                            <summary>Ejemplo para Gmail</summary>
+                            <pre class="mt-2 mb-0" style="white-space:pre-wrap">"Correo": {
+  "Host": "smtp.gmail.com", "Puerto": 587, "UsarSsl": false,
+  "Usuario": "minegocio@gmail.com", "Clave": "contraseña de aplicación",
+  "Remitente": "minegocio@gmail.com", "NombreRemitente": "Mi Negocio"
+}</pre>
+                            <div class="mt-1">En Gmail la clave es una “contraseña de aplicación” (Cuenta de Google → Seguridad → Verificación en 2 pasos → Contraseñas de aplicaciones).</div>
+                        </details>
+                    </div></div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card"><div class="card-body">
+                        <h4 class="mb-3">Avisos de reservas</h4>
+                        <div class="form-group">
+                            <label asp-for="gene_correo_avisos">Avisar también a</label>
+                            <input asp-for="gene_correo_avisos" class="form-control" maxlength="500" placeholder="encargado@ejemplo.com, cocina@ejemplo.com" />
+                            <small class="form-text text-muted">Reciben una copia de cada confirmación, recordatorio y cancelación. Separe con comas.</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label asp-for="gene_recordatorio_horas">Recordatorio</label>
+                                <select asp-for="gene_recordatorio_horas" class="form-control">
+                                    @foreach (var h in new[] { 1, 2, 3, 4, 6, 12, 24, 48 }) { <option value="@h">@h hora@(h > 1 ? "s" : "") antes</option> }
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
+                                <label asp-for="gene_reserva_minutos">Duración por defecto</label>
+                                <select asp-for="gene_reserva_minutos" class="form-control">
+                                    @foreach (var m in new[] { 60, 90, 120, 150, 180, 240 }) { <option value="@m">@(m % 60 == 0 ? m / 60 + " h" : $"{m / 60} h {m % 60} min")</option> }
+                                </select>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-0">Los recordatorios se revisan cada 5 minutos. En hosting compartido active “siempre encendido” (Always On) o un monitor que visite el sitio cada 5 minutos para que no se detengan.</p>
+                    </div></div>
+                </div>
+            </div>
+        </section>
+
         <section class="tab-pane fade" id="t-carta" role="tabpanel">
             <div class="card"><div class="card-body d-flex flex-wrap align-items-center" style="gap:16px">
                 <div class="flex-fill">
@@ -146,6 +202,8 @@
         <span class="text-muted small">Los cambios se guardan para todas las pestañas.</span>
     </div>
 </form>
+
+<form asp-action="ProbarCorreo" method="post" id="formPruebaCorreo"></form>
 
 @if (tieneIp)
 {

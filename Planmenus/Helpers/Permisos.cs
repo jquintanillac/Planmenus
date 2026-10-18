@@ -27,7 +27,8 @@ namespace Planmenus.Helpers
             [16] = "submenu2_9",
             [18] = "submenu3_1", [19] = "submenu3_2", [20] = "submenu3_3", [21] = "submenu3_4",
             [22] = "submenu3_5", [23] = "submenu3_6", [24] = "submenu3_7", [25] = "submenu3_8",
-            [26] = "submenu3_9", [27] = "submenu3_10",
+            [26] = "submenu3_9", [27] = "submenu3_10", [28] = "submenu3_11", [29] = "submenu3_12",
+            [30] = "submenu2_10",
         };
 
         public static IEnumerable<string> ClaimsDe(IEnumerable<MDRol_Permisos> permisosActivos)

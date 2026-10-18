@@ -56,7 +56,7 @@ namespace Planmenus.Services
             {
                 ticket = caja.id_caja,
                 fecha = caja.caja_fecha,
-                usuario = caja.caja_usuario,
+                usuario = caja.caja_mozo ?? caja.caja_usuario,
                 tipo_pago = await _context.Tipo_Pagos.Where(t => t.id_tipago == caja.id_tipago).Select(t => t.tipago_desc).FirstOrDefaultAsync(),
                 mesa = await _context.Mesas.Where(m => m.id_mesa == caja.id_mesa).Select(m => m.mesa_desc).FirstOrDefaultAsync(),
                 delivery = await _context.Deliveries.Where(d => d.id_deliv == caja.id_deliv).Select(d => d.deliv_nombcom).FirstOrDefaultAsync(),
