@@ -1,4 +1,5 @@
-﻿@model Planmenus.Data.Entities.MDMesas
+@model Planmenus.Data.Entities.MDMesas
+@inject Planmenus.Data.Datacontext Db
 
 @{
     ViewData["Title"] = "Create";
@@ -26,6 +27,17 @@
                             <label asp-for="mesa_nro" class="control-label"></label>
                             <input asp-for="mesa_nro" class="form-control" />
                             <span asp-validation-for="mesa_nro" class="text-danger"></span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label asp-for="mesa_capacidad" class="control-label"></label>
+                                <input asp-for="mesa_capacidad" class="form-control" min="1" max="50" />
+                                <span asp-validation-for="mesa_capacidad" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-6">
+                                <label asp-for="id_zona" class="control-label"></label>
+                                <select asp-for="id_zona" class="form-control" asp-items="@(new SelectList(Db.Zonas.Where(z => z.zona_act).OrderBy(z => z.zona_orden).ToList(), "id_zona", "zona_desc"))"></select>
+                            </div>
                         </div>
                         <div class="form-group form-check">
                             <label class="form-check-label">

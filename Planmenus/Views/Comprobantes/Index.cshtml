@@ -1,0 +1,134 @@
+@using Planmenus.Data.Entities
+@model List<MDComprobante>
+@{
+    ViewData["Title"] = "Comprobantes electrónicos";
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    DateTime desde = ViewBag.desde, hasta = ViewBag.hasta;
+    var config = (MDFacturacion)ViewBag.config;
+    int pendientes = ViewBag.pendientes;
+    string Badge(byte e) => e switch
+    {
+        EstadoComprobante.Aceptado => "badge-ok",
+        EstadoComprobante.Observado => "badge-ok",
+        EstadoComprobante.Anulado => "badge-anul",
+        EstadoComprobante.Rechazado => "badge-anul",
+        _ => "badge-pend"
+    };
+    var validos = Model.Where(c => c.comp_estado is EstadoComprobante.Aceptado or EstadoComprobante.Observado).ToList();
+}
+
+@if (!config.fe_activa)
+{
+    <div class="alert alert-warning">La facturación electrónica está desactivada. @if (User.HasClaim("submenu1_1", "S")) { <a asp-controller="Facturacion" asp-action="Index">Configurarla</a> }</div>
+}
+@if (pendientes > 0)
+{
+    <div class="alert alert-warning d-flex align-items-center flex-wrap" style="gap:8px">
+        <span class="flex-fill">Hay @pendientes comprobante(s) que aún no llegan a SUNAT. El sistema los reintenta cada 10 minutos.</span>
+        <form asp-action="ReenviarPendientes" method="post"><button class="btn btn-sm btn-mostaza">Reenviar ahora</button></form>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="get" class="form-row align-items-end">
+            <div class="form-group col-6 col-md-2"><label for="desde">Desde</label><input type="date" id="desde" name="desde" value="@desde.ToString("yyyy-MM-dd")" class="form-control" /></div>
+            <div class="form-group col-6 col-md-2"><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta" value="@hasta.ToString("yyyy-MM-dd")" class="form-control" /></div>
+            <div class="form-group col-6 col-md-2">
+                <label for="tipo">Tipo</label>
+                <select id="tipo" name="tipo" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="03" selected="@(ViewBag.tipo == "03")">Boletas</option>
+                    <option value="01" selected="@(ViewBag.tipo == "01")">Facturas</option>
+                    <option value="07" selected="@(ViewBag.tipo == "07")">Notas de crédito</option>
+                </select>
+            </div>
+            <div class="form-group col-6 col-md-3">
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado" class="form-control">
+                    <option value="">Todos</option>
+                    @foreach (var e in new byte[] { EstadoComprobante.Aceptado, EstadoComprobante.Observado, EstadoComprobante.PorEnviar, EstadoComprobante.ErrorEnvio, EstadoComprobante.Rechazado, EstadoComprobante.Anulado })
+                    {
+                        <option value="@e" selected="@(ViewBag.estado == e)">@EstadoComprobante.Nombre(e)</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group col-md-3 d-flex" style="gap:8px">
+                <button class="btn btn-primary flex-fill">Filtrar</button>
+                <a class="btn btn-light" asp-action="Descargar" asp-route-desde="@desde.ToString("yyyy-MM-dd")" asp-route-hasta="@hasta.ToString("yyyy-MM-dd")" title="XML y CDR del periodo en un ZIP">ZIP</a>
+            </div>
+        </form>
+        <div class="d-flex flex-wrap" style="gap:16px">
+            <span><strong>@validos.Count(c => c.comp_tipo == TipoComprobante.Boleta)</strong> boletas</span>
+            <span><strong>@validos.Count(c => c.comp_tipo == TipoComprobante.Factura)</strong> facturas</span>
+            <span>Total válido: <strong>S/ @validos.Where(c => c.comp_tipo != TipoComprobante.NotaCredito).Sum(c => c.comp_total).ToString("N2", peru)</strong></span>
+            <span>IGV: <strong>S/ @validos.Where(c => c.comp_tipo != TipoComprobante.NotaCredito).Sum(c => c.comp_igv).ToString("N2", peru)</strong></span>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Comprobante</th><th>Fecha</th><th>Cliente</th><th class="text-right">Total</th><th>SUNAT</th><th class="text-right">Acciones</th></tr></thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@c.Numero</strong>
+                            <div class="small text-muted">@TipoComprobante.Nombre(c.comp_tipo).Replace(" ELECTRÓNICA", "").ToLowerInvariant() @if (c.comp_ambiente == AmbienteFe.Pruebas) { <span class="badge badge-pend">prueba</span> }</div>
+                        </td>
+                        <td>@c.comp_fecha.ToString("dd/MM HH:mm")</td>
+                        <td>@c.cli_nombre @if (c.cli_num_doc != "-") { <div class="small text-muted">@c.cli_num_doc</div> }</td>
+                        <td class="text-right">S/ @c.comp_total.ToString("N2", peru)</td>
+                        <td style="max-width:280px">
+                            <span class="badge @Badge(c.comp_estado)">@EstadoComprobante.Nombre(c.comp_estado)</span>
+                            @if (!string.IsNullOrWhiteSpace(c.comp_sunat_mensaje)) { <div class="small text-muted text-truncate" title="@c.comp_sunat_codigo @c.comp_sunat_mensaje">@c.comp_sunat_mensaje</div> }
+                        </td>
+                        <td class="text-right text-nowrap">
+                            @if (c.id_caja != null) { <a class="btn btn-sm btn-light" asp-controller="MDCajas" asp-action="Ticket" asp-route-id="@c.id_caja" target="_blank" title="Representación impresa">Ver</a> }
+                            <a class="btn btn-sm btn-light" asp-action="Xml" asp-route-id="@c.id_comp" title="Descargar XML firmado">XML</a>
+                            @if (c.comp_estado is EstadoComprobante.Aceptado or EstadoComprobante.Observado or EstadoComprobante.Rechazado) { <a class="btn btn-sm btn-light" asp-action="Cdr" asp-route-id="@c.id_comp" title="Constancia de recepción de SUNAT">CDR</a> }
+                            @if (c.comp_estado is EstadoComprobante.PorEnviar or EstadoComprobante.ErrorEnvio)
+                            {
+                                <form asp-action="Reenviar" method="post" class="d-inline"><input type="hidden" name="id" value="@c.id_comp" /><button class="btn btn-sm btn-mostaza">Reenviar</button></form>
+                            }
+                            @if (c.comp_tipo != TipoComprobante.NotaCredito && c.comp_estado is EstadoComprobante.Aceptado or EstadoComprobante.Observado)
+                            {
+                                <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#modalAnular" data-id="@c.id_comp" data-numero="@c.Numero">Anular</button>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0) { <tr><td colspan="6" class="vacio">No hay comprobantes en este periodo.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAnular" tabindex="-1" role="dialog" aria-labelledby="tituloAnular" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form asp-action="Anular" method="post" class="modal-content">
+            <div class="modal-header"><h5 class="modal-title" id="tituloAnular">Anular <span id="numAnular"></span></h5><button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button></div>
+            <div class="modal-body">
+                <input type="hidden" name="id" id="idAnular" />
+                <p>Se emitirá una <strong>nota de crédito electrónica</strong> por el total (motivo 01, anulación de la operación) y se enviará a SUNAT.</p>
+                <label for="sustento">Motivo</label>
+                <input id="sustento" name="sustento" class="form-control" maxlength="250" placeholder="Ej.: error en el pedido" required />
+                <small class="form-text text-muted">La venta en caja no se modifica; para anular también la venta use Lista de tickets → Anular.</small>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button><button class="btn btn-danger">Emitir nota de crédito</button></div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $('#modalAnular').on('show.bs.modal', function (e) {
+        var b = $(e.relatedTarget);
+        $('#idAnular').val(b.data('id'));
+        $('#numAnular').text(b.data('numero'));
+    });
+</script>
+}

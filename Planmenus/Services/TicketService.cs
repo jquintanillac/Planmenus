@@ -20,7 +20,13 @@ namespace Planmenus.Services
         public async Task<MDGenerales> ObtenerEmpresaAsync()
         {
             return await _context.Generales.AsNoTracking().OrderBy(g => g.id_gene).FirstOrDefaultAsync()
-                   ?? new MDGenerales { gene_empre = "MENU", gene_ticket_ancho = 80, gene_impresora_puerto = 9100 };
+                   ?? new MDGenerales { gene_empre = "MENU" };
+        }
+
+        /// <summary>Configuracion de la ticketera (o la predeterminada si aun no se guardo)</summary>
+        public async Task<MDTicketera> ObtenerFormatoAsync()
+        {
+            return await _context.Ticketeras.AsNoTracking().OrderBy(t => t.id_ticketera).FirstOrDefaultAsync() ?? new MDTicketera();
         }
 
         public async Task<VMTicket> ObtenerAsync(int id_caja)
@@ -52,11 +58,15 @@ namespace Planmenus.Services
             }
 
             var empresa = await ObtenerEmpresaAsync();
-            return new VMTicket
+            var formato = await ObtenerFormatoAsync();
+            var comprobante = await _context.Comprobantes.AsNoTracking()
+                .Where(c => c.id_caja == id_caja && c.comp_tipo != TipoComprobante.NotaCredito && c.comp_estado != EstadoComprobante.Rechazado)
+                .OrderByDescending(c => c.id_comp).FirstOrDefaultAsync();
+            var ticket = new VMTicket
             {
                 ticket = caja.id_caja,
                 fecha = caja.caja_fecha,
-                usuario = caja.caja_usuario,
+                usuario = caja.caja_mozo ?? caja.caja_usuario,
                 tipo_pago = await _context.Tipo_Pagos.Where(t => t.id_tipago == caja.id_tipago).Select(t => t.tipago_desc).FirstOrDefaultAsync(),
                 mesa = await _context.Mesas.Where(m => m.id_mesa == caja.id_mesa).Select(m => m.mesa_desc).FirstOrDefaultAsync(),
                 delivery = await _context.Deliveries.Where(d => d.id_deliv == caja.id_deliv).Select(d => d.deliv_nombcom).FirstOrDefaultAsync(),
@@ -69,9 +79,50 @@ namespace Planmenus.Services
                 ruc = empresa.gene_ruc,
                 direccion = empresa.gene_direc,
                 telefono = empresa.gene_telef,
-                pie = string.IsNullOrWhiteSpace(empresa.gene_ticket_pie) ? "¡Gracias por su preferencia!" : empresa.gene_ticket_pie,
-                ancho_mm = empresa.gene_ticket_ancho == 58 ? 58 : 80
+                pie = string.IsNullOrWhiteSpace(formato.tk_pie) ? "¡Gracias por su preferencia!" : formato.tk_pie,
+                ancho_mm = formato.tk_ancho_mm == 58 ? 58 : 80,
+                formato = formato
             };
+            if (comprobante != null)
+            {
+                await CompletarComprobanteAsync(ticket, comprobante);
+            }
+            return ticket;
+        }
+
+        /// <summary>Datos de la representacion impresa del comprobante electronico</summary>
+        private async Task CompletarComprobanteAsync(VMTicket t, MDComprobante c)
+        {
+            var fe = await _context.Facturacion.AsNoTracking().OrderBy(f => f.id_fe).FirstOrDefaultAsync() ?? new MDFacturacion();
+            var nombre = TipoComprobante.Nombre(c.comp_tipo);
+            t.empresa = string.IsNullOrWhiteSpace(fe.fe_nombre_comercial) ? fe.fe_razon_social : fe.fe_nombre_comercial;
+            t.ruc = fe.fe_ruc;
+            t.direccion = string.IsNullOrWhiteSpace(fe.fe_nombre_comercial) ? fe.fe_direccion : $"{fe.fe_razon_social} · {fe.fe_direccion}";
+            t.comprobante = $"{nombre} {c.Numero}";
+            t.fecha = c.comp_fecha;
+            t.cliente = c.cli_nombre;
+            if (c.cli_num_doc != "-")
+            {
+                t.cliente_doc = (c.cli_tipo_doc switch { "6" => "RUC", "1" => "DNI", "4" => "C.E.", "7" => "Pasaporte", _ => "Doc." }) + ": " + c.cli_num_doc;
+            }
+            t.subtotales = new() { ("Op. gravada", c.comp_gravada), ($"IGV ({c.comp_tasa_igv:0.##}%)", c.comp_igv) };
+            t.total = c.comp_total;
+            t.qr = Planmenus.Services.Facturacion.FacturacionService.Qr(fe.fe_ruc, c);
+            t.leyendas = new()
+            {
+                "SON: " + Helpers.NumeroLetras.Soles(c.comp_total),
+                $"Representación impresa de la {nombre.ToLowerInvariant()}",
+                "Consulte su validez en www.sunat.gob.pe",
+                "Resumen: " + c.comp_hash
+            };
+            if (c.comp_ambiente == AmbienteFe.Pruebas)
+            {
+                t.leyendas.Insert(0, "*** AMBIENTE DE PRUEBAS - SIN VALOR TRIBUTARIO ***");
+            }
+            if (c.comp_estado == EstadoComprobante.Anulado)
+            {
+                t.anulado = true;
+            }
         }
     }
 }

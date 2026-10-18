@@ -107,6 +107,9 @@
                             <a class="btn btn-sm btn-danger" asp-action="Edit" asp-route-id="@item.id_caja">Anular</a>
                         }
                         <a class="btn btn-sm btn-primary"  asp-action="Ticket" asp-route-id="@item.id_caja" target="_blank" >Imprimir</a>
+                        @{ var comps = (Dictionary<int, string>)ViewBag.comprobantes; }
+                        @if (comps.TryGetValue((int)item.id_caja, out string numComp)) { <div class="small text-muted mt-1">@numComp</div> }
+                        else if (ViewBag.fe_activa == true && item.caja_act && item.caja_pagado && User.HasClaim("submenu3_13", "S")) { <a class="btn btn-sm btn-light mt-1" asp-controller="Comprobantes" asp-action="Emitir" asp-route-id="@item.id_caja">Emitir boleta/factura</a> }
                     </td>
                 </tr>
                 }

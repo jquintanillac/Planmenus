@@ -1,0 +1,132 @@
+@using Planmenus.Data.Entities
+@{
+    ViewData["Title"] = "Reservas";
+    var proximas = (List<MDReserva>)ViewBag.proximas;
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+}
+<link href="~/Fullcalendar/lib/main.css" rel="stylesheet" />
+<style>
+    .fc { --fc-border-color: var(--borde); --fc-today-bg-color: var(--mostaza-suave); --fc-button-bg-color: var(--papel); --fc-button-border-color: var(--borde); --fc-button-text-color: var(--tinta); --fc-button-hover-bg-color: var(--crema); --fc-button-hover-border-color: var(--borde); --fc-button-active-bg-color: var(--aji); --fc-button-active-border-color: var(--aji); --fc-event-border-color: transparent; font-size: 14px; }
+    .fc .fc-toolbar-title { font-family: var(--fuente-titulo); font-size: 22px; text-transform: capitalize; }
+    .fc .fc-button { border-radius: 10px; font-weight: 600; box-shadow: none !important; text-transform: capitalize; }
+    .fc .fc-button-primary:not(:disabled).fc-button-active { color: #fff; }
+    .fc .fc-col-header-cell-cushion, .fc .fc-daygrid-day-number { color: var(--tinta); text-decoration: none; text-transform: capitalize; }
+    .fc-event { border-radius: 6px; padding: 1px 4px; cursor: pointer; }
+    .fc .fc-timegrid-slot { height: 2.2em; }
+    .leyenda-res { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; font-weight: 600; }
+    .leyenda-res i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 6px; vertical-align: -1px; }
+    .proxima { display: block; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--borde); margin-bottom: 8px; color: var(--tinta); text-decoration: none !important; }
+    .proxima:hover { border-color: var(--aji); color: var(--tinta); }
+    .proxima .hora { font-family: var(--fuente-titulo); font-size: 18px; font-weight: 600; }
+    #detalleRes { position: fixed; z-index: 1065; max-width: 300px; background: var(--papel); border: 1px solid var(--borde); border-radius: 12px; box-shadow: 0 14px 30px rgba(42,33,27,.18); padding: 12px 14px; font-size: 13.5px; display: none; pointer-events: none; }
+</style>
+
+<div class="row">
+    <div class="col-xl-9">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex flex-wrap align-items-center mb-3" style="gap:12px">
+                    <div class="leyenda-res">
+                        <span><i style="background:#f2a541"></i>Pendiente</span>
+                        <span><i style="background:#2e8b57"></i>Confirmada</span>
+                        <span><i style="background:#3a312b"></i>Completada</span>
+                        <span><i style="background:#b42318"></i>No asistió</span>
+                        <span><i style="background:#a39789"></i>Cancelada</span>
+                    </div>
+                    <span class="flex-fill"></span>
+                    <a class="btn btn-primary btn-sm" asp-action="Create"><i data-feather="plus" style="width:15px;height:15px"></i> Nueva reserva</a>
+                </div>
+                <div id="calendario"></div>
+                <form id="formToken" class="d-none">@Html.AntiForgeryToken()</form>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card">
+            <div class="card-header"><strong>Próximas</strong></div>
+            <div class="card-body">
+                @if (proximas.Count == 0) { <div class="vacio"><i data-feather="calendar"></i><div>No hay reservas para hoy ni mañana.</div></div> }
+                @foreach (var r in proximas)
+                {
+                    <a class="proxima" asp-action="Edit" asp-route-id="@r.id_reserva">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="hora">@r.res_inicio.ToString("HH:mm")</span>
+                            <span class="badge @(r.res_estado == EstadoReserva.Confirmada ? "badge-ok" : "badge-pend")">@EstadoReserva.Nombre(r.res_estado)</span>
+                        </div>
+                        <div class="font-weight-bold">@r.res_cliente</div>
+                        <small class="text-muted">@(r.res_inicio.Date == Planmenus.Helpers.Fechas.HoyPeru() ? "Hoy" : r.res_inicio.ToString("ddd d", peru)) · @r.res_personas pers.@(r.res_tipo == TipoReserva.Evento ? " · Evento" : "")</small>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div id="detalleRes" role="tooltip"></div>
+
+@section Scripts {
+<script src="~/Fullcalendar/lib/main.js"></script>
+<script src="~/Fullcalendar/lib/locales/es.js"></script>
+<script>
+(function () {
+    var token = document.querySelector('#formToken input[name=__RequestVerificationToken]').value;
+    var detalle = document.getElementById('detalleRes');
+    var fecha = new URLSearchParams(location.search).get('fecha');
+    function fmt(d) { var p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':00'; }
+
+    var cal = new FullCalendar.Calendar(document.getElementById('calendario'), {
+        locale: 'es',
+        initialView: window.innerWidth < 768 ? 'listWeek' : 'timeGridWeek',
+        initialDate: fecha || undefined,
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
+        buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día', list: 'Lista' },
+        slotMinTime: '07:00:00', slotMaxTime: '24:00:00', scrollTime: '12:00:00',
+        allDaySlot: false, nowIndicator: true, height: 'auto', expandRows: true,
+        selectable: true, editable: true, eventDurationEditable: true,
+        events: '@Url.Action("Eventos")',
+        // Clic o arrastre sobre horas libres: nueva reserva en ese horario
+        select: function (info) {
+            location.href = '@Url.Action("Create")?inicio=' + encodeURIComponent(fmt(info.start));
+        },
+        dateClick: function (info) {
+            if (info.view.type === 'dayGridMonth') location.href = '@Url.Action("Create")?inicio=' + encodeURIComponent(info.dateStr + 'T13:00:00');
+        },
+        eventClick: function (info) { location.href = '@Url.Action("Edit")/' + info.event.id; },
+        eventDrop: mover, eventResize: mover,
+        eventMouseEnter: function (info) {
+            var p = info.event.extendedProps;
+            detalle.innerHTML = '';
+            [['', info.event.title], ['Estado', p.estado], ['Tipo', p.tipo], ['Mesa', p.mesas], ['Teléfono', p.telefono], ['Notas', p.notas]]
+                .forEach(function (f) {
+                    if (!f[1]) return;
+                    var div = document.createElement('div');
+                    if (f[0]) { var b = document.createElement('strong'); b.textContent = f[0] + ': '; div.appendChild(b); }
+                    else div.style.fontWeight = '700';
+                    div.appendChild(document.createTextNode(f[1]));
+                    detalle.appendChild(div);
+                });
+            var r = info.el.getBoundingClientRect();
+            detalle.style.left = Math.min(r.left, window.innerWidth - 320) + 'px';
+            detalle.style.top = (r.bottom + 6) + 'px';
+            detalle.style.display = 'block';
+        },
+        eventMouseLeave: function () { detalle.style.display = 'none'; }
+    });
+    cal.render();
+
+    function mover(info) {
+        var datos = new URLSearchParams();
+        datos.append('id', info.event.id);
+        datos.append('inicio', fmt(info.event.start));
+        datos.append('fin', fmt(info.event.end || new Date(info.event.start.getTime() + 7200000)));
+        datos.append('__RequestVerificationToken', token);
+        fetch('@Url.Action("Mover")', { method: 'POST', credentials: 'same-origin', body: datos })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (!res.ok) { info.revert(); alert(res.mensaje || 'No se pudo mover la reserva.'); }
+                else if (res.mensaje) alert(res.mensaje);
+            })
+            .catch(function () { info.revert(); alert('No se pudo mover la reserva.'); });
+    }
+})();
+</script>
+}

@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data.Entities;
 
 namespace Planmenus.Data
 {
-    public class Datacontext : DbContext
+    public class Datacontext : DbContext, IDataProtectionKeyContext
     {
         public Datacontext(DbContextOptions<Datacontext> options) : base(options)
         {
@@ -26,6 +27,19 @@ namespace Planmenus.Data
         public virtual DbSet<MDRol_Usuario> Rol_Usuarios { get; set; }
         public virtual DbSet<MDRol_Permisos> Rol_Permisos { get; set; }
         public virtual DbSet<MDTurno_Caja> Turnos { get; set; }
+        public virtual DbSet<MDZona> Zonas { get; set; }
+        public virtual DbSet<MDAsignacion_Mozo> Asignaciones { get; set; }
+        public virtual DbSet<MDReserva> Reservas { get; set; }
+        public virtual DbSet<MDReserva_Mesa> Reserva_Mesas { get; set; }
+        public virtual DbSet<MDCorreo_Log> Correos { get; set; }
+        public virtual DbSet<MDTicketera> Ticketeras { get; set; }
+        public virtual DbSet<MDImpresion_Cola> Impresiones { get; set; }
+        public virtual DbSet<MDFacturacion> Facturacion { get; set; }
+        public virtual DbSet<MDComprobante> Comprobantes { get; set; }
+        public virtual DbSet<MDComprobante_Detalle> Comprobante_Detalles { get; set; }
+        public virtual DbSet<MDSerie> Series { get; set; }
+        /// <summary>Llaves de ASP.NET Data Protection (cookies de sesion y datos cifrados)</summary>
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +74,24 @@ namespace Planmenus.Data
             modelBuilder.Entity<MDUsuarios>().HasIndex(x => x.Usua_user).IsUnique();
             modelBuilder.Entity<MDCaja>().HasIndex(x => x.caja_fecha);
             modelBuilder.Entity<MDCaja>().HasIndex(x => new { x.caja_pagado, x.caja_act });
+
+            modelBuilder.Entity<MDMesas>().HasOne<MDZona>().WithMany().HasForeignKey(x => x.id_zona).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<MDAsignacion_Mozo>().HasOne<MDMesas>().WithMany().HasForeignKey(x => x.id_mesa).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<MDAsignacion_Mozo>().HasOne<MDUsuarios>().WithMany().HasForeignKey(x => x.IdUsuario).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<MDAsignacion_Mozo>().HasIndex(x => new { x.asig_fecha, x.id_mesa }).IsUnique();
+            modelBuilder.Entity<MDReserva_Mesa>().HasOne<MDReserva>().WithMany().HasForeignKey(x => x.id_reserva).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<MDReserva_Mesa>().HasOne<MDMesas>().WithMany().HasForeignKey(x => x.id_mesa).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<MDReserva_Mesa>().HasIndex(x => new { x.id_reserva, x.id_mesa }).IsUnique();
+            modelBuilder.Entity<MDReserva>().HasIndex(x => new { x.res_inicio, x.res_estado });
+            modelBuilder.Entity<MDCorreo_Log>().HasIndex(x => x.cor_fecha);
+            modelBuilder.Entity<MDImpresion_Cola>().HasIndex(x => new { x.imp_estado, x.imp_creado });
+
+            modelBuilder.Entity<MDComprobante>().HasIndex(x => new { x.comp_tipo, x.comp_serie, x.comp_numero }).IsUnique();
+            modelBuilder.Entity<MDComprobante>().HasIndex(x => x.id_caja);
+            modelBuilder.Entity<MDComprobante>().HasIndex(x => new { x.comp_estado, x.comp_fecha });
+            modelBuilder.Entity<MDComprobante>().HasOne<MDCaja>().WithMany().HasForeignKey(x => x.id_caja).OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<MDComprobante>().HasOne<MDComprobante>().WithMany().HasForeignKey(x => x.ref_id_comp).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<MDComprobante_Detalle>().HasOne<MDComprobante>().WithMany().HasForeignKey(x => x.id_comp).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

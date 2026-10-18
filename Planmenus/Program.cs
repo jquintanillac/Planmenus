@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
 using Planmenus.Data.DataSql;
 using Planmenus.Services;
+using Planmenus.Services.Facturacion;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 
@@ -13,8 +15,18 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<Datacontext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<SP_Menus>();
 builder.Services.AddScoped<TicketService>();
+builder.Services.AddScoped<PlanoService>();
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<TurnoService>();
+builder.Services.AddScoped<CorreoService>();
+builder.Services.AddScoped<ImpresionService>();
+builder.Services.AddScoped<ReservaService>();
+builder.Services.Configure<CorreoOptions>(builder.Configuration.GetSection("Correo"));
+builder.Services.AddHostedService<RecordatorioWorker>();
+builder.Services.AddSingleton<UblService>();
+builder.Services.AddHttpClient<SunatClient>();
+builder.Services.AddScoped<FacturacionService>();
+builder.Services.AddHostedService<FacturacionWorker>();
 builder.Services.AddSingleton<PdfService>();
 builder.Services.AddSingleton<EscPosService>();
 
@@ -47,6 +59,9 @@ builder.Services.AddControllersWithViews(o =>
             o.JsonSerializerOptions.PropertyNamingPolicy = null;
         });
 
+
+// Llaves de proteccion en la base: las sesiones y los datos cifrados sobreviven a reinicios del hosting
+builder.Services.AddDataProtection().PersistKeysToDbContext<Datacontext>().SetApplicationName("Planmenus");
 
 var app = builder.Build();
 

@@ -22,6 +22,54 @@ namespace Planmenus.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDAsignacion_Mozo", b =>
+                {
+                    b.Property<int>("id_asig")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_asig"));
+
+                    b.Property<int>("IdUsuario")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("asig_fecha")
+                        .HasColumnType("date");
+
+                    b.Property<int>("id_mesa")
+                        .HasColumnType("int");
+
+                    b.HasKey("id_asig");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.HasIndex("id_mesa");
+
+                    b.HasIndex("asig_fecha", "id_mesa")
+                        .IsUnique();
+
+                    b.ToTable("Asignacion_Mozo");
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDCaja", b =>
                 {
                     b.Property<int>("id_caja")
@@ -45,6 +93,10 @@ namespace Planmenus.Migrations
                     b.Property<decimal>("caja_monto")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("caja_mozo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("caja_obs")
                         .HasColumnType("nvarchar(max)");
@@ -117,6 +169,202 @@ namespace Planmenus.Migrations
                     b.HasIndex("id_menu");
 
                     b.ToTable("Caja_Detalle");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDComprobante", b =>
+                {
+                    b.Property<int>("id_comp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_comp"));
+
+                    b.Property<string>("cli_direccion")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("cli_email")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("cli_nombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("cli_num_doc")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("cli_tipo_doc")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<byte>("comp_ambiente")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte[]>("comp_cdr")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTime?>("comp_enviado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte>("comp_estado")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime>("comp_fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("comp_gravada")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("comp_hash")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("comp_igv")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("comp_intentos")
+                        .HasColumnType("int");
+
+                    b.Property<int>("comp_numero")
+                        .HasColumnType("int");
+
+                    b.Property<string>("comp_serie")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("comp_sunat_codigo")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("comp_sunat_mensaje")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("comp_tasa_igv")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("comp_tipo")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<decimal>("comp_total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<byte[]>("comp_xml")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int?>("id_caja")
+                        .HasColumnType("int");
+
+                    b.Property<string>("nc_motivo")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("nc_sustento")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int?>("ref_id_comp")
+                        .HasColumnType("int");
+
+                    b.HasKey("id_comp");
+
+                    b.HasIndex("id_caja");
+
+                    b.HasIndex("ref_id_comp");
+
+                    b.HasIndex("comp_estado", "comp_fecha");
+
+                    b.HasIndex("comp_tipo", "comp_serie", "comp_numero")
+                        .IsUnique()
+                        .HasFilter("[comp_tipo] IS NOT NULL AND [comp_serie] IS NOT NULL");
+
+                    b.ToTable("Comprobante");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDComprobante_Detalle", b =>
+                {
+                    b.Property<int>("id_compdet")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_compdet"));
+
+                    b.Property<decimal>("cantidad")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("descripcion")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("id_comp")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("igv")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("item")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("precio")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("valor_unitario")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("valor_venta")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("id_compdet");
+
+                    b.HasIndex("id_comp");
+
+                    b.ToTable("Comprobante_Detalle");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDCorreo_Log", b =>
+                {
+                    b.Property<int>("id_correo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_correo"));
+
+                    b.Property<string>("cor_asunto")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("cor_error")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("cor_fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("cor_ok")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("cor_para")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("cor_tipo")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int?>("id_reserva")
+                        .HasColumnType("int");
+
+                    b.HasKey("id_correo");
+
+                    b.HasIndex("cor_fecha");
+
+                    b.ToTable("Correo_Log");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDDelivery", b =>
@@ -200,6 +448,96 @@ namespace Planmenus.Migrations
                     b.ToTable("Eventos");
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDFacturacion", b =>
+                {
+                    b.Property<int>("id_fe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_fe"));
+
+                    b.Property<bool>("fe_activa")
+                        .HasColumnType("bit");
+
+                    b.Property<byte>("fe_ambiente")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte[]>("fe_certificado")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("fe_certificado_clave")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("fe_certificado_titular")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("fe_certificado_vence")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("fe_clave_sol")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("fe_direccion")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("fe_establecimiento")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<decimal>("fe_igv")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("fe_nombre_comercial")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte>("fe_por_defecto")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("fe_proveedor")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("fe_razon_social")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("fe_ruc")
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.Property<string>("fe_serie_boleta")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("fe_serie_factura")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("fe_serie_nc_boleta")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("fe_serie_nc_factura")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("fe_ubigeo")
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<string>("fe_usuario_sol")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("id_fe");
+
+                    b.ToTable("Facturacion");
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDGenerales", b =>
                 {
                     b.Property<int>("id_gene")
@@ -208,16 +546,20 @@ namespace Planmenus.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_gene"));
 
+                    b.Property<string>("gene_correo_avisos")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("gene_direc")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("gene_empre")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("gene_impresora_ip")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("gene_recordatorio_horas")
+                        .HasColumnType("int");
 
-                    b.Property<int>("gene_impresora_puerto")
+                    b.Property<int>("gene_reserva_minutos")
                         .HasColumnType("int");
 
                     b.Property<string>("gene_ruc")
@@ -226,18 +568,60 @@ namespace Planmenus.Migrations
                     b.Property<string>("gene_telef")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("gene_ticket_ancho")
-                        .HasColumnType("int");
-
-                    b.Property<string>("gene_ticket_pie")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("gene_url")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id_gene");
 
                     b.ToTable("Generales");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDImpresion_Cola", b =>
+                {
+                    b.Property<int>("id_trabajo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_trabajo"));
+
+                    b.Property<int?>("id_caja")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("imp_creado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("imp_datos")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("imp_error")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<byte>("imp_estado")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("imp_impresora")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("imp_intentos")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("imp_terminado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("imp_tipo")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("imp_tomado")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("id_trabajo");
+
+                    b.HasIndex("imp_estado", "imp_creado");
+
+                    b.ToTable("Impresion_Cola");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDIngresos", b =>
@@ -339,18 +723,133 @@ namespace Planmenus.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_mesa"));
 
+                    b.Property<int?>("id_zona")
+                        .HasColumnType("int");
+
                     b.Property<bool>("mesa_act")
                         .HasColumnType("bit");
+
+                    b.Property<int>("mesa_alto")
+                        .HasColumnType("int");
+
+                    b.Property<int>("mesa_ancho")
+                        .HasColumnType("int");
+
+                    b.Property<int>("mesa_capacidad")
+                        .HasColumnType("int");
 
                     b.Property<string>("mesa_desc")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("mesa_forma")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
                     b.Property<int>("mesa_nro")
+                        .HasColumnType("int");
+
+                    b.Property<int>("mesa_rotacion")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("mesa_x")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("mesa_y")
                         .HasColumnType("int");
 
                     b.HasKey("id_mesa");
 
+                    b.HasIndex("id_zona");
+
                     b.ToTable("Mesas");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDReserva", b =>
+                {
+                    b.Property<int>("id_reserva")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_reserva"));
+
+                    b.Property<string>("res_cliente")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("res_confirmacion_enviada")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("res_creado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("res_email")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("res_emails_extra")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<byte>("res_estado")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime>("res_fin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("res_inicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("res_notas")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("res_personas")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("res_recordatorio_enviado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("res_telefono")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<byte>("res_tipo")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("res_usuario")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("id_reserva");
+
+                    b.HasIndex("res_inicio", "res_estado");
+
+                    b.ToTable("Reserva");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDReserva_Mesa", b =>
+                {
+                    b.Property<int>("id_resmesa")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_resmesa"));
+
+                    b.Property<int>("id_mesa")
+                        .HasColumnType("int");
+
+                    b.Property<int>("id_reserva")
+                        .HasColumnType("int");
+
+                    b.HasKey("id_resmesa");
+
+                    b.HasIndex("id_mesa");
+
+                    b.HasIndex("id_reserva", "id_mesa")
+                        .IsUnique();
+
+                    b.ToTable("Reserva_Mesa");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDRol", b =>
@@ -426,6 +925,20 @@ namespace Planmenus.Migrations
                     b.ToTable("Rol_Usuario");
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDSerie", b =>
+                {
+                    b.Property<string>("serie_clave")
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<int>("serie_ultimo")
+                        .HasColumnType("int");
+
+                    b.HasKey("serie_clave");
+
+                    b.ToTable("Serie");
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDSubmenu", b =>
                 {
                     b.Property<int>("id_submenu")
@@ -448,6 +961,112 @@ namespace Planmenus.Migrations
                     b.HasIndex("id_menprin");
 
                     b.ToTable("Submenu");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDTicketera", b =>
+                {
+                    b.Property<int>("id_ticketera")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ticketera"));
+
+                    b.Property<string>("tk_agente_clave_hash")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("tk_agente_contacto")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("tk_agente_equipo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("tk_agente_impresoras")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("tk_ancho_mm")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("tk_auto")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("tk_avance")
+                        .HasColumnType("int");
+
+                    b.Property<int>("tk_codepage")
+                        .HasColumnType("int");
+
+                    b.Property<int>("tk_columnas")
+                        .HasColumnType("int");
+
+                    b.Property<int>("tk_copias")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("tk_corte")
+                        .HasColumnType("tinyint");
+
+                    b.Property<bool>("tk_gaveta")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("tk_impresora")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("tk_ip")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("tk_logo_alto")
+                        .HasColumnType("int");
+
+                    b.Property<int>("tk_logo_ancho")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("tk_logo_mostrar")
+                        .HasColumnType("bit");
+
+                    b.Property<byte[]>("tk_logo_png")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("tk_logo_raster")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte>("tk_modo")
+                        .HasColumnType("tinyint");
+
+                    b.Property<bool>("tk_mostrar_direccion")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_mesa")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_mozo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_obs")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_ruc")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("tk_mostrar_telefono")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("tk_pie")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<int>("tk_puerto")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("tk_total_grande")
+                        .HasColumnType("bit");
+
+                    b.HasKey("id_ticketera");
+
+                    b.ToTable("Ticketera");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDTipo_pago", b =>
@@ -561,6 +1180,45 @@ namespace Planmenus.Migrations
                     b.ToTable("Usuarios");
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDZona", b =>
+                {
+                    b.Property<int>("id_zona")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_zona"));
+
+                    b.Property<bool>("zona_act")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("zona_desc")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("zona_orden")
+                        .HasColumnType("int");
+
+                    b.HasKey("id_zona");
+
+                    b.ToTable("Zona");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDAsignacion_Mozo", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDUsuarios", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDMesas", null)
+                        .WithMany()
+                        .HasForeignKey("id_mesa")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDCaja", b =>
                 {
                     b.HasOne("Planmenus.Data.Entities.MDDelivery", null)
@@ -599,11 +1257,56 @@ namespace Planmenus.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDComprobante", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDCaja", null)
+                        .WithMany()
+                        .HasForeignKey("id_caja")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Planmenus.Data.Entities.MDComprobante", null)
+                        .WithMany()
+                        .HasForeignKey("ref_id_comp")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDComprobante_Detalle", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDComprobante", null)
+                        .WithMany()
+                        .HasForeignKey("id_comp")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDEventos", b =>
                 {
                     b.HasOne("Planmenus.Data.Entities.MDMenu", null)
                         .WithMany()
                         .HasForeignKey("id_menu")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDMesas", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDZona", null)
+                        .WithMany()
+                        .HasForeignKey("id_zona")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDReserva_Mesa", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDMesas", null)
+                        .WithMany()
+                        .HasForeignKey("id_mesa")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDReserva", null)
+                        .WithMany()
+                        .HasForeignKey("id_reserva")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

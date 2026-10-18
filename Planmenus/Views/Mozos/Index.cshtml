@@ -1,0 +1,124 @@
+@using Planmenus.Data.Entities
+@{
+    ViewData["Title"] = "Planificar mozos";
+    var plano = (Planmenus.Services.PlanoService.Plano)ViewBag.plano;
+    var mozos = (List<MDUsuarios>)ViewBag.mozos;
+    var asig = (Dictionary<int, int>)ViewBag.asignaciones;
+    DateTime fecha = ViewBag.fecha;
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+}
+<div class="d-flex flex-wrap align-items-end mb-3" style="gap:10px">
+    <form method="get" class="d-flex align-items-end" style="gap:8px">
+        <div>
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" class="form-control" value="@fecha.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+        </div>
+    </form>
+    <span class="text-muted pb-2 primera-mayuscula" style="display:inline-block">@fecha.ToString("dddd d 'de' MMMM", peru)</span>
+    <span class="flex-fill"></span>
+    @if (ViewBag.hay_anterior)
+    {
+        <form asp-action="CopiarAnterior" method="post" onsubmit="return confirm('Se reemplazará la planificación de este día. ¿Continuar?')">
+            <input type="hidden" name="fecha" value="@fecha.ToString("yyyy-MM-dd")" />
+            <button class="btn btn-light"><i data-feather="copy" style="width:15px;height:15px"></i> Copiar del día anterior</button>
+        </form>
+    }
+</div>
+
+@if (mozos.Count == 0)
+{
+    <div class="alert alert-warning">No hay usuarios que puedan atender mesas. Cree usuarios y deles un rol con permiso de <strong>Nueva venta</strong> o <strong>Salón y mesas</strong>.</div>
+}
+
+<form asp-action="Guardar" method="post">
+    <input type="hidden" name="fecha" value="@fecha.ToString("yyyy-MM-dd")" />
+    <div class="row">
+        @foreach (var z in plano.zonas)
+        {
+            var mesasZona = plano.mesas.Where(m => m.zona == z.id_zona).OrderBy(m => m.nro).ToList();
+            if (mesasZona.Count == 0) { continue; }
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center flex-wrap" style="gap:8px">
+                        <strong class="flex-fill">@z.zona_desc</strong>
+                        <select class="form-control form-control-sm todo-zona" style="max-width:200px" data-zona="@z.id_zona" aria-label="Asignar toda la zona">
+                            <option value="">Asignar toda la zona…</option>
+                            @foreach (var mz in mozos) { <option value="@mz.IdUsuario">@mz.Usua_nombres</option> }
+                        </select>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead><tr><th>Mesa</th><th>Capacidad</th><th>Mozo</th></tr></thead>
+                            <tbody>
+                                @foreach (var m in mesasZona)
+                                {
+                                    asig.TryGetValue(m.id, out var actual);
+                                    <tr>
+                                        <td><strong>@m.nro</strong> · @m.desc</td>
+                                        <td>@m.cap pers.</td>
+                                        <td>
+                                            <select name="asig[@m.id]" class="form-control form-control-sm mozo-mesa" data-zona="@z.id_zona" aria-label="Mozo de @m.desc">
+                                                <option value="">Sin asignar</option>
+                                                @foreach (var mz in mozos) { <option value="@mz.IdUsuario" selected="@(actual == mz.IdUsuario)">@mz.Usua_nombres</option> }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <button class="btn btn-primary btn-lg"><i data-feather="save" style="width:18px;height:18px"></i> Guardar planificación</button>
+</form>
+
+@if (mozos.Count > 0)
+{
+    <div class="card mt-4">
+        <div class="card-header"><strong>Resumen por mozo</strong></div>
+        <div class="card-body d-flex flex-wrap" style="gap:10px" id="resumen"></div>
+    </div>
+}
+
+@section Scripts {
+<script>
+(function () {
+    var capacidad = {};
+    @foreach (var m in plano.mesas) { <text>capacidad[@m.id] = @m.cap;</text> }
+    document.querySelectorAll('.todo-zona').forEach(function (s) {
+        s.addEventListener('change', function () {
+            if (!s.value) return;
+            document.querySelectorAll('.mozo-mesa[data-zona="' + s.dataset.zona + '"]').forEach(function (m) { m.value = s.value; });
+            s.value = '';
+            resumen();
+        });
+    });
+    document.querySelectorAll('.mozo-mesa').forEach(function (s) { s.addEventListener('change', resumen); });
+
+    // Muestra cuantas mesas y cubiertos tiene cada mozo para equilibrar la carga
+    function resumen() {
+        var cont = document.getElementById('resumen');
+        if (!cont) return;
+        var porMozo = {};
+        document.querySelectorAll('.mozo-mesa').forEach(function (s) {
+            if (!s.value) return;
+            var nombre = s.options[s.selectedIndex].text, id = s.name.match(/\d+/)[0];
+            porMozo[nombre] = porMozo[nombre] || { mesas: 0, pers: 0 };
+            porMozo[nombre].mesas++;
+            porMozo[nombre].pers += capacidad[id] || 0;
+        });
+        var nombres = Object.keys(porMozo);
+        cont.innerHTML = nombres.length ? '' : '<span class="text-muted">Aún no hay mesas asignadas.</span>';
+        nombres.forEach(function (n) {
+            var d = document.createElement('div');
+            d.className = 'pill border rounded-pill px-3 py-2';
+            d.textContent = n + ': ' + porMozo[n].mesas + ' mesa(s) · ' + porMozo[n].pers + ' cubiertos';
+            cont.appendChild(d);
+        });
+    }
+    resumen();
+})();
+</script>
+}

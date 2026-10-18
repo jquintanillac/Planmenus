@@ -2,92 +2,120 @@
 @model Planmenus.Models.VMSalon
 @{
     ViewData["Title"] = "Salón y mesas";
+    var plano = (Planmenus.Services.PlanoService.Plano)ViewBag.plano;
+    string usuario = ViewBag.usuario;
     var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
-    string Soles(decimal m) => "S/ " + m.ToString("N2", peru);
-    string Espera(DateTime d) { var min = (int)(Model.ahora - d).TotalMinutes; return min < 60 ? $"{min} min" : $"{min / 60} h {min % 60} min"; }
+    string Soles(decimal m) => "S/ " + m.ToString("N0", peru);
+    string Espera(DateTime d) { var min = (int)(Model.ahora - d).TotalMinutes; return min < 60 ? $"{min} min" : $"{min / 60} h {min % 60} m"; }
     string Cocina(byte e) => e switch { EstadoCocina.EnCocina => "En cocina", EstadoCocina.Listo => "Listo para servir", _ => "Servido" };
-    var ocupadas = Model.mesas.Count(m => m.pedido != null);
+    string Iniciales(string n) => string.Concat((n ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    var mesasZona = plano.MesasDeZona.ToList();
+    bool tengoMesas = plano.mesas.Any(m => m.mozo_usuario == usuario);
 }
-<style>
-    .salon-resumen { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; align-items: center; }
-    .salon-resumen .pill { background: var(--papel); border: 1px solid var(--borde); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: 13.5px; }
-    .salon-resumen .pill i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
-    .mesas { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
-    .mesa {
-        position: relative; display: flex; flex-direction: column; justify-content: space-between;
-        min-height: 150px; padding: 16px; border-radius: 18px; text-decoration: none !important;
-        border: 2px solid var(--borde); background: var(--papel); color: var(--tinta);
-        transition: transform .12s, box-shadow .15s, border-color .15s;
-    }
-    .mesa:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(42,33,27,.12); color: var(--tinta); }
-    .mesa .num { font-family: var(--fuente-titulo); font-size: 34px; font-weight: 700; line-height: 1; }
-    .mesa .nom { font-size: 13px; color: var(--gris); margin-top: 4px; }
-    .mesa .estado { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-    .mesa.libre { border-color: #bfe3cf; background: linear-gradient(180deg, #fff, var(--hierba-suave)); }
-    .mesa.libre .estado { color: var(--hierba); }
-    .mesa.ocupada { border-color: var(--aji); background: linear-gradient(180deg, #fff, var(--aji-suave)); }
-    .mesa.ocupada .estado { color: var(--aji-osc); }
-    .mesa.ocupada.listo { border-color: var(--mostaza); background: linear-gradient(180deg, #fff, var(--mostaza-suave)); }
-    .mesa .total { font-family: var(--fuente-titulo); font-size: 20px; font-weight: 600; }
-    .mesa .meta { font-size: 12.5px; color: var(--gris); }
-    .mesa .punto { position: absolute; top: 14px; right: 14px; width: 12px; height: 12px; border-radius: 50%; }
-    .libre .punto { background: var(--hierba); }
-    .ocupada .punto { background: var(--aji); box-shadow: 0 0 0 4px rgba(228,87,46,.18); }
-    .ocupada.listo .punto { background: var(--mostaza); box-shadow: 0 0 0 4px rgba(242,165,65,.25); }
-</style>
+<link rel="stylesheet" href="~/css/plano.css" asp-append-version="true" />
 
-<div class="salon-resumen">
-    <span class="pill"><i style="background:var(--hierba)"></i>@(Model.mesas.Count - ocupadas) libres</span>
-    <span class="pill"><i style="background:var(--aji)"></i>@ocupadas ocupadas</span>
-    <span class="pill"><i style="background:var(--mostaza)"></i>@Model.mesas.Count(m => m.pedido?.cocina == EstadoCocina.Listo) listas para servir</span>
+<div class="d-flex flex-wrap align-items-center mb-3" style="gap:10px">
+    <div class="pm-leyenda">
+        <span class="pill"><i style="background:var(--hierba)"></i>@plano.mesas.Count(m => m.estado == "libre") libres</span>
+        <span class="pill"><i style="background:var(--aji)"></i>@plano.mesas.Count(m => m.estado == "ocupada") ocupadas</span>
+        <span class="pill"><i style="background:var(--mostaza)"></i>@plano.mesas.Count(m => m.estado == "listo") listas para servir</span>
+        <span class="pill"><i style="background:#7b6ad8"></i>@plano.mesas.Count(m => m.estado == "reservada") reservadas</span>
+    </div>
     <span class="flex-fill"></span>
-    <a class="btn btn-sm btn-light" asp-controller="MDCajas" asp-action="Create"><i data-feather="shopping-bag" style="width:15px;height:15px"></i> Venta para llevar</a>
+    @if (tengoMesas)
+    {
+        <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="soloMias" />
+            <label class="custom-control-label" for="soloMias">Solo mis mesas</label>
+        </div>
+    }
+    @if (User.HasClaim("submenu2_10", "S")) { <a class="btn btn-sm btn-light" asp-controller="Plano" asp-action="Index" asp-route-zona="@plano.zona_actual"><i data-feather="edit-3" style="width:15px;height:15px"></i> Editar plano</a> }
+    <a class="btn btn-sm btn-light" asp-controller="MDCajas" asp-action="Create"><i data-feather="shopping-bag" style="width:15px;height:15px"></i> Para llevar</a>
 </div>
 
-@if (Model.mesas.Count == 0)
+@if (plano.zonas.Count > 1)
+{
+    <div class="pm-zonas">
+        @foreach (var z in plano.zonas)
+        {
+            var ocupadas = plano.mesas.Count(m => m.zona == z.id_zona && (m.estado == "ocupada" || m.estado == "listo"));
+            <a asp-action="Index" asp-route-zona="@z.id_zona" class="@(z.id_zona == plano.zona_actual ? "activa" : "")">@z.zona_desc @if (ocupadas > 0) { <span class="badge badge-coc ml-1">@ocupadas</span> }</a>
+        }
+    </div>
+}
+
+@if (plano.mesas.Count == 0)
 {
     <div class="card"><div class="card-body vacio">
         <i data-feather="grid"></i>
-        <p class="mb-2">Aún no hay mesas registradas.</p>
-        <a class="btn btn-primary btn-sm" asp-controller="MDMesas" asp-action="Create">Registrar mesas</a>
+        <p class="mb-2">Aún no hay mesas en el salón.</p>
+        @if (User.HasClaim("submenu2_10", "S")) { <a class="btn btn-primary btn-sm" asp-controller="Plano" asp-action="Index">Armar el plano</a> }
     </div></div>
 }
+else
+{
+    <div class="pm-scroll">
+        <div class="pm-lienzo" id="lienzo" data-vacio="Esta zona no tiene mesas">
+            @foreach (var m in mesasZona)
+            {
+                var titulo = m.estado switch
+                {
+                    "libre" => $"{m.desc}: libre, {m.cap} personas. Tomar pedido",
+                    "reservada" => $"{m.desc}: reservada {m.reserva_hora:HH:mm} para {m.reserva_cliente} ({m.reserva_personas} pers.)",
+                    _ => $"{m.desc}: {Soles(m.monto)} · {m.platos} plato(s) · {Espera(m.desde.Value)}"
+                };
+                var href = m.id_caja != null
+                    ? Url.Action("Pedido", new { id = m.id_caja })
+                    : Url.Action("Create", "MDCajas", new { id_mesa = m.id });
+                <div class="pm-mesa forma-@m.forma estado-@m.estado @(m.mozo_usuario == usuario && usuario != null ? "mia" : "")"
+                     data-x="@m.x" data-y="@m.y" data-w="@m.w" data-h="@m.h" data-rot="@m.rot" data-cap="@m.cap" data-forma="@m.forma">
+                    <a class="pm-tablero" href="@href" title="@titulo" aria-label="@titulo">
+                        <div class="pm-info">
+                            <span class="pm-num">@m.nro</span>
+                            @switch (m.estado)
+                            {
+                                case "libre": <span class="pm-sub">@m.cap pers.</span> break;
+                                case "reservada": <span class="pm-sub">Res. @m.reserva_hora?.ToString("HH:mm")</span> break;
+                                default: <span class="pm-sub">@Soles(m.monto) · @Espera(m.desde.Value)</span> break;
+                            }
+                        </div>
+                    </a>
+                    @if (!string.IsNullOrEmpty(m.mozo)) { <span class="pm-mozo" title="Mozo: @m.mozo">@Iniciales(m.mozo)</span> }
+                </div>
+            }
+        </div>
+    </div>
 
-<div class="mesas">
-    @foreach (var m in Model.mesas)
-    {
-        if (m.pedido == null)
-        {
-            <a class="mesa libre" asp-controller="MDCajas" asp-action="Create" asp-route-id_mesa="@m.id_mesa" title="Tomar pedido en @m.mesa_desc">
-                <span class="punto"></span>
-                <div>
-                    <div class="num">@m.mesa_nro</div>
-                    <div class="nom">@m.mesa_desc</div>
-                </div>
-                <div class="estado">Libre · tomar pedido</div>
-            </a>
-        }
-        else
-        {
-            <a class="mesa ocupada @(m.pedido.cocina == EstadoCocina.Listo ? "listo" : "")" asp-action="Pedido" asp-route-id="@m.pedido.id_caja" title="Ver pedido de @m.mesa_desc">
-                <span class="punto"></span>
-                <div>
-                    <div class="num">@m.mesa_nro</div>
-                    <div class="nom">@m.mesa_desc</div>
-                </div>
-                <div>
-                    <div class="total">@Soles(m.pedido.monto)</div>
-                    <div class="meta">@m.pedido.platos plato(s) · @Espera(m.pedido.desde)</div>
-                    <div class="estado mt-1">@Cocina(m.pedido.cocina)</div>
-                </div>
-            </a>
-        }
-    }
-</div>
+    <div class="card mt-3">
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead><tr><th>Mesa</th><th>Estado</th><th>Mozo</th><th>Detalle</th><th class="text-right">Total</th></tr></thead>
+                <tbody>
+                    @foreach (var m in mesasZona.Where(x => x.estado != "libre").OrderBy(x => x.desde ?? x.reserva_hora))
+                    {
+                        <tr>
+                            <td><strong>@m.nro</strong> · @m.desc</td>
+                            <td>
+                                @if (m.estado == "reservada") { <span class="badge" style="background:#efecfb;color:#5b4bc4">Reservada @m.reserva_hora?.ToString("HH:mm")</span> }
+                                else { <span class="badge @(m.estado == "listo" ? "badge-pend" : "badge-coc")">@(m.estado == "listo" ? "Listo para servir" : "Ocupada")</span> }
+                            </td>
+                            <td>@m.mozo</td>
+                            <td>@(m.estado == "reservada" ? $"{m.reserva_cliente} · {m.reserva_personas} pers." : $"{m.platos} plato(s) · {Espera(m.desde.Value)}")</td>
+                            <td class="text-right">
+                                @if (m.id_caja != null) { <a asp-action="Pedido" asp-route-id="@m.id_caja" class="font-weight-bold">@Soles(m.monto)</a> }
+                            </td>
+                        </tr>
+                    }
+                    @if (!mesasZona.Any(x => x.estado != "libre")) { <tr><td colspan="5" class="text-muted px-3">Todas las mesas de esta zona están libres.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
 
 @if (Model.sin_mesa.Count > 0)
 {
-    <div class="card mt-4">
+    <div class="card mt-3">
         <div class="card-header"><strong>Para llevar y delivery por cobrar</strong></div>
         <div class="card-body p-0">
             <table class="table mb-0">
@@ -100,7 +128,7 @@
                             <td>@p.platos</td>
                             <td>@Espera(p.desde)</td>
                             <td><span class="badge @(p.cocina == EstadoCocina.Listo ? "badge-pend" : "badge-coc")">@Cocina(p.cocina)</span></td>
-                            <td class="text-right font-weight-bold">@Soles(p.monto)</td>
+                            <td class="text-right font-weight-bold">S/ @p.monto.ToString("N2", peru)</td>
                             <td class="text-right"><a class="btn btn-sm btn-primary" asp-action="Pedido" asp-route-id="@p.id_caja">Ver / cobrar</a></td>
                         </tr>
                     }
@@ -111,8 +139,22 @@
 }
 
 @section Scripts {
+<script src="~/js/plano.js" asp-append-version="true"></script>
 <script>
+(function () {
+    var lienzo = document.getElementById('lienzo');
+    if (lienzo) Plano.iniciar(lienzo);
+    var sw = document.getElementById('soloMias');
+    if (sw && lienzo) {
+        try { sw.checked = localStorage.getItem('salon-solo-mias') === '1'; } catch (e) { }
+        lienzo.classList.toggle('solo-mias', sw.checked);
+        sw.addEventListener('change', function () {
+            lienzo.classList.toggle('solo-mias', sw.checked);
+            try { localStorage.setItem('salon-solo-mias', sw.checked ? '1' : '0'); } catch (e) { }
+        });
+    }
     // El salon se refresca solo cada 30 segundos para ver mesas nuevas o pedidos listos
     setTimeout(function () { location.reload(); }, 30000);
+})();
 </script>
 }

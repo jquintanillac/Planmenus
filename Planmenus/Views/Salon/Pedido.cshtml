@@ -49,7 +49,14 @@
             </div>
             <div class="card-body d-flex align-items-center flex-wrap border-top" style="gap:10px">
                 @if (puedeVender) { <a class="btn btn-light" asp-controller="MDCajas" asp-action="Create" asp-route-id_caja="@Model.ticket"><i data-feather="plus" style="width:16px;height:16px"></i> Agregar platos</a> }
-                <a class="btn btn-light" asp-controller="MDCajas" asp-action="Ticket" asp-route-id="@Model.ticket" asp-route-imprimir="true" target="_blank"><i data-feather="printer" style="width:16px;height:16px"></i> Pre-cuenta</a>
+                @if (Model.formato.tk_modo != Planmenus.Data.Entities.ModoImpresion.Navegador)
+                {
+                    <form asp-controller="MDCajas" asp-action="Imprimir" asp-route-id="@Model.ticket" method="post" target="_blank" class="d-inline"><button class="btn btn-light"><i data-feather="printer" style="width:16px;height:16px"></i> Pre-cuenta</button></form>
+                }
+                else
+                {
+                    <a class="btn btn-light" asp-controller="MDCajas" asp-action="Ticket" asp-route-id="@Model.ticket" asp-route-imprimir="true" target="_blank"><i data-feather="printer" style="width:16px;height:16px"></i> Pre-cuenta</a>
+                }
                 <span class="flex-fill"></span>
                 <a class="btn btn-link" asp-action="Index">Volver al salón</a>
             </div>
@@ -78,7 +85,9 @@
                                 </label>
                             }
                         </div>
-                        <button type="submit" class="btn btn-success btn-block btn-lg" @(Model.items.Count == 0 ? "disabled" : "")>Cobrar e imprimir ticket</button>
+                        <partial name="_DatosComprobante" model="(Planmenus.Data.Entities.MDFacturacion)ViewBag.fe" />
+                        <div class="mb-3"></div>
+                        <button type="submit" class="btn btn-success btn-block btn-lg" @(Model.items.Count == 0 ? "disabled" : "")>Cobrar e imprimir</button>
                     </form>
                     <p class="small text-muted mt-3 mb-0">Para anular el pedido completo use <a asp-controller="MDCajas" asp-action="Edit" asp-route-id="@Model.ticket">Anular ticket</a>.</p>
                 }
@@ -94,8 +103,11 @@
 @section Scripts {
 <script>
     var f = document.getElementById('formCobro');
+    if (f && window.Comprobante) Comprobante.iniciar(f);
     if (f) f.addEventListener('submit', function (e) {
         if (!f.querySelector('input[name=id_tipago]:checked')) { e.preventDefault(); alert('Seleccione el tipo de pago.'); return; }
+        var errorComp = window.Comprobante ? Comprobante.validar(f, @Model.total.ToString(System.Globalization.CultureInfo.InvariantCulture)) : null;
+        if (errorComp) { e.preventDefault(); alert(errorComp); return; }
         // Tras cobrar, esta pestaña vuelve al salón (el ticket se abre en otra)
         setTimeout(function () { location.href = '@Url.Action("Index")'; }, 600);
     });

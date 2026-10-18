@@ -13,10 +13,12 @@ namespace Planmenus.Services
     public class VentaService
     {
         private readonly Datacontext _context;
+        private readonly PlanoService _plano;
 
-        public VentaService(Datacontext context)
+        public VentaService(Datacontext context, PlanoService plano)
         {
             _context = context;
+            _plano = plano;
         }
 
         public record Resultado(MDCaja Caja, string Error)
@@ -56,6 +58,7 @@ namespace Planmenus.Services
             }
 
             var ahora = Fechas.AhoraPeru();
+            var mozo = mesa != null ? await _plano.MozoAsignadoAsync(mesa.Value) ?? usuario : usuario;
             var caja = new MDCaja
             {
                 id_tipago = venta.Cobrar ? venta.id_tipago : null,
@@ -68,7 +71,8 @@ namespace Planmenus.Services
                 caja_act = true,
                 caja_pagado = venta.Cobrar,
                 caja_fecha_pago = venta.Cobrar ? ahora : null,
-                caja_cocina = EstadoCocina.EnCocina
+                caja_cocina = EstadoCocina.EnCocina,
+                caja_mozo = mozo
             };
 
             await using var tx = await _context.Database.BeginTransactionAsync();
@@ -120,6 +124,13 @@ namespace Planmenus.Services
                 await _context.SaveChangesAsync();
             }
             return new Resultado(caja, null);
+        }
+
+        /// <summary>Total del pedido con los precios de la base (para validar antes de cobrar)</summary>
+        public async Task<decimal?> TotalAsync(List<VMVentaItem> items)
+        {
+            var (detalle, error) = await ArmarDetalleAsync(items);
+            return error == null ? detalle.Sum(d => d.det_subtotal) : null;
         }
 
         public Task<MDCaja> PedidoAbiertoAsync(int id_caja) =>

@@ -37,6 +37,10 @@ namespace Planmenus.Data.Entities
         /// <summary>Estado en cocina, ver <see cref="EstadoCocina"/></summary>
         [Display(Name = "Cocina")]
         public byte caja_cocina { get; set; }
+        /// <summary>Usuario del mozo que atiende el pedido</summary>
+        [Display(Name = "Mozo")]
+        [StringLength(50)]
+        public string caja_mozo { get; set; }
     }
 }
 

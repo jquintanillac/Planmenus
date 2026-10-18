@@ -1,0 +1,231 @@
+@using Planmenus.Data.Entities
+@model MDReserva
+@{
+    var nueva = Model.id_reserva == 0;
+    ViewData["Title"] = nueva ? "Nueva reserva" : "Reserva";
+    var plano = (Planmenus.Services.PlanoService.Plano)ViewBag.plano;
+    var seleccion = (int[])ViewBag.mesas_sel;
+    var ocupadas = (List<int>)ViewBag.ocupadas;
+    var correos = (List<MDCorreo_Log>)ViewBag.correos;
+    bool correoOk = ViewBag.correo_configurado;
+    var duracion = Math.Max(30, (int)(Model.res_fin - Model.res_inicio).TotalMinutes);
+}
+<style>
+    .mesa-op { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 2px solid var(--borde); border-radius: 12px; margin: 0 8px 8px 0; cursor: pointer; font-weight: 600; background: var(--papel); }
+    .mesa-op input { accent-color: var(--aji); }
+    .mesa-op:has(input:checked) { border-color: var(--aji); background: var(--aji-suave); }
+    .mesa-op.ocupada { opacity: .5; cursor: not-allowed; text-decoration: line-through; }
+    .mesa-op small { color: var(--gris); font-weight: 500; }
+    .estados .btn { margin: 0 6px 6px 0; }
+</style>
+
+<form asp-action="Guardar" method="post" id="formReserva">
+    <input type="hidden" asp-for="id_reserva" />
+    <input type="hidden" asp-for="res_fin" id="res_fin" />
+    <div asp-validation-summary="All" class="alert alert-danger" style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header d-flex align-items-center" style="gap:8px">
+                    <strong class="flex-fill">@(nueva ? "Datos de la reserva" : $"Reserva N° {Model.id_reserva:D5}")</strong>
+                    @if (!nueva) { <span class="badge @(Model.res_estado == EstadoReserva.Confirmada ? "badge-ok" : Model.res_estado == EstadoReserva.Pendiente ? "badge-pend" : "badge-anul")">@EstadoReserva.Nombre(Model.res_estado)</span> }
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="res_cliente">A nombre de *</label>
+                            <input asp-for="res_cliente" class="form-control" required maxlength="100" autocomplete="off" />
+                            <span asp-validation-for="res_cliente" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label asp-for="res_telefono">Teléfono</label>
+                            <input asp-for="res_telefono" class="form-control" inputmode="tel" maxlength="30" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="res_email">Correo del cliente</label>
+                            <input asp-for="res_email" class="form-control" type="email" maxlength="150" placeholder="para enviar confirmación y recordatorio" />
+                            <span asp-validation-for="res_email" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label asp-for="res_emails_extra">Otros interesados</label>
+                            <input asp-for="res_emails_extra" class="form-control" maxlength="500" placeholder="correo1@ej.com, correo2@ej.com" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-5">
+                            <label for="res_inicio">Fecha y hora *</label>
+                            <input asp-for="res_inicio" id="res_inicio" class="form-control" type="datetime-local" step="900" required />
+                        </div>
+                        <div class="form-group col-6 col-md-3">
+                            <label for="duracion">Duración</label>
+                            <select id="duracion" class="form-control">
+                                @foreach (var d in new[] { 60, 90, 120, 150, 180, 240, 300, 360, 480 }.Union(new[] { duracion }).OrderBy(x => x))
+                                {
+                                    <option value="@d" selected="@(d == duracion)">@(d < 60 ? d + " min" : d % 60 == 0 ? d / 60 + " h" : $"{d / 60} h {d % 60} min")</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-6 col-md-4">
+                            <label asp-for="res_personas">Personas *</label>
+                            <input asp-for="res_personas" id="personas" class="form-control" type="number" min="1" max="500" required />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="res_tipo">Tipo</label>
+                            <select asp-for="res_tipo" class="form-control">
+                                <option value="@TipoReserva.Mesa">Reserva de mesa</option>
+                                <option value="@TipoReserva.Evento">Evento privado (cumpleaños, reunión…)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label asp-for="res_estado">Estado</label>
+                            <select asp-for="res_estado" class="form-control">
+                                <option value="@EstadoReserva.Pendiente">Pendiente (por confirmar)</option>
+                                <option value="@EstadoReserva.Confirmada">Confirmada</option>
+                                @if (!nueva)
+                                {
+                                    <option value="@EstadoReserva.Completada">Completada</option>
+                                    <option value="@EstadoReserva.NoAsistio">No asistió</option>
+                                    <option value="@EstadoReserva.Cancelada">Cancelada</option>
+                                }
+                            </select>
+                            <small class="form-text text-muted">Al confirmar se envía el correo de confirmación.</small>
+                        </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label asp-for="res_notas">Notas</label>
+                        <textarea asp-for="res_notas" class="form-control" rows="2" maxlength="500" placeholder="Torta de cumpleaños, silla para bebé, alergias…"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header d-flex align-items-center"><strong class="flex-fill">Mesas</strong><small id="capacidad" class="text-muted"></small></div>
+                <div class="card-body">
+                    @foreach (var z in plano.zonas)
+                    {
+                        var mesas = plano.mesas.Where(m => m.zona == z.id_zona).OrderBy(m => m.nro).ToList();
+                        if (mesas.Count == 0) { continue; }
+                        <div class="small text-uppercase text-muted font-weight-bold mb-2" style="letter-spacing:.08em">@z.zona_desc</div>
+                        <div class="mb-2">
+                            @foreach (var m in mesas)
+                            {
+                                var ocupada = ocupadas.Contains(m.id) && !seleccion.Contains(m.id);
+                                <label class="mesa-op @(ocupada ? "ocupada" : "")" data-id="@m.id" title="@(ocupada ? "Reservada en ese horario" : m.desc)">
+                                    <input type="checkbox" name="mesas" value="@m.id" data-cap="@m.cap" checked="@seleccion.Contains(m.id)" disabled="@ocupada" />
+                                    @m.desc <small>@m.cap pers.</small>
+                                </label>
+                            }
+                        </div>
+                    }
+                    @if (plano.mesas.Count == 0) { <p class="text-muted mb-0">No hay mesas registradas. Puede guardar la reserva sin mesa.</p> }
+                    <small class="form-text text-muted">Las mesas tachadas ya están reservadas en ese horario. Para eventos grandes puede elegir varias.</small>
+                </div>
+            </div>
+            @if (!correoOk)
+            {
+                <div class="alert alert-warning small">El correo aún no está configurado: la reserva se guarda, pero no se enviarán avisos. Vea Configuración → Correo.</div>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center" style="gap:10px">
+        <button class="btn btn-primary btn-lg"><i data-feather="save" style="width:18px;height:18px"></i> Guardar reserva</button>
+        <a class="btn btn-link" asp-action="Index">Volver al calendario</a>
+    </div>
+</form>
+
+@if (!nueva)
+{
+    <div class="row mt-4">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header"><strong>Cambiar estado</strong></div>
+                <div class="card-body estados">
+                    @foreach (var e in new[] { (EstadoReserva.Confirmada, "Confirmar", "btn-success"), (EstadoReserva.Completada, "Llegó / completada", "btn-secondary"), (EstadoReserva.NoAsistio, "No asistió", "btn-light"), (EstadoReserva.Cancelada, "Cancelar reserva", "btn-danger") })
+                    {
+                        if (e.Item1 == Model.res_estado) { continue; }
+                        <form asp-action="Estado" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.id_reserva" />
+                            <input type="hidden" name="estado" value="@e.Item1" />
+                            <button class="btn btn-sm @e.Item3">@e.Item2</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header"><strong>Correos enviados</strong></div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            @foreach (var c in correos)
+                            {
+                                <tr>
+                                    <td class="pl-3">@c.cor_fecha.ToString("dd/MM HH:mm")</td>
+                                    <td>@c.cor_tipo</td>
+                                    <td>@if (c.cor_ok) { <span class="badge badge-ok">Enviado</span> } else { <span class="badge badge-anul" title="@c.cor_error">Falló</span> }</td>
+                                </tr>
+                            }
+                            @if (correos.Count == 0) { <tr><td class="text-muted pl-3">Aún no se envían correos.</td></tr> }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+(function () {
+    var inicio = document.getElementById('res_inicio'), duracion = document.getElementById('duracion'), fin = document.getElementById('res_fin');
+    var personas = document.getElementById('personas'), capacidad = document.getElementById('capacidad');
+    var excluir = '@Model.id_reserva';
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    function calcularFin() {
+        if (!inicio.value) return;
+        var d = new Date(inicio.value);
+        d.setMinutes(d.getMinutes() + parseInt(duracion.value, 10));
+        fin.value = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+    function sumar() {
+        var cap = 0;
+        document.querySelectorAll('input[name=mesas]:checked').forEach(function (c) { cap += parseInt(c.dataset.cap, 10); });
+        var n = parseInt(personas.value, 10) || 0;
+        capacidad.textContent = cap ? 'Capacidad elegida: ' + cap + ' / ' + n + ' pers.' : '';
+        capacidad.style.color = cap && cap < n ? 'var(--vino)' : '';
+    }
+    // Al cambiar el horario se vuelve a consultar que mesas estan libres
+    function disponibilidad() {
+        calcularFin();
+        if (!inicio.value || !fin.value) return;
+        fetch('@Url.Action("Ocupadas")?inicio=' + encodeURIComponent(inicio.value) + '&fin=' + encodeURIComponent(fin.value) + '&excluir=' + excluir, { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (ids) {
+                document.querySelectorAll('.mesa-op').forEach(function (l) {
+                    var ocupada = ids.indexOf(parseInt(l.dataset.id, 10)) >= 0, chk = l.querySelector('input');
+                    l.classList.toggle('ocupada', ocupada);
+                    chk.disabled = ocupada;
+                    if (ocupada) chk.checked = false;
+                    l.title = ocupada ? 'Reservada en ese horario' : '';
+                });
+                sumar();
+            });
+    }
+    inicio.addEventListener('change', disponibilidad);
+    duracion.addEventListener('change', disponibilidad);
+    personas.addEventListener('input', sumar);
+    document.querySelectorAll('input[name=mesas]').forEach(function (c) { c.addEventListener('change', sumar); });
+    document.getElementById('formReserva').addEventListener('submit', calcularFin);
+    calcularFin(); sumar();
+})();
+</script>
+}

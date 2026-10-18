@@ -3,7 +3,9 @@
 @{
     ViewData["Title"] = "Configuración";
     var tipos = (List<MDTipo_pago>)ViewBag.tipos_pago;
-    var tieneIp = !string.IsNullOrWhiteSpace(Model.gene_impresora_ip);
+    var formato = (MDTicketera)ViewBag.formato;
+    var fe = (MDFacturacion)ViewBag.fe;
+    var correo = (Planmenus.Services.CorreoOptions)ViewBag.correo;
 }
 <style>
     .conf-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--borde); margin-bottom: 20px; }
@@ -27,6 +29,8 @@
         <a class="active" data-toggle="tab" href="#t-negocio" role="tab"><i data-feather="briefcase"></i> Negocio</a>
         <a data-toggle="tab" href="#t-ticket" role="tab"><i data-feather="printer"></i> Ticket y ticketera</a>
         <a data-toggle="tab" href="#t-pagos" role="tab"><i data-feather="credit-card"></i> Pagos</a>
+        <a data-toggle="tab" href="#t-fe" role="tab"><i data-feather="award"></i> Facturación</a>
+        <a data-toggle="tab" href="#t-correo" role="tab"><i data-feather="mail"></i> Correo y reservas</a>
         <a data-toggle="tab" href="#t-carta" role="tab"><i data-feather="smartphone"></i> Carta digital</a>
     </nav>
 
@@ -64,53 +68,17 @@
         </section>
 
         <section class="tab-pane fade" id="t-ticket" role="tabpanel">
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="card"><div class="card-body">
-                        <h4 class="mb-3">Formato del ticket</h4>
-                        <label>Ancho del papel</label>
-                        <div class="opcion-ancho mb-3">
-                            <label><input type="radio" name="gene_ticket_ancho" value="80" @(Model.gene_ticket_ancho != 58 ? "checked" : "") /><span><span class="papel" style="width:70px"></span>80 mm<br /><small class="text-muted">el más común</small></span></label>
-                            <label><input type="radio" name="gene_ticket_ancho" value="58" @(Model.gene_ticket_ancho == 58 ? "checked" : "") /><span><span class="papel" style="width:50px"></span>58 mm<br /><small class="text-muted">portátiles</small></span></label>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="gene_ticket_pie">Mensaje al pie</label>
-                            <input asp-for="gene_ticket_pie" class="form-control" maxlength="80" placeholder="¡Gracias por su preferencia!" />
-                        </div>
-                        <a class="btn btn-light" asp-action="VistaPrevia" target="_blank"><i data-feather="eye" style="width:16px;height:16px"></i> Vista previa del ticket</a>
-                        <small class="form-text text-muted">Guarde primero para ver los cambios en la vista previa.</small>
-                    </div></div>
+            <div class="card"><div class="card-body d-flex flex-wrap align-items-center" style="gap:16px">
+                <div class="kpi-icono mb-0" style="--color-kpi:var(--aji)"><i data-feather="printer"></i></div>
+                <div class="flex-fill">
+                    <h4 class="mb-1">Ticketera</h4>
+                    <p class="text-muted mb-0">
+                        @(formato.tk_modo switch { ModoImpresion.Red => $"Ticketera de red en {formato.tk_ip}:{formato.tk_puerto}", ModoImpresion.Agente => $"Agente local · impresora {formato.tk_impresora ?? "sin elegir"}", _ => "Impresión desde el navegador" })
+                        · papel @formato.tk_ancho_mm mm · @(formato.tk_logo_raster != null ? "con logo" : "sin logo")
+                    </p>
                 </div>
-                <div class="col-lg-6">
-                    <div class="card"><div class="card-body">
-                        <h4 class="mb-1">Ticketera de red (opcional)</h4>
-                        <p class="text-muted small">Impresión directa ESC/POS (Epson, Xprinter, Bixolon…). Solo funciona si esta aplicación corre en una PC del mismo local que la ticketera. Si usa la app desde internet, deje la IP vacía e imprima desde el navegador.</p>
-                        <div class="estado-ticketera mb-3" style="background:@(tieneIp ? "var(--hierba-suave)" : "var(--crema)")">
-                            <i data-feather="@(tieneIp ? "check-circle" : "info")" style="color:@(tieneIp ? "var(--hierba)" : "var(--gris)")"></i>
-                            <span>@(tieneIp ? $"Configurada en {Model.gene_impresora_ip}:{Model.gene_impresora_puerto}" : "Sin ticketera de red: se imprime desde el navegador")</span>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-8">
-                                <label asp-for="gene_impresora_ip">Dirección IP</label>
-                                <input asp-for="gene_impresora_ip" class="form-control" placeholder="192.168.1.100" inputmode="decimal" />
-                                <span asp-validation-for="gene_impresora_ip" class="text-danger small"></span>
-                            </div>
-                            <div class="form-group col-4">
-                                <label asp-for="gene_impresora_puerto">Puerto</label>
-                                <input asp-for="gene_impresora_puerto" class="form-control" type="number" min="1" max="65535" />
-                            </div>
-                        </div>
-                        <details class="small text-muted">
-                            <summary>¿Cómo encuentro la IP de mi ticketera?</summary>
-                            <ol class="pl-3 mt-2 mb-0">
-                                <li>Apague la ticketera, mantenga presionado el botón FEED y enciéndala: imprimirá una hoja de configuración.</li>
-                                <li>Busque “IP Address” en esa hoja.</li>
-                                <li>El puerto casi siempre es 9100.</li>
-                            </ol>
-                        </details>
-                    </div></div>
-                </div>
-            </div>
+                <a class="btn btn-primary" asp-controller="Ticketera" asp-action="Index">Configurar ticketera y ticket</a>
+            </div></div>
         </section>
 
         <section class="tab-pane fade" id="t-pagos" role="tabpanel">
@@ -126,6 +94,71 @@
                 }
                 <a class="small" asp-controller="MDTipo_pago" asp-action="Index">Agregar o editar tipos de pago →</a>
             </div></div>
+        </section>
+
+        <section class="tab-pane fade" id="t-fe" role="tabpanel">
+            <div class="card"><div class="card-body d-flex flex-wrap align-items-center" style="gap:16px">
+                <div class="kpi-icono mb-0" style="--color-kpi:@(fe.fe_activa ? "var(--hierba)" : "var(--carbon-3)")"><i data-feather="award"></i></div>
+                <div class="flex-fill">
+                    <h4 class="mb-1">Facturación electrónica</h4>
+                    <p class="text-muted mb-0">@(fe.fe_activa ? $"Activa en {(fe.fe_ambiente == AmbienteFe.Produccion ? "producción" : "ambiente de pruebas")} · series {fe.fe_serie_boleta} y {fe.fe_serie_factura} · IGV {fe.fe_igv:0.##}%" : "Desactivada: al cobrar se emite solo el ticket interno.")</p>
+                </div>
+                <a class="btn btn-primary" asp-controller="Facturacion" asp-action="Index">@(fe.fe_activa ? "Configurar" : "Activar facturación electrónica")</a>
+            </div></div>
+        </section>
+
+        <section class="tab-pane fade" id="t-correo" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card"><div class="card-body">
+                        <h4 class="mb-1">Servidor de correo</h4>
+                        <p class="text-muted small">Las credenciales se configuran en <code>appsettings.json</code> (sección <code>Correo</code>) o como variables de entorno del hosting (<code>Correo__Host</code>, <code>Correo__Clave</code>…). Por seguridad no se muestran ni se editan aquí.</p>
+                        <div class="estado-ticketera mb-3" style="background:@(correo.Configurado ? "var(--hierba-suave)" : "var(--mostaza-suave)")">
+                            <i data-feather="@(correo.Configurado ? "check-circle" : "alert-triangle")" style="color:@(correo.Configurado ? "var(--hierba)" : "#8a5a0b")"></i>
+                            <span>@(correo.Configurado ? $"Configurado: {correo.Host}:{correo.Puerto} · envía como {correo.Remitente}" : "Sin configurar: las reservas se guardan pero no se envían avisos")</span>
+                        </div>
+                        <label for="destinoPrueba">Enviar correo de prueba a</label>
+                        <div class="d-flex" style="gap:8px">
+                            <input id="destinoPrueba" name="destino" form="formPruebaCorreo" type="email" class="form-control" placeholder="su-correo@ejemplo.com" />
+                            <button type="submit" form="formPruebaCorreo" class="btn btn-light text-nowrap" @(correo.Configurado ? "" : "disabled")>Probar</button>
+                        </div>
+                        <details class="small text-muted mt-3">
+                            <summary>Ejemplo para Gmail</summary>
+                            <pre class="mt-2 mb-0" style="white-space:pre-wrap">"Correo": {
+  "Host": "smtp.gmail.com", "Puerto": 587, "UsarSsl": false,
+  "Usuario": "minegocio@gmail.com", "Clave": "contraseña de aplicación",
+  "Remitente": "minegocio@gmail.com", "NombreRemitente": "Mi Negocio"
+}</pre>
+                            <div class="mt-1">En Gmail la clave es una “contraseña de aplicación” (Cuenta de Google → Seguridad → Verificación en 2 pasos → Contraseñas de aplicaciones).</div>
+                        </details>
+                    </div></div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card"><div class="card-body">
+                        <h4 class="mb-3">Avisos de reservas</h4>
+                        <div class="form-group">
+                            <label asp-for="gene_correo_avisos">Avisar también a</label>
+                            <input asp-for="gene_correo_avisos" class="form-control" maxlength="500" placeholder="encargado@ejemplo.com, cocina@ejemplo.com" />
+                            <small class="form-text text-muted">Reciben una copia de cada confirmación, recordatorio y cancelación. Separe con comas.</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label asp-for="gene_recordatorio_horas">Recordatorio</label>
+                                <select asp-for="gene_recordatorio_horas" class="form-control">
+                                    @foreach (var h in new[] { 1, 2, 3, 4, 6, 12, 24, 48 }) { <option value="@h">@h hora@(h > 1 ? "s" : "") antes</option> }
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
+                                <label asp-for="gene_reserva_minutos">Duración por defecto</label>
+                                <select asp-for="gene_reserva_minutos" class="form-control">
+                                    @foreach (var m in new[] { 60, 90, 120, 150, 180, 240 }) { <option value="@m">@(m % 60 == 0 ? m / 60 + " h" : $"{m / 60} h {m % 60} min")</option> }
+                                </select>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-0">Los recordatorios se revisan cada 5 minutos. En hosting compartido active “siempre encendido” (Always On) o un monitor que visite el sitio cada 5 minutos para que no se detengan.</p>
+                    </div></div>
+                </div>
+            </div>
         </section>
 
         <section class="tab-pane fade" id="t-carta" role="tabpanel">
@@ -147,11 +180,7 @@
     </div>
 </form>
 
-@if (tieneIp)
-{
-    <form asp-action="ProbarTicketera" method="post" class="mt-3">
-        <button type="submit" class="btn btn-light"><i data-feather="printer" style="width:16px;height:16px"></i> Imprimir ticket de prueba</button>
-    </form>
+<form asp-action="ProbarCorreo" method="post" id="formPruebaCorreo"></form>
 }
 
 @section Scripts {
