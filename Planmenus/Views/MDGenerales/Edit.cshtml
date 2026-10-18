@@ -43,6 +43,31 @@
                             <input asp-for="gene_url" class="form-control" />
                             <span asp-validation-for="gene_url" class="text-danger"></span>
                         </div>
+                        <h5 class="mt-4">Ticketera</h5>
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label asp-for="gene_ticket_ancho" class="control-label"></label>
+                                <select asp-for="gene_ticket_ancho" class="form-control">
+                                    <option value="80">80 mm</option>
+                                    <option value="58">58 mm</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-6">
+                                <label asp-for="gene_ticket_pie" class="control-label"></label>
+                                <input asp-for="gene_ticket_pie" class="form-control" placeholder="¡Gracias por su preferencia!" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-8">
+                                <label asp-for="gene_impresora_ip" class="control-label"></label>
+                                <input asp-for="gene_impresora_ip" class="form-control" placeholder="Ej.: 192.168.1.100 (opcional)" />
+                                <small class="form-text text-muted">Solo si la aplicación corre en el mismo local que la ticketera de red. Si no, se imprime desde el navegador.</small>
+                            </div>
+                            <div class="form-group col-4">
+                                <label asp-for="gene_impresora_puerto" class="control-label"></label>
+                                <input asp-for="gene_impresora_puerto" class="form-control" />
+                            </div>
+                        </div>
                         <div class="form-group">
                             <input type="submit" value="Grabar" class="btn btn-sm btn-primary" />
                              <a class="btn btn-sm btn-primary" asp-action="Index">Regresar</a>

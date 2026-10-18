@@ -1,64 +1,192 @@
-﻿@model Planmenus.Data.Entities.MDCaja
-
+﻿@using Planmenus.Data.Entities
 @{
-    ViewData["Title"] = "Crear Ticket";
+    ViewData["Title"] = "Nueva venta";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var menus = (List<MDMenu>)ViewBag.menu;
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
 }
 
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-             <div class="div-title">
-				<h2 class="text-center">IMPRIMIR TICKET</h2>
-			 </div>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                 <div class="col-md-5">
-                     <form asp-action="Create">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group">
-                                 <label class="control-label">Menu: </label>
-                                 <select class="form-control" asp-for="id_menu" asp-items="@(new SelectList(ViewBag.menu, "id_menu", "menu_desc"))">
-                                    <option>Seleccione menu</option>
-                                 </select>
-                            </div>
-                            <div class="form-group">
-                                 <label class="control-label">Tipo de pago: </label>
-                                 <select class="form-control" asp-for="id_tipago" asp-items="@(new SelectList(ViewBag.tipago, "id_tipago", "tipago_desc"))">
-                                    <option>Seleccione tipo pago</option>
-                                 </select>    
-                            </div>
-                            <div class="form-group">
-                                 <label class="control-label">Reparto: </label>
-                                 <select class="form-control" asp-for="id_deliv" asp-items="@(new SelectList(ViewBag.delivery, "id_deliv", "deliv_nombcom"))">
-                                    <option>Seleccione delivery</option>
-                                 </select>    
-                            </div>
-                             <div class="form-group">
-                                 <label class="control-label">Mesa: </label>
-                                 <select class="form-control" asp-for="id_mesa" asp-items="@(new SelectList(ViewBag.mesa, "id_mesa", "mesa_desc"))">
-                                    <option>Seleccione mesa</option>
-                                 </select>    
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="caja_monto" class="control-label">Monto</label>
-                                <input asp-for="caja_monto" class="form-control" />
-                                <span asp-validation-for="caja_monto" class="text-danger"></span>
-                            </div>                          
-                            <div class="form-group">
-                                 <input type="submit" value="Imprimir" formtarget="_blank" class="btn btn-sm btn-success" />                               
-                            </div>
-                    </form>
-                </div>  
-                <div class="col-md-7">
-                    <img src="~/AdminX-master/demo/img/Caja2.jpg" width="580" height="400" />
+<style>
+    .pos-plato { display: block; width: 100%; min-height: 92px; margin-bottom: 12px; padding: 10px; border: 1px solid #dee2e6; border-radius: 6px; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+    .pos-plato:hover, .pos-plato:focus { border-color: #0d6efd; box-shadow: 0 0 0 2px rgba(13,110,253,.15); outline: none; }
+    .pos-plato .nombre { font-weight: 600; display: block; }
+    .pos-plato .obs { font-size: 12px; color: #6c757d; display: block; }
+    .pos-plato .precio { font-size: 16px; font-weight: 700; color: #198754; display: block; margin-top: 4px; }
+    .pos-plato .badge-cant { float: right; background: #0d6efd; color: #fff; border-radius: 10px; padding: 0 8px; font-size: 12px; }
+    .pos-carrito td { vertical-align: middle; }
+    .pos-total { font-size: 26px; font-weight: 700; }
+    .pos-cant { width: 34px; text-align: center; display: inline-block; }
+</style>
+
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Menú del día</strong>
+                <input id="buscar" type="search" class="form-control form-control-sm" style="max-width:220px" placeholder="Buscar plato..." autocomplete="off" />
+            </div>
+            <div class="card-body">
+                @if (menus.Count == 0)
+                {
+                    <p class="text-muted mb-0">No hay platos programados para hoy. Regístrelos en <a asp-controller="MDMenus" asp-action="Index">Programación Menú</a>.</p>
+                }
+                <div class="row" id="platos">
+                    @foreach (var m in menus)
+                    {
+                        <div class="col-sm-6 col-xl-4 plato-col" data-nombre="@m.menu_desc?.ToLowerInvariant()">
+                            <button type="button" class="pos-plato" data-id="@m.id_menu" data-nombre="@m.menu_desc" data-precio="@m.menu_precio.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                                <span class="badge-cant d-none"></span>
+                                <span class="nombre">@m.menu_desc</span>
+                                @if (!string.IsNullOrWhiteSpace(m.menu_observ)) { <span class="obs">@m.menu_observ</span> }
+                                <span class="precio">S/ @m.menu_precio.ToString("N2", peru)</span>
+                            </button>
+                        </div>
+                    }
                 </div>
-            </div>           
+            </div>
         </div>
+    </div>
+
+    <div class="col-lg-5">
+        <form asp-action="Create" method="post" target="_blank" id="formVenta" class="card">
+            <div class="card-header"><strong>Pedido</strong></div>
+            <div class="card-body">
+                <table class="table table-sm pos-carrito mb-2">
+                    <tbody id="carrito">
+                        <tr id="vacio"><td class="text-muted text-center">Toque un plato para agregarlo</td></tr>
+                    </tbody>
+                </table>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Total</span>
+                    <span class="pos-total" id="total">S/ 0.00</span>
+                </div>
+                <div id="itemsOcultos"></div>
+
+                <div class="form-group">
+                    <label class="control-label">Tipo de pago</label>
+                    <div class="btn-group btn-group-toggle d-flex flex-wrap" data-toggle="buttons">
+                        @foreach (MDTipo_pago tp in ViewBag.tipago)
+                        {
+                            <label class="btn btn-outline-primary btn-sm flex-fill">
+                                <input type="radio" name="id_tipago" value="@tp.id_tipago" autocomplete="off" /> @tp.tipago_desc
+                            </label>
+                        }
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label class="control-label">Mesa</label>
+                        <select class="form-control form-control-sm" name="id_mesa">
+                            <option value="">Para llevar / sin mesa</option>
+                            @foreach (MDMesas me in ViewBag.mesa) { <option value="@me.id_mesa">@me.mesa_desc</option> }
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label class="control-label">Reparto</label>
+                        <select class="form-control form-control-sm" name="id_deliv">
+                            <option value="">Sin delivery</option>
+                            @foreach (MDDelivery d in ViewBag.delivery) { <option value="@d.id_deliv">@d.deliv_nombcom</option> }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Observación</label>
+                    <input class="form-control form-control-sm" name="caja_obs" maxlength="200" placeholder="Ej.: sin cebolla, cliente Juan" />
+                </div>
+                <div class="d-flex">
+                    <button type="button" id="limpiar" class="btn btn-sm btn-secondary mr-2">Limpiar</button>
+                    <button type="submit" id="cobrar" class="btn btn-success flex-fill" disabled>Cobrar e imprimir</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script>
+(function () {
+    var carrito = {}; // id -> { nombre, precio, cant }
+    var fmt = new Intl.NumberFormat('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    var $carrito = document.getElementById('carrito');
+    var $ocultos = document.getElementById('itemsOcultos');
+
+    function soles(n) { return 'S/ ' + fmt.format(n); }
+
+    function render() {
+        var ids = Object.keys(carrito), total = 0;
+        $carrito.innerHTML = '';
+        $ocultos.innerHTML = '';
+        if (ids.length === 0) {
+            $carrito.innerHTML = '<tr><td class="text-muted text-center">Toque un plato para agregarlo</td></tr>';
+        }
+        ids.forEach(function (id, i) {
+            var it = carrito[id], sub = it.precio * it.cant;
+            total += sub;
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td></td>' +
+                '<td class="text-nowrap"><button type="button" class="btn btn-sm btn-light menos">−</button>' +
+                '<span class="pos-cant">' + it.cant + '</span>' +
+                '<button type="button" class="btn btn-sm btn-light mas">+</button></td>' +
+                '<td class="text-right text-nowrap">' + soles(sub) + '</td>' +
+                '<td class="text-right"><button type="button" class="btn btn-sm btn-link text-danger quitar" title="Quitar">✕</button></td>';
+            tr.firstChild.textContent = it.nombre;
+            tr.querySelector('.menos').onclick = function () { cambiar(id, -1); };
+            tr.querySelector('.mas').onclick = function () { cambiar(id, 1); };
+            tr.querySelector('.quitar').onclick = function () { delete carrito[id]; render(); };
+            $carrito.appendChild(tr);
+            $ocultos.insertAdjacentHTML('beforeend',
+                '<input type="hidden" name="items[' + i + '].id_menu" value="' + id + '">' +
+                '<input type="hidden" name="items[' + i + '].cantidad" value="' + it.cant + '">');
+        });
+        document.getElementById('total').textContent = soles(total);
+        document.getElementById('cobrar').disabled = ids.length === 0;
+        document.querySelectorAll('.pos-plato').forEach(function (b) {
+            var c = carrito[b.dataset.id], badge = b.querySelector('.badge-cant');
+            badge.textContent = c ? c.cant : '';
+            badge.classList.toggle('d-none', !c);
+        });
+    }
+
+    function cambiar(id, delta) {
+        carrito[id].cant += delta;
+        if (carrito[id].cant <= 0) delete carrito[id];
+        render();
+    }
+
+    document.querySelectorAll('.pos-plato').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var id = b.dataset.id;
+            if (!carrito[id]) carrito[id] = { nombre: b.dataset.nombre, precio: parseFloat(b.dataset.precio), cant: 0 };
+            carrito[id].cant++;
+            render();
+        });
+    });
+
+    document.getElementById('buscar').addEventListener('input', function () {
+        var q = this.value.trim().toLowerCase();
+        document.querySelectorAll('.plato-col').forEach(function (c) {
+            c.style.display = !q || c.dataset.nombre.indexOf(q) >= 0 ? '' : 'none';
+        });
+    });
+
+    function limpiar() {
+        carrito = {};
+        document.getElementById('formVenta').reset();
+        document.querySelectorAll('[data-toggle=buttons] .active').forEach(function (l) { l.classList.remove('active'); });
+        render();
+    }
+    document.getElementById('limpiar').onclick = limpiar;
+
+    // El ticket se abre en otra pestaña; esta pantalla queda lista para el siguiente pedido
+    document.getElementById('formVenta').addEventListener('submit', function (e) {
+        if (!this.querySelector('input[name=id_tipago]:checked')) {
+            e.preventDefault();
+            alert('Seleccione el tipo de pago.');
+            return;
+        }
+        setTimeout(limpiar, 100);
+    });
+})();
+</script>
 }

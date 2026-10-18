@@ -10,6 +10,8 @@
         public string caja_monto { get; set; }
         public string caja_fecha { get; set; }
         public bool caja_act { get; set; }
+        public string detalle { get; set; }
+        public string caja_usuario { get; set; }
 
     }
 

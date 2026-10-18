@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
+using Planmenus.Helpers;
 using Planmenus.Data.Entities;
 using Planmenus.Models;
 
 namespace Planmenus.Controllers
 {
+    [Permiso("submenu1_7")]
     public class MDRol_PermisosController : Controller
     {
         private readonly Datacontext _context;
@@ -33,6 +35,24 @@ namespace Planmenus.Controllers
                 Idrol = id_rol;
             }
             ViewData["Idrol2"] = id_rol;
+
+            // Crea, desactivadas, las filas de permisos que falten (roles nuevos o submenus agregados despues)
+            if (await _context.Rols.AnyAsync(r => r.id_rol == Idrol))
+            {
+                var existentes = await _context.Rol_Permisos.Where(x => x.id_rol == Idrol).Select(x => x.id_submenu).ToListAsync();
+                var faltantes = await _context.Submenus.Where(s => !existentes.Contains(s.id_submenu)).ToListAsync();
+                if (faltantes.Count > 0)
+                {
+                    _context.Rol_Permisos.AddRange(faltantes.Select(s => new MDRol_Permisos
+                    {
+                        id_rol = Idrol,
+                        id_menprin = s.id_menprin,
+                        id_submenu = s.id_submenu,
+                        rolper_act = false
+                    }));
+                    await _context.SaveChangesAsync();
+                }
+            }
             ViewBag.rol = await _context.Rols.ToListAsync();  
             ViewBag.admin = await (from rolper in _context.Rol_Permisos
                              join rol in _context.Rols on rolper.id_rol equals rol.id_rol
@@ -235,9 +255,9 @@ namespace Planmenus.Controllers
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
 
             return View();

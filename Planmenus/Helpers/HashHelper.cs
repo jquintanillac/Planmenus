@@ -1,47 +1,65 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Planmenus.Helpers
 {
     public class HashHelper
     {
+        private const int Iteraciones = 100000;
+
         public static HashedPassword Hash(string password)
         {
-            byte[] salt = new byte[128 / 8];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
-
-            // derive a 256-bit subkey (use HMACSHA1 with 10,000 iterations)
-            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password,
-                salt: salt,
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterationCount: 10000,
-                numBytesRequested: 256 / 8));
-            return new HashedPassword() { Password = hashed, Salt = Convert.ToBase64String(salt) };
+            byte[] salt = RandomNumberGenerator.GetBytes(128 / 8);
+            return new HashedPassword() { Password = Derivar(password, salt), Salt = Convert.ToBase64String(salt) };
         }
 
         public static bool CheckHash(string attemptedPassword, string hash, string salt)
         {
-            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                 password: attemptedPassword,
-                 salt: Convert.FromBase64String(salt),
-                 prf: KeyDerivationPrf.HMACSHA256,
-                 iterationCount: 10000,
-                 numBytesRequested: 256 / 8));
-            return hash == hashed;
+            if (string.IsNullOrEmpty(attemptedPassword) || string.IsNullOrEmpty(hash) || string.IsNullOrEmpty(salt))
+            {
+                return false;
+            }
+
+            byte[] saltBytes;
+            byte[] hashBytes;
+            try
+            {
+                saltBytes = Convert.FromBase64String(salt);
+                hashBytes = Convert.FromBase64String(hash);
+            }
+            catch (FormatException)
+            {
+                // El valor guardado no es un hash (p. ej. contraseña antigua en texto plano)
+                return false;
+            }
+
+            byte[] intento = Convert.FromBase64String(Derivar(attemptedPassword, saltBytes));
+            return CryptographicOperations.FixedTimeEquals(intento, hashBytes);
         }
 
-        public static byte[] GetHash(string password, string salt)
+        /// <summary>
+        /// Indica si el valor guardado tiene el formato de un hash generado por esta clase
+        /// (256 bits en Base64), para distinguirlo de una contraseña antigua en texto plano.
+        /// </summary>
+        public static bool EsHash(string valor)
         {
-            byte[] unhashedBytes = Encoding.Unicode.GetBytes(string.Concat(salt, password));
-            SHA256Managed sha256 = new SHA256Managed();
-            byte[] hashedBytes = sha256.ComputeHash(unhashedBytes);
-            return hashedBytes;
+            if (string.IsNullOrEmpty(valor) || valor.Length != 44)
+            {
+                return false;
+            }
+            Span<byte> buffer = stackalloc byte[33];
+            return Convert.TryFromBase64String(valor, buffer, out int bytes) && bytes == 32;
+        }
+
+        private static string Derivar(string password, byte[] salt)
+        {
+            // derive a 256-bit subkey (HMACSHA256)
+            return Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: password,
+                salt: salt,
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: Iteraciones,
+                numBytesRequested: 256 / 8));
         }
     }
     public class HashedPassword

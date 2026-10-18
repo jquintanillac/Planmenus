@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
+using Planmenus.Helpers;
 using Planmenus.Data.DataSql;
 using Planmenus.Data.Entities;
 
@@ -17,22 +18,25 @@ namespace Planmenus.Controllers
         private readonly Datacontext _context;
         private readonly SP_Menus _Menu; 
 
-        public MDMenusController(Datacontext context)
+        public MDMenusController(Datacontext context, SP_Menus menus)
         {
             _context = context;
-            _Menu = new SP_Menus();
+            _Menu = menus;
         }
 
         // GET: MDMenus
+        [Permiso("submenu2_1")]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Menus.ToListAsync());
         }
+        [Permiso("submenu2_4")]
         public async Task<IActionResult> Calendar()
         {
             var events = await _context.Eventos.ToListAsync();
             return View();
         }
+        [Permiso("submenu2_4")]
         public async Task<IActionResult> Fulleventos()
         {
             var events = await _context.Eventos.Select(e => new
@@ -48,6 +52,7 @@ namespace Planmenus.Controllers
 
 
         // GET: MDMenus/Details/5
+        [Permiso("submenu2_1")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -66,6 +71,7 @@ namespace Planmenus.Controllers
         }
 
         // GET: MDMenus/Create
+        [Permiso("submenu2_1")]
         public IActionResult Create()
         {
             return View();
@@ -76,6 +82,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Permiso("submenu2_1")]
         public async Task<IActionResult> Create([Bind("id_menu,menu_desc,menu_precio,menu_observ,menu_fecha")] MDMenu mDMenu)
         {
             if (ModelState.IsValid)
@@ -101,6 +108,7 @@ namespace Planmenus.Controllers
         }
 
         // GET: MDMenus/Edit/5
+        [Permiso("submenu2_1")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -121,6 +129,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Permiso("submenu2_1")]
         public async Task<IActionResult> Edit(int id, [Bind("id_menu,menu_desc,menu_precio,menu_observ,menu_fecha")] MDMenu mDMenu)
         {
             if (id != mDMenu.id_menu)
@@ -154,6 +163,7 @@ namespace Planmenus.Controllers
         }
 
         // GET: MDMenus/Delete/5
+        [Permiso("submenu2_1")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -174,9 +184,19 @@ namespace Planmenus.Controllers
         // POST: MDMenus/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Permiso("submenu2_1")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var mDMenu = await _context.Menus.FindAsync(id);
+            if (mDMenu == null)
+            {
+                return NotFound();
+            }
+            if (await _context.Caja_Detalles.AnyAsync(d => d.id_menu == id) || await _context.Cajas.AnyAsync(c => c.id_menu == id))
+            {
+                TempData["error"] = "No se puede eliminar un plato que ya tiene ventas registradas.";
+                return RedirectToAction(nameof(Index));
+            }
             _context.Menus.Remove(mDMenu);
             await _context.SaveChangesAsync();
             _Menu.mEliminarEvento(id);

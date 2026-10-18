@@ -1,0 +1,102 @@
+@model Planmenus.Models.VMTicket
+@{
+    Layout = null;
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    string Soles(decimal m) => "S/ " + m.ToString("N2", peru);
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ticket @Model.ticket.ToString("D6")</title>
+    <style>
+        /* El ancho del papel se toma de Generales (58 u 80 mm) */
+        @@page { size: @(Model.ancho_mm)mm auto; margin: 0; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #e9ecef; font-family: "Courier New", Consolas, monospace; color: #000; }
+        .ticket { width: @(Model.ancho_mm)mm; margin: 16px auto; padding: 3mm; background: #fff; font-size: @(Model.ancho_mm == 58 ? "11px" : "12.5px"); line-height: 1.35; }
+        .c { text-align: center; }
+        .r { text-align: right; }
+        .b { font-weight: bold; }
+        .grande { font-size: 1.35em; }
+        .sep { border-top: 1px dashed #000; margin: 4px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        td { vertical-align: top; padding: 1px 0; }
+        .sub { font-size: .85em; color: #333; }
+        .anulado { border: 2px solid #000; padding: 2px; margin: 4px 0; }
+        .acciones { width: @(Model.ancho_mm)mm; margin: 0 auto 16px; display: flex; flex-wrap: wrap; gap: 6px; font-family: system-ui, sans-serif; }
+        .acciones a, .acciones button { flex: 1 1 45%; padding: 8px; border: 0; border-radius: 4px; background: #0d6efd; color: #fff; text-decoration: none; text-align: center; font-size: 13px; cursor: pointer; }
+        .acciones .sec { background: #6c757d; }
+        .acciones form { display: contents; }
+        .msg { width: @(Model.ancho_mm)mm; margin: 8px auto 0; padding: 6px; font: 13px system-ui, sans-serif; border-radius: 4px; }
+        .ok { background: #d1e7dd; } .err { background: #f8d7da; }
+        @@media print {
+            body { background: #fff; }
+            .ticket { margin: 0; width: 100%; }
+            .acciones, .msg { display: none; }
+        }
+    </style>
+</head>
+<body>
+    @if (TempData["success"] != null) { <div class="msg ok">@TempData["success"]</div> }
+    @if (TempData["error"] != null) { <div class="msg err">@TempData["error"]</div> }
+
+    <div class="ticket">
+        <div class="c b grande">@Model.empresa</div>
+        @if (!string.IsNullOrWhiteSpace(Model.ruc)) { <div class="c">RUC: @Model.ruc</div> }
+        @if (!string.IsNullOrWhiteSpace(Model.direccion)) { <div class="c">@Model.direccion</div> }
+        @if (!string.IsNullOrWhiteSpace(Model.telefono)) { <div class="c">Tel: @Model.telefono</div> }
+        <div class="sep"></div>
+        <div><span class="b">TICKET N° @Model.ticket.ToString("D6")</span></div>
+        <div>Fecha: @Model.fecha.ToString("dd/MM/yyyy HH:mm")</div>
+        @if (!string.IsNullOrWhiteSpace(Model.mesa)) { <div>Mesa: @Model.mesa</div> }
+        @if (!string.IsNullOrWhiteSpace(Model.delivery)) { <div>Reparto: @Model.delivery</div> }
+        @if (!string.IsNullOrWhiteSpace(Model.usuario)) { <div>Atendió: @Model.usuario</div> }
+        @if (Model.anulado) { <div class="c b anulado">*** ANULADO ***</div> }
+        <div class="sep"></div>
+        <table>
+            @foreach (var item in Model.items)
+            {
+                <tr>
+                    <td style="width:2.2em">@item.cantidad</td>
+                    <td>
+                        @item.descripcion
+                        @if (item.cantidad > 1) { <div class="sub">@item.cantidad x @Soles(item.precio)</div> }
+                    </td>
+                    <td class="r" style="white-space:nowrap">@Soles(item.subtotal)</td>
+                </tr>
+            }
+        </table>
+        <div class="sep"></div>
+        <table>
+            <tr class="b grande"><td>TOTAL</td><td class="r">@Soles(Model.total)</td></tr>
+        </table>
+        @if (!string.IsNullOrWhiteSpace(Model.tipo_pago)) { <div>Pago: @Model.tipo_pago</div> }
+        @if (!string.IsNullOrWhiteSpace(Model.observacion)) { <div>Obs: @Model.observacion</div> }
+        <div class="sep"></div>
+        <div class="c">@Model.pie</div>
+        <div class="c sub">Comprobante interno, no válido como boleta</div>
+    </div>
+
+    <div class="acciones">
+        <button type="button" onclick="window.print()">Imprimir</button>
+        <a asp-controller="Crearpdf" asp-action="Index" asp-route-id_caja="@Model.ticket" target="_blank">Ver PDF</a>
+        @if (ViewBag.termica == true)
+        {
+            <form asp-action="ImprimirTermica" asp-route-id="@Model.ticket" method="post">
+                <button type="submit">Enviar a ticketera</button>
+            </form>
+        }
+        <button type="button" class="sec" onclick="window.close()">Cerrar</button>
+    </div>
+
+    @if (ViewBag.imprimir == true)
+    {
+        <script>
+            // Con Chrome/Edge iniciado con --kiosk-printing se imprime sin mostrar el dialogo
+            window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 300); });
+        </script>
+    }
+</body>
+</html>

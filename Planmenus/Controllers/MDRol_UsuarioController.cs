@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
+using Planmenus.Helpers;
 using Planmenus.Data.Entities;
 using Planmenus.Models;
 
 namespace Planmenus.Controllers
 {
+    [Permiso("submenu1_6")]
     public class MDRol_UsuarioController : Controller
     {
         private readonly Datacontext _context;

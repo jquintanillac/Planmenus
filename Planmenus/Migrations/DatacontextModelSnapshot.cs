@@ -17,10 +17,10 @@ namespace Planmenus.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.2")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDCaja", b =>
                 {
@@ -28,7 +28,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_caja"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_caja"));
 
                     b.Property<bool>("caja_act")
                         .HasColumnType("bit");
@@ -37,15 +37,20 @@ namespace Planmenus.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("caja_monto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("caja_obs")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("caja_usuario")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<int?>("id_deliv")
                         .HasColumnType("int");
 
-                    b.Property<int>("id_menu")
+                    b.Property<int?>("id_menu")
                         .HasColumnType("int");
 
                     b.Property<int?>("id_mesa")
@@ -56,7 +61,51 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_caja");
 
+                    b.HasIndex("caja_fecha");
+
+                    b.HasIndex("id_deliv");
+
+                    b.HasIndex("id_menu");
+
+                    b.HasIndex("id_mesa");
+
+                    b.HasIndex("id_tipago");
+
                     b.ToTable("Caja");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDCaja_Detalle", b =>
+                {
+                    b.Property<int>("id_detalle")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_detalle"));
+
+                    b.Property<int>("det_cant")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("det_precio")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("det_subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("id_caja")
+                        .HasColumnType("int");
+
+                    b.Property<int>("id_menu")
+                        .HasColumnType("int");
+
+                    b.HasKey("id_detalle");
+
+                    b.HasIndex("id_caja");
+
+                    b.HasIndex("id_menu");
+
+                    b.ToTable("Caja_Detalle");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDDelivery", b =>
@@ -65,7 +114,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_deliv"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_deliv"));
 
                     b.Property<bool>("deliv_act")
                         .HasColumnType("bit");
@@ -90,9 +139,10 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_egre"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_egre"));
 
                     b.Property<decimal>("egre_costo")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("egre_descr")
@@ -112,7 +162,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -134,6 +184,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id");
 
+                    b.HasIndex("id_menu");
+
                     b.ToTable("Eventos");
                 });
 
@@ -143,7 +195,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_gene"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_gene"));
 
                     b.Property<string>("gene_direc")
                         .HasColumnType("nvarchar(max)");
@@ -151,10 +203,22 @@ namespace Planmenus.Migrations
                     b.Property<string>("gene_empre")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("gene_impresora_ip")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("gene_impresora_puerto")
+                        .HasColumnType("int");
+
                     b.Property<string>("gene_ruc")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("gene_telef")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("gene_ticket_ancho")
+                        .HasColumnType("int");
+
+                    b.Property<string>("gene_ticket_pie")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("gene_url")
@@ -171,7 +235,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ingre"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ingre"));
 
                     b.Property<string>("ingre_desc")
                         .HasColumnType("nvarchar(max)");
@@ -180,6 +244,7 @@ namespace Planmenus.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("ingre_monto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("id_ingre");
@@ -193,7 +258,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ini"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ini"));
 
                     b.Property<string>("ini_desc")
                         .HasColumnType("nvarchar(max)");
@@ -202,6 +267,7 @@ namespace Planmenus.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("ini_monto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("id_ini");
@@ -215,7 +281,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menu"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menu"));
 
                     b.Property<string>("menu_desc")
                         .HasColumnType("nvarchar(max)");
@@ -227,6 +293,7 @@ namespace Planmenus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("menu_precio")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("id_menu");
@@ -240,7 +307,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menprin"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menprin"));
 
                     b.Property<bool>("menuprin_act")
                         .HasColumnType("bit");
@@ -259,7 +326,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_mesa"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_mesa"));
 
                     b.Property<bool>("mesa_act")
                         .HasColumnType("bit");
@@ -281,7 +348,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rol"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rol"));
 
                     b.Property<bool>("rol_act")
                         .HasColumnType("bit");
@@ -300,7 +367,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rolper"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rolper"));
 
                     b.Property<int>("id_menprin")
                         .HasColumnType("int");
@@ -316,6 +383,12 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_rolper");
 
+                    b.HasIndex("id_menprin");
+
+                    b.HasIndex("id_rol");
+
+                    b.HasIndex("id_submenu");
+
                     b.ToTable("Rol_Permisos");
                 });
 
@@ -325,7 +398,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_roluser"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_roluser"));
 
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
@@ -334,6 +407,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("id_roluser");
+
+                    b.HasIndex("IdUsuario");
+
+                    b.HasIndex("id_rol");
 
                     b.ToTable("Rol_Usuario");
                 });
@@ -344,7 +421,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_submenu"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_submenu"));
 
                     b.Property<int>("id_menprin")
                         .HasColumnType("int");
@@ -357,6 +434,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_submenu");
 
+                    b.HasIndex("id_menprin");
+
                     b.ToTable("Submenu");
                 });
 
@@ -366,7 +445,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_tipago"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_tipago"));
 
                     b.Property<bool>("tipago_act")
                         .HasColumnType("bit");
@@ -385,7 +464,7 @@ namespace Planmenus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdUsuario"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdUsuario"));
 
                     b.Property<string>("Usua_Hash")
                         .HasColumnType("nvarchar(max)");
@@ -406,11 +485,109 @@ namespace Planmenus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Usua_user")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("IdUsuario");
 
+                    b.HasIndex("Usua_user")
+                        .IsUnique();
+
                     b.ToTable("Usuarios");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDCaja", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDDelivery", null)
+                        .WithMany()
+                        .HasForeignKey("id_deliv")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Planmenus.Data.Entities.MDMenu", null)
+                        .WithMany()
+                        .HasForeignKey("id_menu")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Planmenus.Data.Entities.MDMesas", null)
+                        .WithMany()
+                        .HasForeignKey("id_mesa")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Planmenus.Data.Entities.MDTipo_pago", null)
+                        .WithMany()
+                        .HasForeignKey("id_tipago")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDCaja_Detalle", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDCaja", null)
+                        .WithMany()
+                        .HasForeignKey("id_caja")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDMenu", null)
+                        .WithMany()
+                        .HasForeignKey("id_menu")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDEventos", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDMenu", null)
+                        .WithMany()
+                        .HasForeignKey("id_menu")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDRol_Permisos", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDMenuprin", null)
+                        .WithMany()
+                        .HasForeignKey("id_menprin")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDRol", null)
+                        .WithMany()
+                        .HasForeignKey("id_rol")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDSubmenu", null)
+                        .WithMany()
+                        .HasForeignKey("id_submenu")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDRol_Usuario", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDUsuarios", null)
+                        .WithMany()
+                        .HasForeignKey("IdUsuario")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDRol", null)
+                        .WithMany()
+                        .HasForeignKey("id_rol")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDSubmenu", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDMenuprin", null)
+                        .WithMany()
+                        .HasForeignKey("id_menprin")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

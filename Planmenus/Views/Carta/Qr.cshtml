@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Carta digital";
+}
+<div class="card">
+    <div class="card-header"><strong>Carta digital (QR)</strong></div>
+    <div class="card-body text-center">
+        <p class="text-muted">Imprima este código y colóquelo en las mesas. Al escanearlo, el cliente ve el menú del día con precios, siempre actualizado.</p>
+        <div id="imprimible">
+            <img src="@Url.Action("QrImagen")" alt="Código QR de la carta" style="width:280px;max-width:100%" />
+            <p class="mt-2 mb-0"><strong>Escanea y mira nuestra carta</strong></p>
+        </div>
+        <p class="mt-3"><a href="@ViewBag.url" target="_blank">@ViewBag.url</a></p>
+        <button type="button" class="btn btn-sm btn-primary" onclick="window.print()">Imprimir QR</button>
+        <a class="btn btn-sm btn-secondary" href="@ViewBag.url" target="_blank">Ver carta</a>
+    </div>
+</div>
+<style>
+    @@media print {
+        body * { visibility: hidden; }
+        #imprimible, #imprimible * { visibility: visible; }
+        #imprimible { position: absolute; left: 0; top: 0; width: 100%; text-align: center; }
+    }
+</style>

@@ -6,10 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
+using Planmenus.Helpers;
 using Planmenus.Data.Entities;
 
 namespace Planmenus.Controllers
 {
+    [Permiso("submenu1_1")]
     public class MDGeneralesController : Controller
     {
         private readonly Datacontext _context;
@@ -54,7 +56,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id_gene,gene_empre,gene_ruc,gene_direc,gene_telef,gene_url")] MDGenerales mDGenerales)
+        public async Task<IActionResult> Create([Bind("id_gene,gene_empre,gene_ruc,gene_direc,gene_telef,gene_url,gene_ticket_ancho,gene_ticket_pie,gene_impresora_ip,gene_impresora_puerto")] MDGenerales mDGenerales)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +88,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id_gene,gene_empre,gene_ruc,gene_direc,gene_telef,gene_url")] MDGenerales mDGenerales)
+        public async Task<IActionResult> Edit(int id, [Bind("id_gene,gene_empre,gene_ruc,gene_direc,gene_telef,gene_url,gene_ticket_ancho,gene_ticket_pie,gene_impresora_ip,gene_impresora_puerto")] MDGenerales mDGenerales)
         {
             if (id != mDGenerales.id_gene)
             {

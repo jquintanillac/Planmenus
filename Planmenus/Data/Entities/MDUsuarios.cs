@@ -11,6 +11,8 @@ namespace Planmenus.Data.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int IdUsuario { get; set; }
         [Display(Name = "Usuario")]
+        [Required]
+        [StringLength(50)]
         public string Usua_user { get; set; }
         [Display(Name = "Nombre")]
         public string Usua_nombres { get; set; }

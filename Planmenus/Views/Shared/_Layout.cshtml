@@ -19,7 +19,7 @@
   <body>
     <div class="adminx-container">
       <nav class="navbar navbar-expand justify-content-between fixed-top">
-        <a class="navbar-brand mb-0 h1 d-none d-md-block" href="index.html">
+        <a class="navbar-brand mb-0 h1 d-none d-md-block" asp-controller="Home" asp-action="Inicio">
           <img src="~/AdminX-master/demo/img/logo.png" class="navbar-brand-image d-inline-block align-top mr-2" alt="">
           Soluciones FLP
         </a>
@@ -50,6 +50,16 @@
       <!-- Sidebar -->
       <div class="adminx-sidebar expand-hover push">
         <ul class="sidebar-nav">
+         <li class="sidebar-nav-item">
+            <a class="sidebar-nav-link" asp-controller="Home" asp-action="Inicio">
+              <span class="sidebar-nav-icon">
+                <i data-feather="home"></i>
+              </span>
+              <span class="sidebar-nav-name">
+                Inicio
+              </span>
+            </a>
+         </li>
          @if (SessionHelper.GetValue(User, "menu1") == "S")
          {
                     <li class="sidebar-nav-item">
@@ -208,6 +218,14 @@
                   </span>
                 </a>  
                }
+               @if (SessionHelper.GetValue(User, "submenu2_9") == "S")
+               {
+                <a href="#" class="sidebar-nav-link">
+                  <span class="sidebar-nav-abbr">
+                    <a class="nav-link" asp-controller="Carta" asp-action="Qr">Carta digital (QR)</a>
+                  </span>
+                </a>
+               }
               </li>
             </ul>
           </li>
@@ -300,6 +318,14 @@
 
         <div class="adminx-main-content">
           <div class="container-fluid">
+				@if (TempData["success"] != null)
+				{
+					<div class="alert alert-success alert-dismissible fade show" role="alert">@TempData["success"]<button type="button" class="close" data-dismiss="alert" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button></div>
+				}
+				@if (TempData["error"] != null)
+				{
+					<div class="alert alert-danger alert-dismissible fade show" role="alert">@TempData["error"]<button type="button" class="close" data-dismiss="alert" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button></div>
+				}
 				@RenderBody()
           </div>
         </div>
