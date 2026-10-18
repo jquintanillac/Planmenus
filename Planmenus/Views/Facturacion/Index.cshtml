@@ -1,0 +1,215 @@
+@using Planmenus.Data.Entities
+@model MDFacturacion
+@{
+    ViewData["Title"] = "Facturación electrónica";
+    var pendientes = (List<string>)ViewBag.pendientes;
+    var ultimos = (List<MDComprobante>)ViewBag.ultimos;
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    var produccion = Model.fe_ambiente == AmbienteFe.Produccion;
+}
+<style>
+    .amb-op { display: block; border: 2px solid var(--borde); border-radius: 14px; padding: 14px; cursor: pointer; height: 100%; margin: 0; }
+    .amb-op input { position: absolute; opacity: 0; }
+    .amb-op:has(input:checked) { border-color: var(--aji); background: var(--aji-suave); }
+    .amb-op strong { display: block; }
+    .amb-op small { color: var(--gris); }
+    .estado-fe { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 14px; }
+</style>
+
+<div class="estado-fe mb-3" style="background:@(Model.fe_activa ? (produccion ? "var(--hierba-suave)" : "var(--mostaza-suave)") : "var(--papel)");border:1px solid var(--borde)">
+    <i data-feather="@(Model.fe_activa ? "check-circle" : "power")" style="color:@(Model.fe_activa ? "var(--hierba)" : "var(--gris)")"></i>
+    <div class="flex-fill">
+        <strong>@(Model.fe_activa ? $"Facturación electrónica activa · {(produccion ? "PRODUCCIÓN" : "ambiente de pruebas")}" : "Facturación electrónica desactivada")</strong>
+        <div class="small text-muted">
+            @if (pendientes.Count > 0) { <text>Para activarla falta: @string.Join(", ", pendientes).</text> }
+            else if (!Model.fe_activa) { <text>Todo listo: active el interruptor y guarde.</text> }
+            else { <text>Al cobrar podrá elegir ticket, boleta o factura. Envío directo a SUNAT (SEE - Del contribuyente).</text> }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8">
+        <form asp-action="Index" method="post">
+            <div asp-validation-summary="All" class="alert alert-danger" style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+            <div class="card">
+                <div class="card-header d-flex align-items-center"><strong class="flex-fill">1. Activación y ambiente</strong>
+                    <div class="custom-control custom-switch"><input asp-for="fe_activa" class="custom-control-input" /><label class="custom-control-label" asp-for="fe_activa">Activar</label></div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="amb-op"><input type="radio" asp-for="fe_ambiente" value="@AmbienteFe.Pruebas" />
+                                <strong>Pruebas (beta de SUNAT)</strong><small>Los comprobantes no tienen valor tributario. Use este ambiente para verificar todo antes de empezar.</small></label>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="amb-op"><input type="radio" asp-for="fe_ambiente" value="@AmbienteFe.Produccion" />
+                                <strong>Producción</strong><small>Comprobantes reales ante SUNAT. Requiere certificado digital real y usuario SOL secundario.</small></label>
+                        </div>
+                    </div>
+                    <div class="form-group mb-0 mt-2">
+                        <label>Proveedor</label>
+                        <select class="form-control" disabled><option>SUNAT directo — SEE Del contribuyente</option></select>
+                        <small class="form-text text-muted">El sistema queda preparado para conectar un OSE/PSE más adelante si su negocio lo necesita.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><strong>2. Datos del emisor</strong></div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label asp-for="fe_ruc">RUC *</label>
+                            <input asp-for="fe_ruc" class="form-control" maxlength="11" inputmode="numeric" />
+                            <span asp-validation-for="fe_ruc" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-md-8">
+                            <label asp-for="fe_razon_social">Razón social *</label>
+                            <input asp-for="fe_razon_social" class="form-control" maxlength="200" placeholder="Tal como figura en la ficha RUC" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="fe_nombre_comercial">Nombre comercial</label>
+                            <input asp-for="fe_nombre_comercial" class="form-control" maxlength="200" />
+                        </div>
+                        <div class="form-group col-6 col-md-3">
+                            <label asp-for="fe_ubigeo">Ubigeo</label>
+                            <input asp-for="fe_ubigeo" class="form-control" maxlength="6" inputmode="numeric" placeholder="150101" />
+                            <span asp-validation-for="fe_ubigeo" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-6 col-md-3">
+                            <label asp-for="fe_establecimiento">Cód. establecimiento</label>
+                            <input asp-for="fe_establecimiento" class="form-control" maxlength="4" placeholder="0000" />
+                        </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label asp-for="fe_direccion">Domicilio fiscal *</label>
+                        <input asp-for="fe_direccion" class="form-control" maxlength="200" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><strong>3. Credenciales SOL</strong></div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="fe_usuario_sol">Usuario SOL secundario</label>
+                            <input asp-for="fe_usuario_sol" class="form-control" maxlength="50" autocomplete="off" placeholder="@(produccion ? "" : "vacío = usuario de pruebas de SUNAT")" />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="clave_sol">Clave SOL</label>
+                            <input id="clave_sol" name="clave_sol" type="password" class="form-control" autocomplete="new-password" placeholder="@(Model.fe_clave_sol != null ? "•••••• (guardada; escriba para cambiarla)" : "")" />
+                        </div>
+                    </div>
+                    <small class="text-muted">Cree en SUNAT Operaciones en Línea un usuario secundario con perfil de emisión electrónica. La clave se guarda cifrada. En el ambiente de pruebas puede dejarlos vacíos.</small>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><strong>4. Series e impuestos</strong></div>
+                <div class="card-body">
+                    <div class="form-row">
+                        @foreach (var (campo, texto) in new[] { ("fe_serie_boleta", "Serie boletas"), ("fe_serie_factura", "Serie facturas"), ("fe_serie_nc_boleta", "N. crédito de boletas"), ("fe_serie_nc_factura", "N. crédito de facturas") })
+                        {
+                            <div class="form-group col-6 col-md-3">
+                                <label for="@campo">@texto</label>
+                                <input id="@campo" name="@campo" value="@typeof(MDFacturacion).GetProperty(campo).GetValue(Model)" class="form-control text-uppercase" maxlength="4" />
+                                <span class="text-danger small field-validation-valid" data-valmsg-for="@campo">@ViewData.ModelState[campo]?.Errors.FirstOrDefault()?.ErrorMessage</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label asp-for="fe_igv">Tasa de IGV (%)</label>
+                            <input asp-for="fe_igv" class="form-control" type="number" step="0.01" min="0" max="30" />
+                            <small class="form-text text-muted">18% general. Restaurantes MYPE pueden tener una tasa especial: confírmela con su contador.</small>
+                        </div>
+                        <div class="form-group col-md-8">
+                            <label asp-for="fe_por_defecto">Al cobrar, seleccionar por defecto</label>
+                            <select asp-for="fe_por_defecto" class="form-control">
+                                <option value="0">Ticket interno</option>
+                                <option value="3">Boleta de venta</option>
+                                <option value="1">Factura</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg mb-4"><i data-feather="save" style="width:18px;height:18px"></i> Guardar</button>
+        </form>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header"><strong>Certificado digital</strong></div>
+            <div class="card-body">
+                @if (Model.fe_certificado != null)
+                {
+                    var vencido = Model.fe_certificado_vence < Planmenus.Helpers.Fechas.AhoraPeru();
+                    <div class="estado-fe mb-3" style="background:@(vencido ? "var(--vino-suave)" : "var(--hierba-suave)")">
+                        <i data-feather="@(vencido ? "alert-triangle" : "shield")"></i>
+                        <div><strong>@Model.fe_certificado_titular</strong><div class="small">@(vencido ? "Venció" : "Vence") el @Model.fe_certificado_vence?.ToString("dd/MM/yyyy")</div></div>
+                    </div>
+                }
+                <form asp-action="Certificado" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="archivo">Archivo .pfx o .p12</label>
+                        <input id="archivo" name="archivo" type="file" accept=".pfx,.p12" class="form-control-file" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="clave">Contraseña del certificado</label>
+                        <input id="clave" name="clave" type="password" class="form-control" autocomplete="new-password" />
+                    </div>
+                    <button class="btn btn-light btn-block">Cargar certificado</button>
+                </form>
+                @if (!produccion)
+                {
+                    <form asp-action="CertificadoPrueba" method="post" class="mt-2">
+                        <button class="btn btn-link btn-block btn-sm">Generar certificado de prueba</button>
+                    </form>
+                }
+                <small class="form-text text-muted">Puede usar el certificado tributario gratuito de SUNAT (si cumple las condiciones) o uno comprado a una entidad acreditada.</small>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Probar con SUNAT</strong></div>
+            <div class="card-body">
+                <p class="small text-muted">Envía una boleta de S/ 10.00 al ambiente de pruebas de SUNAT para comprobar el certificado, la firma y la conexión.</p>
+                <form asp-action="Prueba" method="post">
+                    <button class="btn btn-mostaza btn-block" @(produccion || pendientes.Count > 0 ? "disabled" : "")>Enviar boleta de prueba</button>
+                </form>
+                @if (ultimos.Count > 0)
+                {
+                    <table class="table table-sm mt-3 mb-0">
+                        @foreach (var c in ultimos)
+                        {
+                            <tr title="@c.comp_sunat_mensaje">
+                                <td>@c.Numero @if (c.comp_ambiente == AmbienteFe.Pruebas) { <span class="badge badge-pend">prueba</span> }</td>
+                                <td><span class="badge @(c.comp_estado is EstadoComprobante.Aceptado or EstadoComprobante.Observado ? "badge-ok" : c.comp_estado == EstadoComprobante.Anulado ? "badge-anul" : "badge-pend")">@EstadoComprobante.Nombre(c.comp_estado)</span></td>
+                            </tr>
+                        }
+                    </table>
+                    @if (User.HasClaim("submenu3_13", "S")) { <a class="small" asp-controller="Comprobantes" asp-action="Index">Ver todos los comprobantes →</a> }
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body small">
+                <strong>Antes de pasar a producción</strong>
+                <ul class="pl-3 mb-0 mt-2">
+                    <li>Esté inscrito como emisor electrónico y use el sistema de emisión del contribuyente (SEE - Del contribuyente).</li>
+                    <li>Registre su certificado digital en SUNAT Operaciones en Línea.</li>
+                    <li>Confirme con su contador si su negocio está obligado a enviar a través de un OSE.</li>
+                    <li>Las boletas y notas se deben enviar dentro del plazo que fija SUNAT: el sistema reintenta solo cada 10 minutos.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

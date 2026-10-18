@@ -22,6 +22,25 @@ namespace Planmenus.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDAsignacion_Mozo", b =>
                 {
                     b.Property<int>("id_asig")
@@ -152,6 +171,162 @@ namespace Planmenus.Migrations
                     b.ToTable("Caja_Detalle");
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDComprobante", b =>
+                {
+                    b.Property<int>("id_comp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_comp"));
+
+                    b.Property<string>("cli_direccion")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("cli_email")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("cli_nombre")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("cli_num_doc")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("cli_tipo_doc")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<byte>("comp_ambiente")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte[]>("comp_cdr")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTime?>("comp_enviado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte>("comp_estado")
+                        .HasColumnType("tinyint");
+
+                    b.Property<DateTime>("comp_fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("comp_gravada")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("comp_hash")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("comp_igv")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("comp_intentos")
+                        .HasColumnType("int");
+
+                    b.Property<int>("comp_numero")
+                        .HasColumnType("int");
+
+                    b.Property<string>("comp_serie")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("comp_sunat_codigo")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("comp_sunat_mensaje")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("comp_tasa_igv")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("comp_tipo")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<decimal>("comp_total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<byte[]>("comp_xml")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int?>("id_caja")
+                        .HasColumnType("int");
+
+                    b.Property<string>("nc_motivo")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("nc_sustento")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int?>("ref_id_comp")
+                        .HasColumnType("int");
+
+                    b.HasKey("id_comp");
+
+                    b.HasIndex("id_caja");
+
+                    b.HasIndex("ref_id_comp");
+
+                    b.HasIndex("comp_estado", "comp_fecha");
+
+                    b.HasIndex("comp_tipo", "comp_serie", "comp_numero")
+                        .IsUnique()
+                        .HasFilter("[comp_tipo] IS NOT NULL AND [comp_serie] IS NOT NULL");
+
+                    b.ToTable("Comprobante");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDComprobante_Detalle", b =>
+                {
+                    b.Property<int>("id_compdet")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_compdet"));
+
+                    b.Property<decimal>("cantidad")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("descripcion")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("id_comp")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("igv")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("item")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("precio")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("valor_unitario")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("valor_venta")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("id_compdet");
+
+                    b.HasIndex("id_comp");
+
+                    b.ToTable("Comprobante_Detalle");
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDCorreo_Log", b =>
                 {
                     b.Property<int>("id_correo")
@@ -271,6 +446,96 @@ namespace Planmenus.Migrations
                     b.HasIndex("id_menu");
 
                     b.ToTable("Eventos");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDFacturacion", b =>
+                {
+                    b.Property<int>("id_fe")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_fe"));
+
+                    b.Property<bool>("fe_activa")
+                        .HasColumnType("bit");
+
+                    b.Property<byte>("fe_ambiente")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte[]>("fe_certificado")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("fe_certificado_clave")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("fe_certificado_titular")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("fe_certificado_vence")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("fe_clave_sol")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("fe_direccion")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("fe_establecimiento")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<decimal>("fe_igv")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("fe_nombre_comercial")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte>("fe_por_defecto")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("fe_proveedor")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("fe_razon_social")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("fe_ruc")
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.Property<string>("fe_serie_boleta")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("fe_serie_factura")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("fe_serie_nc_boleta")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("fe_serie_nc_factura")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("fe_ubigeo")
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<string>("fe_usuario_sol")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("id_fe");
+
+                    b.ToTable("Facturacion");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDGenerales", b =>
@@ -660,6 +925,20 @@ namespace Planmenus.Migrations
                     b.ToTable("Rol_Usuario");
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDSerie", b =>
+                {
+                    b.Property<string>("serie_clave")
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<int>("serie_ultimo")
+                        .HasColumnType("int");
+
+                    b.HasKey("serie_clave");
+
+                    b.ToTable("Serie");
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDSubmenu", b =>
                 {
                     b.Property<int>("id_submenu")
@@ -975,6 +1254,28 @@ namespace Planmenus.Migrations
                         .WithMany()
                         .HasForeignKey("id_menu")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDComprobante", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDCaja", null)
+                        .WithMany()
+                        .HasForeignKey("id_caja")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Planmenus.Data.Entities.MDComprobante", null)
+                        .WithMany()
+                        .HasForeignKey("ref_id_comp")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDComprobante_Detalle", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDComprobante", null)
+                        .WithMany()
+                        .HasForeignKey("id_comp")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

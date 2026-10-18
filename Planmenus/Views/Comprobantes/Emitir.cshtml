@@ -1,0 +1,39 @@
+@using Planmenus.Data.Entities
+@{
+    ViewData["Title"] = "Emitir comprobante";
+    var caja = (MDCaja)ViewBag.caja;
+    var fe = (MDFacturacion)ViewBag.fe;
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+}
+<div class="card" style="max-width:560px">
+    <div class="card-header"><strong>Venta N° @caja.id_caja.ToString("D6") · S/ @caja.caja_monto.ToString("N2", peru)</strong></div>
+    <div class="card-body">
+        @if (!fe.fe_activa)
+        {
+            <div class="alert alert-warning mb-0">La facturación electrónica está desactivada.</div>
+        }
+        else
+        {
+            <p class="text-muted">La venta se cobró con ticket interno. Elija boleta o factura e ingrese los datos del cliente.</p>
+            <form asp-action="Emitir" asp-route-id="@caja.id_caja" method="post" id="formEmitir">
+                <partial name="_DatosComprobante" model="fe" />
+                <button class="btn btn-primary btn-block mt-3">Emitir y enviar a SUNAT</button>
+            </form>
+        }
+    </div>
+</div>
+@section Scripts {
+<script>
+    var f = document.getElementById('formEmitir');
+    if (f && window.Comprobante) {
+        // En esta pantalla no tiene sentido "Ticket": se elige boleta si estaba seleccionado
+        var ticket = f.querySelector('input[name=comp_tipo][value="00"]');
+        if (ticket) { ticket.parentElement.remove(); var b = f.querySelector('input[name=comp_tipo][value="03"]'); if (!f.querySelector('input[name=comp_tipo]:checked')) { b.checked = true; b.parentElement.classList.add('active'); } }
+        Comprobante.iniciar(f);
+        f.addEventListener('submit', function (e) {
+            var error = Comprobante.validar(f, @caja.caja_monto.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            if (error) { e.preventDefault(); alert(error); }
+        });
+    }
+</script>
+}

@@ -1,0 +1,84 @@
+@model Planmenus.Data.Entities.MDFacturacion
+@{
+    // Selector de comprobante al cobrar (solo si la facturacion electronica esta activa)
+    var defecto = Model.fe_por_defecto switch { 3 => "03", 1 => "01", _ => "00" };
+}
+@if (Model.fe_activa)
+{
+    <div class="comp-bloque" data-pruebas="@(Model.fe_ambiente == Planmenus.Data.Entities.AmbienteFe.Pruebas ? "1" : "0")">
+        <div class="pos-paso">Comprobante @if (Model.fe_ambiente == Planmenus.Data.Entities.AmbienteFe.Pruebas) { <span class="badge badge-pend ml-1">pruebas</span> }</div>
+        <div class="btn-group btn-group-toggle d-flex mb-2" data-toggle="buttons">
+            @foreach (var (val, txt) in new[] { ("00", "Ticket"), ("03", "Boleta"), ("01", "Factura") })
+            {
+                <label class="btn btn-outline-primary btn-sm flex-fill @(val == defecto ? "active" : "")">
+                    <input type="radio" name="comp_tipo" value="@val" autocomplete="off" checked="@(val == defecto)" /> @txt
+                </label>
+            }
+        </div>
+        <div class="comp-campos" data-para="03">
+            <div class="form-row">
+                <div class="form-group col-4 mb-2">
+                    <select name="cli_tipo_doc" class="form-control form-control-sm" aria-label="Tipo de documento">
+                        <option value="1">DNI</option>
+                        <option value="4">C.E.</option>
+                        <option value="7">Pasaporte</option>
+                        <option value="6">RUC</option>
+                    </select>
+                </div>
+                <div class="form-group col-8 mb-2"><input name="cli_num_doc" data-boleta class="form-control form-control-sm" maxlength="15" inputmode="numeric" placeholder="N.º de documento (opcional)" aria-label="Número de documento" /></div>
+            </div>
+            <input name="cli_nombre" data-boleta class="form-control form-control-sm mb-2" maxlength="200" placeholder="Nombre del cliente (opcional)" aria-label="Nombre del cliente" />
+            <small class="form-text text-muted mt-0 mb-2">Desde S/ @Planmenus.Services.Facturacion.FacturacionService.MontoBoletaConDocumento.ToString("N0") el DNI y el nombre son obligatorios.</small>
+        </div>
+        <div class="comp-campos" data-para="01">
+            <input name="cli_num_doc" data-factura class="form-control form-control-sm mb-2" maxlength="11" inputmode="numeric" placeholder="RUC del cliente *" aria-label="RUC del cliente" />
+            <input name="cli_nombre" data-factura class="form-control form-control-sm mb-2" maxlength="200" placeholder="Razón social *" aria-label="Razón social" />
+            <input name="cli_direccion" data-factura class="form-control form-control-sm mb-2" maxlength="200" placeholder="Dirección fiscal (opcional)" aria-label="Dirección fiscal" />
+        </div>
+    </div>
+    <script>
+    // Muestra los campos del comprobante elegido y valida antes de cobrar (devuelve el error o null)
+    window.Comprobante = (function () {
+        function rucValido(r) {
+            if (!/^(10|15|16|17|20)\d{9}$/.test(r)) return false;
+            var f = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2], s = 0;
+            for (var i = 0; i < 10; i++) s += f[i] * (+r[i]);
+            var dv = 11 - s % 11; if (dv === 10) dv = 0; if (dv === 11) dv = 1;
+            return dv === +r[10];
+        }
+        function iniciar(form) {
+            var bloque = form.querySelector('.comp-bloque');
+            if (!bloque) return;
+            function mostrar() {
+                var t = (form.querySelector('input[name=comp_tipo]:checked') || {}).value || '00';
+                bloque.querySelectorAll('.comp-campos').forEach(function (c) {
+                    var activo = c.dataset.para === t;
+                    c.style.display = activo ? '' : 'none';
+                    // Solo se envian los campos del comprobante elegido
+                    c.querySelectorAll('input,select').forEach(function (i) { i.disabled = !activo; });
+                });
+            }
+            bloque.querySelectorAll('input[name=comp_tipo]').forEach(function (r) { r.addEventListener('change', mostrar); });
+            mostrar();
+        }
+        function validar(form, total) {
+            var t = (form.querySelector('input[name=comp_tipo]:checked') || {}).value || '00';
+            if (t === '01') {
+                var ruc = form.querySelector('[data-factura][name=cli_num_doc]').value.trim();
+                if (!rucValido(ruc)) return 'Ingrese un RUC válido para la factura.';
+                if (!form.querySelector('[data-factura][name=cli_nombre]').value.trim()) return 'Ingrese la razón social del cliente.';
+            }
+            if (t === '03') {
+                var tipo = form.querySelector('select[name=cli_tipo_doc]').value;
+                var doc = form.querySelector('[data-boleta][name=cli_num_doc]').value.trim();
+                var nom = form.querySelector('[data-boleta][name=cli_nombre]').value.trim();
+                if (total >= @Planmenus.Services.Facturacion.FacturacionService.MontoBoletaConDocumento.ToString(System.Globalization.CultureInfo.InvariantCulture) && (!doc || !nom)) return 'Las boletas desde S/ 700 requieren DNI y nombre del cliente.';
+                if (doc && tipo === '1' && !/^\d{8}$/.test(doc)) return 'El DNI debe tener 8 dígitos.';
+                if (doc && tipo === '6' && !rucValido(doc)) return 'El RUC no es válido.';
+            }
+            return null;
+        }
+        return { iniciar: iniciar, validar: validar };
+    })();
+    </script>
+}

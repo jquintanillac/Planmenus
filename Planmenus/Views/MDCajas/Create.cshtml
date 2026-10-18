@@ -117,6 +117,7 @@ else if (!cajaAbierta && User.HasClaim("submenu3_10", "S"))
                         }
                     </div>
 
+                    <partial name="_DatosComprobante" model="(Planmenus.Data.Entities.MDFacturacion)ViewBag.fe" />
                     <div class="d-flex mt-3" style="gap:8px">
                         <button type="submit" data-accion="cocina" class="btn btn-mostaza flex-fill" disabled title="El pedido queda abierto y se cobra después desde el Salón">Enviar a cocina</button>
                         <button type="submit" data-accion="cobrar" class="btn btn-success flex-fill" disabled>Cobrar e imprimir</button>
@@ -143,6 +144,7 @@ else if (!cajaAbierta && User.HasClaim("submenu3_10", "S"))
     var botones = form.querySelectorAll('button[type=submit]');
 
     function soles(n) { return 'S/ ' + fmt.format(n); }
+    function totalPedido() { return Object.keys(carrito).reduce(function (s, id) { return s + carrito[id].precio * carrito[id].cant; }, 0); }
 
     function render() {
         var ids = Object.keys(carrito), total = 0;
@@ -205,6 +207,8 @@ else if (!cajaAbierta && User.HasClaim("submenu3_10", "S"))
         carrito = {};
         form.reset();
         document.querySelectorAll('[data-toggle=buttons] .active').forEach(function (l) { l.classList.remove('active'); });
+        // Tras reiniciar, se resaltan las opciones por defecto (por ejemplo el comprobante)
+        document.querySelectorAll('[data-toggle=buttons] input:checked').forEach(function (i) { i.parentElement.classList.add('active'); i.dispatchEvent(new Event('change')); });
         render();
     }
     document.getElementById('limpiar').onclick = limpiar;
@@ -216,6 +220,8 @@ else if (!cajaAbierta && User.HasClaim("submenu3_10", "S"))
         document.getElementById('accion').value = accionElegida;
         if (accionElegida === 'cobrar') {
             if (!form.querySelector('input[name=id_tipago]:checked')) { e.preventDefault(); alert('Seleccione el tipo de pago.'); return; }
+            var errorComp = window.Comprobante ? Comprobante.validar(form, totalPedido()) : null;
+            if (errorComp) { e.preventDefault(); alert(errorComp); return; }
             // El ticket se abre en otra pestaña; esta pantalla queda lista para el siguiente pedido
             form.target = '_blank';
             setTimeout(limpiar, 100);
@@ -224,6 +230,7 @@ else if (!cajaAbierta && User.HasClaim("submenu3_10", "S"))
         }
     });
 
+    if (window.Comprobante) Comprobante.iniciar(form);
     render();
 })();
 </script>

@@ -40,6 +40,28 @@ namespace Planmenus.Helpers
                         "Use un logo con fondo blanco y ajuste el contraste hasta que la vista previa se vea nítida.",
                         "Imprima una prueba después de cada cambio." }),
 
+            ["Facturacion/Index"] = new("Facturación electrónica",
+                "Active la emisión de boletas y facturas electrónicas con envío directo a SUNAT (SEE - Del contribuyente). Configure el emisor, las credenciales SOL, el certificado digital, las series y la tasa de IGV.",
+                new[] { "RUC válido, razón social y domicilio fiscal tal como figuran en SUNAT.",
+                        "Certificado digital (.pfx o .p12) con su contraseña; en producción debe estar registrado en SUNAT.",
+                        "En producción: usuario SOL secundario con perfil de emisión electrónica.",
+                        "Las series de boletas empiezan con B y las de facturas con F." },
+                new[] { "Empiece en el ambiente de pruebas: genere el certificado de prueba y envíe la boleta de prueba.",
+                        "Confirme con su contador la tasa de IGV (restaurantes MYPE pueden tener tasa especial) y si debe usar un OSE.",
+                        "Revise que el certificado no esté por vencer: sin él no se pueden emitir comprobantes." }),
+
+            ["Comprobantes/Index"] = new("Comprobantes electrónicos",
+                "Boletas, facturas y notas de crédito emitidas con su estado ante SUNAT. Descargue el XML firmado y la constancia (CDR), reenvíe los que no llegaron y anule con nota de crédito.",
+                new[] { "Solo se pueden anular comprobantes aceptados; la anulación genera una nota de crédito.",
+                        "Los comprobantes con error de envío se reintentan solos cada 10 minutos." },
+                new[] { "Revise esta pantalla al cerrar el día: no deben quedar comprobantes por enviar.",
+                        "Use el botón ZIP para enviarle a su contador los XML y CDR del mes." }),
+
+            ["Comprobantes/Emitir"] = new("Emitir comprobante",
+                "Emite una boleta o factura para una venta que se cobró con ticket interno.",
+                new[] { "Factura: RUC y razón social del cliente.", "Boleta desde S/ 700: DNI y nombre del cliente." },
+                new[] { "Emítala el mismo día de la venta." }),
+
             ["Ticketera/Muestra"] = new("Ticket de prueba",
                 "Ticket de ejemplo con la configuración guardada.",
                 Array.Empty<string>(),

@@ -4,6 +4,7 @@
     ViewData["Title"] = "Configuración";
     var tipos = (List<MDTipo_pago>)ViewBag.tipos_pago;
     var formato = (MDTicketera)ViewBag.formato;
+    var fe = (MDFacturacion)ViewBag.fe;
     var correo = (Planmenus.Services.CorreoOptions)ViewBag.correo;
 }
 <style>
@@ -28,6 +29,7 @@
         <a class="active" data-toggle="tab" href="#t-negocio" role="tab"><i data-feather="briefcase"></i> Negocio</a>
         <a data-toggle="tab" href="#t-ticket" role="tab"><i data-feather="printer"></i> Ticket y ticketera</a>
         <a data-toggle="tab" href="#t-pagos" role="tab"><i data-feather="credit-card"></i> Pagos</a>
+        <a data-toggle="tab" href="#t-fe" role="tab"><i data-feather="award"></i> Facturación</a>
         <a data-toggle="tab" href="#t-correo" role="tab"><i data-feather="mail"></i> Correo y reservas</a>
         <a data-toggle="tab" href="#t-carta" role="tab"><i data-feather="smartphone"></i> Carta digital</a>
     </nav>
@@ -91,6 +93,17 @@
                     </div>
                 }
                 <a class="small" asp-controller="MDTipo_pago" asp-action="Index">Agregar o editar tipos de pago →</a>
+            </div></div>
+        </section>
+
+        <section class="tab-pane fade" id="t-fe" role="tabpanel">
+            <div class="card"><div class="card-body d-flex flex-wrap align-items-center" style="gap:16px">
+                <div class="kpi-icono mb-0" style="--color-kpi:@(fe.fe_activa ? "var(--hierba)" : "var(--carbon-3)")"><i data-feather="award"></i></div>
+                <div class="flex-fill">
+                    <h4 class="mb-1">Facturación electrónica</h4>
+                    <p class="text-muted mb-0">@(fe.fe_activa ? $"Activa en {(fe.fe_ambiente == AmbienteFe.Produccion ? "producción" : "ambiente de pruebas")} · series {fe.fe_serie_boleta} y {fe.fe_serie_factura} · IGV {fe.fe_igv:0.##}%" : "Desactivada: al cobrar se emite solo el ticket interno.")</p>
+                </div>
+                <a class="btn btn-primary" asp-controller="Facturacion" asp-action="Index">@(fe.fe_activa ? "Configurar" : "Activar facturación electrónica")</a>
             </div></div>
         </section>
 

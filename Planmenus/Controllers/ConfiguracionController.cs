@@ -92,6 +92,7 @@ namespace Planmenus.Controllers
             ViewBag.url_carta = Url.Action("Index", "Carta", null, Request.Scheme);
             ViewBag.correo = _correo.Opciones;
             ViewBag.formato = await HttpContext.RequestServices.GetRequiredService<TicketService>().ObtenerFormatoAsync();
+            ViewBag.fe = await HttpContext.RequestServices.GetRequiredService<Planmenus.Services.Facturacion.FacturacionService>().ConfigAsync();
         }
     }
 }

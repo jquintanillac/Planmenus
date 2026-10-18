@@ -85,7 +85,9 @@
                                 </label>
                             }
                         </div>
-                        <button type="submit" class="btn btn-success btn-block btn-lg" @(Model.items.Count == 0 ? "disabled" : "")>Cobrar e imprimir ticket</button>
+                        <partial name="_DatosComprobante" model="(Planmenus.Data.Entities.MDFacturacion)ViewBag.fe" />
+                        <div class="mb-3"></div>
+                        <button type="submit" class="btn btn-success btn-block btn-lg" @(Model.items.Count == 0 ? "disabled" : "")>Cobrar e imprimir</button>
                     </form>
                     <p class="small text-muted mt-3 mb-0">Para anular el pedido completo use <a asp-controller="MDCajas" asp-action="Edit" asp-route-id="@Model.ticket">Anular ticket</a>.</p>
                 }
@@ -101,8 +103,11 @@
 @section Scripts {
 <script>
     var f = document.getElementById('formCobro');
+    if (f && window.Comprobante) Comprobante.iniciar(f);
     if (f) f.addEventListener('submit', function (e) {
         if (!f.querySelector('input[name=id_tipago]:checked')) { e.preventDefault(); alert('Seleccione el tipo de pago.'); return; }
+        var errorComp = window.Comprobante ? Comprobante.validar(f, @Model.total.ToString(System.Globalization.CultureInfo.InvariantCulture)) : null;
+        if (errorComp) { e.preventDefault(); alert(errorComp); return; }
         // Tras cobrar, esta pestaña vuelve al salón (el ticket se abre en otra)
         setTimeout(function () { location.href = '@Url.Action("Index")'; }, 600);
     });

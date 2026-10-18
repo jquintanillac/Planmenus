@@ -4,6 +4,7 @@ using Planmenus.Data;
 using Planmenus.Helpers;
 using Planmenus.Models;
 using Planmenus.Services;
+using Planmenus.Services.Facturacion;
 
 namespace Planmenus.Controllers
 {
@@ -73,22 +74,42 @@ namespace Planmenus.Controllers
             }
             ViewBag.tipago = await _context.Tipo_Pagos.Where(t => t.tipago_act).ToListAsync();
             ViewBag.cocina = await _context.Cajas.Where(c => c.id_caja == id).Select(c => c.caja_cocina).FirstAsync();
+            ViewBag.fe = await HttpContext.RequestServices.GetRequiredService<FacturacionService>().ConfigAsync();
             return View(ticket);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Permiso("submenu3_1")]
-        public async Task<IActionResult> Cobrar(int id, int? id_tipago, [FromServices] ImpresionService impresion)
+        public async Task<IActionResult> Cobrar(int id, int? id_tipago, VMVenta comprobante,
+            [FromServices] ImpresionService impresion, [FromServices] FacturacionService facturacion)
         {
+            var cliente = new FacturacionService.Cliente(comprobante.comp_tipo, comprobante.cli_tipo_doc, comprobante.cli_num_doc, comprobante.cli_nombre, comprobante.cli_direccion, comprobante.cli_email);
+            if (comprobante.EmiteComprobante)
+            {
+                var pedido = await _ventas.PedidoAbiertoAsync(id);
+                var errorCliente = pedido == null ? null : FacturacionService.ValidarCliente(cliente, pedido.caja_monto);
+                if (errorCliente != null)
+                {
+                    TempData["error"] = errorCliente;
+                    return RedirectToAction(nameof(Pedido), new { id });
+                }
+            }
+
             var r = await _ventas.CobrarAsync(id, id_tipago);
             if (!r.Ok)
             {
                 TempData["error"] = r.Error;
                 return r.Caja == null ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(Pedido), new { id });
             }
+            string errorComprobante = null;
+            if (comprobante.EmiteComprobante)
+            {
+                errorComprobante = (await facturacion.EmitirVentaAsync(id, cliente)).Error;
+            }
             var imp = await impresion.ImprimirVentaAsync(id, alCobrar: true);
-            TempData[imp.Ok ? "success" : "error"] = imp.Mensaje ?? $"Pedido N° {id:D6} cobrado.";
+            if (errorComprobante != null) TempData["error"] = "Pedido cobrado. " + errorComprobante;
+            else TempData[imp.Ok ? "success" : "error"] = imp.Mensaje ?? $"Pedido N° {id:D6} cobrado.";
             return RedirectToAction("Ticket", "MDCajas", new { id, imprimir = imp.Navegador });
         }
 

@@ -126,6 +126,13 @@ namespace Planmenus.Services
             return new Resultado(caja, null);
         }
 
+        /// <summary>Total del pedido con los precios de la base (para validar antes de cobrar)</summary>
+        public async Task<decimal?> TotalAsync(List<VMVentaItem> items)
+        {
+            var (detalle, error) = await ArmarDetalleAsync(items);
+            return error == null ? detalle.Sum(d => d.det_subtotal) : null;
+        }
+
         public Task<MDCaja> PedidoAbiertoAsync(int id_caja) =>
             _context.Cajas.FirstOrDefaultAsync(c => c.id_caja == id_caja && c.caja_act && !c.caja_pagado);
 

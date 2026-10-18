@@ -51,9 +51,10 @@
                 @if (Puede("submenu3_11")) { <li><a asp-controller="Reservas" asp-action="Index" class="@(Activo("Reservas", null) ? "activo" : "")"><i data-feather="calendar"></i> Reservas</a></li> }
                 @if (Puede("submenu3_12")) { <li><a asp-controller="Mozos" asp-action="Index" class="@(Activo("Mozos", null) ? "activo" : "")"><i data-feather="user-check"></i> Planificar mozos</a></li> }
 
-                @if (Puede("submenu3_10") || Puede("submenu3_3") || Puede("submenu3_2") || Puede("submenu3_4") || Puede("submenu3_5") || Puede("submenu3_6") || Puede("submenu3_7")) { <li class="app-nav-titulo">Caja</li> }
+                @if (Puede("submenu3_10") || Puede("submenu3_3") || Puede("submenu3_2") || Puede("submenu3_4") || Puede("submenu3_5") || Puede("submenu3_6") || Puede("submenu3_7") || Puede("submenu3_13")) { <li class="app-nav-titulo">Caja</li> }
                 @if (Puede("submenu3_10")) { <li><a asp-controller="Turnos" asp-action="Index" class="@(Activo("Turnos", null) ? "activo" : "")"><i data-feather="lock"></i> Apertura y cierre</a></li> }
                 @if (Puede("submenu3_3")) { <li><a asp-controller="MDCajas" asp-action="Cajadiaria" class="@(Activo("MDCajas", "Cajadiaria") || Activo("MDCajas", "Edit") ? "activo" : "")"><i data-feather="list"></i> Lista de tickets</a></li> }
+                @if (Puede("submenu3_13")) { <li><a asp-controller="Comprobantes" asp-action="Index" class="@(Activo("Comprobantes", null) ? "activo" : "")"><i data-feather="file"></i> Comprobantes electrónicos</a></li> }
                 @if (Puede("submenu3_2")) { <li><a asp-controller="MDCajas" asp-action="Index" class="@(Activo("MDCajas", "Index") ? "activo" : "")"><i data-feather="file-text"></i> Cuadre de caja</a></li> }
                 @if (Puede("submenu3_4") || Puede("submenu3_5") || Puede("submenu3_6") || Puede("submenu3_7"))
                 {
@@ -98,6 +99,7 @@
                 <li class="app-nav-titulo">Administración</li>
                 @if (Puede("submenu1_1")) { <li><a asp-controller="Configuracion" asp-action="Index" class="@(Activo("Configuracion", null) || Activo("MDGenerales", null) ? "activo" : "")"><i data-feather="settings"></i> Configuración</a></li> }
                 @if (Puede("submenu1_1")) { <li><a asp-controller="Ticketera" asp-action="Index" class="@(Activo("Ticketera", null) ? "activo" : "")"><i data-feather="printer"></i> Ticketera</a></li> }
+                @if (Puede("submenu1_1")) { <li><a asp-controller="Facturacion" asp-action="Index" class="@(Activo("Facturacion", null) ? "activo" : "")"><i data-feather="award"></i> Facturación electrónica</a></li> }
                 @if (Puede("submenu1_2")) { <li><a asp-controller="MDUsuarios" asp-action="Index" class="@(Activo("MDUsuarios", null) ? "activo" : "")"><i data-feather="users"></i> Usuarios</a></li> }
 
                     var segActivo = GrupoActivo("MDRols", "MDRol_Usuario", "MDRol_Permisos", "MDMenuprins", "MDSubmenus");

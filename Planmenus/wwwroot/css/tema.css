@@ -290,3 +290,6 @@ table.dataTable { border-collapse: collapse !important; }
 .btn-link:hover { color: var(--aji); }
 .ayuda-cerrar:focus-visible, .app-usuario:focus-visible { outline: 3px solid var(--mostaza); outline-offset: 2px; }
 .ayuda-cerrar:focus:not(:focus-visible) { outline: none; }
+
+/* Subtitulos de pasos en formularios de cobro */
+.pos-paso { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gris); margin: 14px 0 6px; }
