@@ -56,7 +56,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id_tipago,tipago_desc,tipago_act")] MDTipo_pago mDTipo_pago)
+        public async Task<IActionResult> Create([Bind("id_tipago,tipago_desc,tipago_act,tipago_efectivo")] MDTipo_pago mDTipo_pago)
         {
             if (ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace Planmenus.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id_tipago,tipago_desc,tipago_act")] MDTipo_pago mDTipo_pago)
+        public async Task<IActionResult> Edit(int id, [Bind("id_tipago,tipago_desc,tipago_act,tipago_efectivo")] MDTipo_pago mDTipo_pago)
         {
             if (id != mDTipo_pago.id_tipago)
             {

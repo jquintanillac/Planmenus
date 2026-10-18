@@ -33,7 +33,13 @@ namespace Planmenus.Migrations
                     b.Property<bool>("caja_act")
                         .HasColumnType("bit");
 
+                    b.Property<byte>("caja_cocina")
+                        .HasColumnType("tinyint");
+
                     b.Property<DateTime>("caja_fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("caja_fecha_pago")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("caja_monto")
@@ -42,6 +48,9 @@ namespace Planmenus.Migrations
 
                     b.Property<string>("caja_obs")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("caja_pagado")
+                        .HasColumnType("bit");
 
                     b.Property<string>("caja_usuario")
                         .HasMaxLength(50)
@@ -56,7 +65,7 @@ namespace Planmenus.Migrations
                     b.Property<int?>("id_mesa")
                         .HasColumnType("int");
 
-                    b.Property<int>("id_tipago")
+                    b.Property<int?>("id_tipago")
                         .HasColumnType("int");
 
                     b.HasKey("id_caja");
@@ -70,6 +79,8 @@ namespace Planmenus.Migrations
                     b.HasIndex("id_mesa");
 
                     b.HasIndex("id_tipago");
+
+                    b.HasIndex("caja_pagado", "caja_act");
 
                     b.ToTable("Caja");
                 });
@@ -453,9 +464,62 @@ namespace Planmenus.Migrations
                     b.Property<string>("tipago_desc")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("tipago_efectivo")
+                        .HasColumnType("bit");
+
                     b.HasKey("id_tipago");
 
                     b.ToTable("Tipo_Pago");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDTurno_Caja", b =>
+                {
+                    b.Property<int>("id_turno")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_turno"));
+
+                    b.Property<bool>("turno_abierto")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("turno_apertura")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("turno_cierre")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("turno_contado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("turno_diferencia")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("turno_esperado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("turno_monto_inicial")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("turno_obs")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("turno_usuario_apertura")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("turno_usuario_cierre")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("id_turno");
+
+                    b.ToTable("Turno_Caja");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDUsuarios", b =>
@@ -517,8 +581,7 @@ namespace Planmenus.Migrations
                     b.HasOne("Planmenus.Data.Entities.MDTipo_pago", null)
                         .WithMany()
                         .HasForeignKey("id_tipago")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDCaja_Detalle", b =>

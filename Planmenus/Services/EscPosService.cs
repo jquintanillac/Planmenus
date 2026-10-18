@@ -64,7 +64,7 @@ namespace Planmenus.Services
             Alinear(b, 0);
             Linea(b, new string('-', cols));
             Negrita(b, true);
-            Linea(b, $"TICKET N° {t.ticket:D6}");
+            Linea(b, $"{(t.pagado ? "TICKET" : "PRE-CUENTA")} N° {t.ticket:D6}");
             Negrita(b, false);
             Linea(b, $"Fecha: {t.fecha:dd/MM/yyyy HH:mm}");
             if (!string.IsNullOrWhiteSpace(t.mesa)) Linea(b, $"Mesa: {t.mesa}");
@@ -94,7 +94,8 @@ namespace Planmenus.Services
             Linea(b, Columnas("TOTAL", Soles(t.total), cols));
             Tamano(b, 0x00);
             Negrita(b, false);
-            if (!string.IsNullOrWhiteSpace(t.tipo_pago)) Linea(b, $"Pago: {t.tipo_pago}");
+            if (t.pagado && !string.IsNullOrWhiteSpace(t.tipo_pago)) Linea(b, $"Pago: {t.tipo_pago}");
+            if (!t.pagado) Linea(b, "PENDIENTE DE PAGO");
             if (!string.IsNullOrWhiteSpace(t.observacion)) Linea(b, $"Obs: {t.observacion}");
 
             Alinear(b, 1);

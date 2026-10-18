@@ -27,6 +27,12 @@
                                     <input class="form-check-input"  asp-for="tipago_act" /> @Html.DisplayNameFor(model => model.tipago_act)
                                 </label>
                             </div>
+                            <div class="form-group form-check">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" asp-for="tipago_efectivo" /> @Html.DisplayNameFor(model => model.tipago_efectivo)
+                                </label>
+                                <small class="form-text text-muted">Marque si este pago entra a la gaveta de efectivo (se usa en el arqueo de caja).</small>
+                            </div>
                             <div class="form-group">
                                 <input type="submit" value="Crear" class="btn btn-sm btn-primary" />
                                  <a class="btn btn-sm btn-primary" asp-action="Index">Regresar</a>

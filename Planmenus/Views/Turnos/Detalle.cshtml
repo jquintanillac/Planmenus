@@ -1,0 +1,42 @@
+@model Planmenus.Services.TurnoService.Resumen
+@{
+    ViewData["Title"] = "Detalle del turno";
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    string Soles(decimal? m) => "S/ " + (m ?? 0).ToString("N2", peru);
+    var t = Model.turno;
+    var dif = t.turno_diferencia ?? 0;
+}
+<div class="card" style="max-width:720px">
+    <div class="card-header d-flex align-items-center flex-wrap" style="gap:8px">
+        <strong>Turno N° @t.id_turno</strong>
+        <span class="badge @(t.turno_abierto ? "badge-pend" : "badge-ok")">@(t.turno_abierto ? "Abierto" : "Cerrado")</span>
+        <span class="flex-fill"></span>
+        <button class="btn btn-sm btn-light d-print-none" onclick="window.print()"><i data-feather="printer" style="width:15px;height:15px"></i> Imprimir</button>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-5">Apertura</dt><dd class="col-sm-7">@t.turno_apertura.ToString("dd/MM/yyyy HH:mm") · @t.turno_usuario_apertura</dd>
+            <dt class="col-sm-5">Cierre</dt><dd class="col-sm-7">@(t.turno_cierre?.ToString("dd/MM/yyyy HH:mm") ?? "—") @(t.turno_usuario_cierre != null ? "· " + t.turno_usuario_cierre : "")</dd>
+        </dl>
+        <table class="table table-sm mt-3">
+            <thead><tr><th>Tipo de pago</th><th class="text-right">Tickets</th><th class="text-right">Monto</th></tr></thead>
+            <tbody>
+                @foreach (var p in Model.por_tipo_pago) { <tr><td>@p.tipo</td><td class="text-right">@p.tickets</td><td class="text-right">@Soles(p.monto)</td></tr> }
+                <tr class="font-weight-bold"><td>Total ventas</td><td></td><td class="text-right">@Soles(Model.ventas_total)</td></tr>
+            </tbody>
+        </table>
+        <table class="table table-sm mb-0">
+            <tbody>
+                <tr><td>Fondo inicial</td><td class="text-right">@Soles(t.turno_monto_inicial)</td></tr>
+                <tr><td>+ Ventas en efectivo</td><td class="text-right">@Soles(Model.ventas_efectivo)</td></tr>
+                <tr><td>+ Ingresos</td><td class="text-right">@Soles(Model.ingresos)</td></tr>
+                <tr><td>− Egresos</td><td class="text-right">@Soles(Model.egresos)</td></tr>
+                <tr class="font-weight-bold"><td>Efectivo esperado</td><td class="text-right">@Soles(t.turno_esperado ?? Model.esperado)</td></tr>
+                <tr><td>Efectivo contado</td><td class="text-right">@Soles(t.turno_contado)</td></tr>
+                <tr class="font-weight-bold"><td>Diferencia</td><td class="text-right"><span class="badge @(dif == 0 ? "badge-ok" : dif > 0 ? "badge-pend" : "badge-anul")" style="font-size:14px">@(dif > 0 ? "Sobra " : dif < 0 ? "Falta " : "Cuadra ")@Soles(Math.Abs(dif))</span></td></tr>
+            </tbody>
+        </table>
+        @if (!string.IsNullOrWhiteSpace(t.turno_obs)) { <p class="mt-3 mb-0"><strong>Observación:</strong> @t.turno_obs</p> }
+    </div>
+</div>
+<a class="btn btn-link d-print-none" asp-action="Index">← Volver</a>

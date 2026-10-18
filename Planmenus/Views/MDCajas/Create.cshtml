@@ -1,102 +1,132 @@
 ﻿@using Planmenus.Data.Entities
 @{
     ViewData["Title"] = "Nueva venta";
-    Layout = "~/Views/Shared/_Layout.cshtml";
     var menus = (List<MDMenu>)ViewBag.menu;
     var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    var pedido = ViewBag.pedido as MDCaja;
+    int? mesaSel = ViewBag.id_mesa;
+    bool cajaAbierta = ViewBag.caja_abierta;
 }
 
 <style>
-    .pos-plato { display: block; width: 100%; min-height: 92px; margin-bottom: 12px; padding: 10px; border: 1px solid #dee2e6; border-radius: 6px; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
-    .pos-plato:hover, .pos-plato:focus { border-color: #0d6efd; box-shadow: 0 0 0 2px rgba(13,110,253,.15); outline: none; }
-    .pos-plato .nombre { font-weight: 600; display: block; }
-    .pos-plato .obs { font-size: 12px; color: #6c757d; display: block; }
-    .pos-plato .precio { font-size: 16px; font-weight: 700; color: #198754; display: block; margin-top: 4px; }
-    .pos-plato .badge-cant { float: right; background: #0d6efd; color: #fff; border-radius: 10px; padding: 0 8px; font-size: 12px; }
-    .pos-carrito td { vertical-align: middle; }
-    .pos-total { font-size: 26px; font-weight: 700; }
-    .pos-cant { width: 34px; text-align: center; display: inline-block; }
+    .pos-plato { position: relative; display: flex; flex-direction: column; width: 100%; min-height: 108px; margin-bottom: 14px; padding: 14px; border: 1px solid var(--borde); border-radius: 16px; background: var(--papel); text-align: left; cursor: pointer; transition: transform .1s, border-color .15s, box-shadow .15s; }
+    .pos-plato:hover, .pos-plato:focus { border-color: var(--aji); box-shadow: 0 8px 20px rgba(228,87,46,.14); outline: none; transform: translateY(-1px); }
+    .pos-plato:active { transform: scale(.98); }
+    .pos-plato.en-pedido { border-color: var(--aji); background: linear-gradient(180deg, #fff, var(--aji-suave)); }
+    .pos-plato .nombre { font-weight: 700; display: block; padding-right: 30px; }
+    .pos-plato .obs { font-size: 12.5px; color: var(--gris); display: block; margin-top: 2px; }
+    .pos-plato .precio { margin-top: auto; padding-top: 8px; font-family: var(--fuente-titulo); font-size: 19px; font-weight: 600; color: var(--aji-osc); }
+    .pos-plato .badge-cant { position: absolute; top: 10px; right: 10px; min-width: 26px; height: 26px; border-radius: 13px; background: var(--aji); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+    .pos-pedido { position: sticky; top: calc(var(--barra-alto) + 16px); }
+    .pos-carrito td { vertical-align: middle; border-color: var(--borde); }
+    .pos-total { font-family: var(--fuente-titulo); font-size: 32px; font-weight: 700; color: var(--tinta); }
+    .pos-cant { width: 30px; text-align: center; display: inline-block; font-weight: 700; }
+    .pos-paso { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gris); margin: 14px 0 6px; }
+    .pagos label.btn { flex: 1 1 30%; }
 </style>
 
+@if (pedido != null)
+{
+    <div class="alert alert-warning d-flex align-items-center flex-wrap" style="gap:8px">
+        <i data-feather="plus-circle"></i>
+        <span>Agregando platos al pedido <strong>N° @pedido.id_caja.ToString("D6")</strong> @(ViewBag.pedido_mesa != null ? "· " + ViewBag.pedido_mesa : "")</span>
+        <span class="flex-fill"></span>
+        <a class="btn btn-sm btn-light" asp-controller="Salon" asp-action="Pedido" asp-route-id="@pedido.id_caja">Volver al pedido</a>
+    </div>
+}
+else if (!cajaAbierta && User.HasClaim("submenu3_10", "S"))
+{
+    <div class="alert alert-warning d-flex align-items-center flex-wrap" style="gap:8px">
+        <i data-feather="alert-triangle"></i>
+        <span>La caja no está abierta. Ábrala para que el cierre del turno cuadre.</span>
+        <span class="flex-fill"></span>
+        <a class="btn btn-sm btn-mostaza" asp-controller="Turnos" asp-action="Index">Abrir caja</a>
+    </div>
+}
+
 <div class="row">
-    <div class="col-lg-7">
-        <div class="card mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <strong>Menú del día</strong>
-                <input id="buscar" type="search" class="form-control form-control-sm" style="max-width:220px" placeholder="Buscar plato..." autocomplete="off" />
-            </div>
-            <div class="card-body">
-                @if (menus.Count == 0)
-                {
-                    <p class="text-muted mb-0">No hay platos programados para hoy. Regístrelos en <a asp-controller="MDMenus" asp-action="Index">Programación Menú</a>.</p>
-                }
-                <div class="row" id="platos">
-                    @foreach (var m in menus)
-                    {
-                        <div class="col-sm-6 col-xl-4 plato-col" data-nombre="@m.menu_desc?.ToLowerInvariant()">
-                            <button type="button" class="pos-plato" data-id="@m.id_menu" data-nombre="@m.menu_desc" data-precio="@m.menu_precio.ToString(System.Globalization.CultureInfo.InvariantCulture)">
-                                <span class="badge-cant d-none"></span>
-                                <span class="nombre">@m.menu_desc</span>
-                                @if (!string.IsNullOrWhiteSpace(m.menu_observ)) { <span class="obs">@m.menu_observ</span> }
-                                <span class="precio">S/ @m.menu_precio.ToString("N2", peru)</span>
-                            </button>
-                        </div>
-                    }
+    <div class="col-lg-7 col-xl-8">
+        <div class="d-flex align-items-center mb-3" style="gap:10px">
+            <h3 class="mb-0 flex-fill">Menú de hoy</h3>
+            <input id="buscar" type="search" class="form-control" style="max-width:240px" placeholder="Buscar plato…" autocomplete="off" aria-label="Buscar plato" />
+        </div>
+        @if (menus.Count == 0)
+        {
+            <div class="card"><div class="card-body vacio">
+                <i data-feather="book-open"></i>
+                <p class="mb-2">No hay platos programados para hoy.</p>
+                <a class="btn btn-primary btn-sm" asp-controller="MDMenus" asp-action="Create">Programar platos</a>
+            </div></div>
+        }
+        <div class="row" id="platos">
+            @foreach (var m in menus)
+            {
+                <div class="col-sm-6 col-xl-4 plato-col" data-nombre="@m.menu_desc?.ToLowerInvariant()">
+                    <button type="button" class="pos-plato" data-id="@m.id_menu" data-nombre="@m.menu_desc" data-precio="@m.menu_precio.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                        <span class="badge-cant d-none"></span>
+                        <span class="nombre">@m.menu_desc</span>
+                        @if (!string.IsNullOrWhiteSpace(m.menu_observ)) { <span class="obs">@m.menu_observ</span> }
+                        <span class="precio">S/ @m.menu_precio.ToString("N2", peru)</span>
+                    </button>
                 </div>
-            </div>
+            }
         </div>
     </div>
 
-    <div class="col-lg-5">
-        <form asp-action="Create" method="post" target="_blank" id="formVenta" class="card">
-            <div class="card-header"><strong>Pedido</strong></div>
+    <div class="col-lg-5 col-xl-4">
+        <form asp-action="Create" method="post" id="formVenta" class="card pos-pedido">
+            <input type="hidden" name="accion" id="accion" value="cobrar" />
+            @if (pedido != null) { <input type="hidden" name="id_caja" value="@pedido.id_caja" /> }
+            <div class="card-header d-flex align-items-center"><strong class="flex-fill">@(pedido != null ? "Platos a agregar" : "Pedido")</strong><button type="button" id="limpiar" class="btn btn-sm btn-link text-muted">Limpiar</button></div>
             <div class="card-body">
                 <table class="table table-sm pos-carrito mb-2">
-                    <tbody id="carrito">
-                        <tr id="vacio"><td class="text-muted text-center">Toque un plato para agregarlo</td></tr>
-                    </tbody>
+                    <tbody id="carrito"></tbody>
                 </table>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Total</span>
+                <div class="d-flex justify-content-between align-items-end mb-1">
+                    <span class="text-muted">Total</span>
                     <span class="pos-total" id="total">S/ 0.00</span>
                 </div>
                 <div id="itemsOcultos"></div>
 
-                <div class="form-group">
-                    <label class="control-label">Tipo de pago</label>
-                    <div class="btn-group btn-group-toggle d-flex flex-wrap" data-toggle="buttons">
+                @if (pedido == null)
+                {
+                    <div class="pos-paso">¿Dónde?</div>
+                    <div class="form-row">
+                        <div class="form-group col-6 mb-2">
+                            <select class="form-control form-control-sm" name="id_mesa" id="id_mesa" aria-label="Mesa">
+                                <option value="">Para llevar</option>
+                                @foreach (MDMesas me in ViewBag.mesa) { <option value="@me.id_mesa" selected="@(mesaSel == me.id_mesa)">@me.mesa_desc</option> }
+                            </select>
+                        </div>
+                        <div class="form-group col-6 mb-2">
+                            <select class="form-control form-control-sm" name="id_deliv" aria-label="Reparto">
+                                <option value="">Sin delivery</option>
+                                @foreach (MDDelivery d in ViewBag.delivery) { <option value="@d.id_deliv">@d.deliv_nombcom</option> }
+                            </select>
+                        </div>
+                    </div>
+                    <input class="form-control form-control-sm" name="caja_obs" maxlength="200" placeholder="Observación: sin cebolla, cliente Juan…" aria-label="Observación" />
+
+                    <div class="pos-paso">Pago</div>
+                    <div class="btn-group-toggle d-flex flex-wrap pagos" data-toggle="buttons" style="gap:6px">
                         @foreach (MDTipo_pago tp in ViewBag.tipago)
                         {
-                            <label class="btn btn-outline-primary btn-sm flex-fill">
+                            <label class="btn btn-outline-primary btn-sm mb-0">
                                 <input type="radio" name="id_tipago" value="@tp.id_tipago" autocomplete="off" /> @tp.tipago_desc
                             </label>
                         }
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group col-6">
-                        <label class="control-label">Mesa</label>
-                        <select class="form-control form-control-sm" name="id_mesa">
-                            <option value="">Para llevar / sin mesa</option>
-                            @foreach (MDMesas me in ViewBag.mesa) { <option value="@me.id_mesa">@me.mesa_desc</option> }
-                        </select>
+
+                    <div class="d-flex mt-3" style="gap:8px">
+                        <button type="submit" data-accion="cocina" class="btn btn-mostaza flex-fill" disabled title="El pedido queda abierto y se cobra después desde el Salón">Enviar a cocina</button>
+                        <button type="submit" data-accion="cobrar" class="btn btn-success flex-fill" disabled>Cobrar e imprimir</button>
                     </div>
-                    <div class="form-group col-6">
-                        <label class="control-label">Reparto</label>
-                        <select class="form-control form-control-sm" name="id_deliv">
-                            <option value="">Sin delivery</option>
-                            @foreach (MDDelivery d in ViewBag.delivery) { <option value="@d.id_deliv">@d.deliv_nombcom</option> }
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label">Observación</label>
-                    <input class="form-control form-control-sm" name="caja_obs" maxlength="200" placeholder="Ej.: sin cebolla, cliente Juan" />
-                </div>
-                <div class="d-flex">
-                    <button type="button" id="limpiar" class="btn btn-sm btn-secondary mr-2">Limpiar</button>
-                    <button type="submit" id="cobrar" class="btn btn-success flex-fill" disabled>Cobrar e imprimir</button>
-                </div>
+                    <small class="form-text text-muted">“Enviar a cocina” deja el pedido abierto para cobrarlo después desde el Salón.</small>
+                }
+                else
+                {
+                    <button type="submit" data-accion="cocina" class="btn btn-primary btn-block mt-3" disabled>Agregar al pedido</button>
+                }
             </div>
         </form>
     </div>
@@ -109,6 +139,8 @@
     var fmt = new Intl.NumberFormat('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     var $carrito = document.getElementById('carrito');
     var $ocultos = document.getElementById('itemsOcultos');
+    var form = document.getElementById('formVenta');
+    var botones = form.querySelectorAll('button[type=submit]');
 
     function soles(n) { return 'S/ ' + fmt.format(n); }
 
@@ -117,7 +149,7 @@
         $carrito.innerHTML = '';
         $ocultos.innerHTML = '';
         if (ids.length === 0) {
-            $carrito.innerHTML = '<tr><td class="text-muted text-center">Toque un plato para agregarlo</td></tr>';
+            $carrito.innerHTML = '<tr><td class="text-muted text-center py-4">Toque un plato para agregarlo</td></tr>';
         }
         ids.forEach(function (id, i) {
             var it = carrito[id], sub = it.precio * it.cant;
@@ -125,26 +157,25 @@
             var tr = document.createElement('tr');
             tr.innerHTML =
                 '<td></td>' +
-                '<td class="text-nowrap"><button type="button" class="btn btn-sm btn-light menos">−</button>' +
+                '<td class="text-nowrap"><button type="button" class="btn btn-sm btn-light menos" aria-label="Quitar uno">−</button>' +
                 '<span class="pos-cant">' + it.cant + '</span>' +
-                '<button type="button" class="btn btn-sm btn-light mas">+</button></td>' +
-                '<td class="text-right text-nowrap">' + soles(sub) + '</td>' +
-                '<td class="text-right"><button type="button" class="btn btn-sm btn-link text-danger quitar" title="Quitar">✕</button></td>';
+                '<button type="button" class="btn btn-sm btn-light mas" aria-label="Agregar uno">+</button></td>' +
+                '<td class="text-right text-nowrap font-weight-bold">' + soles(sub) + '</td>';
             tr.firstChild.textContent = it.nombre;
             tr.querySelector('.menos').onclick = function () { cambiar(id, -1); };
             tr.querySelector('.mas').onclick = function () { cambiar(id, 1); };
-            tr.querySelector('.quitar').onclick = function () { delete carrito[id]; render(); };
             $carrito.appendChild(tr);
             $ocultos.insertAdjacentHTML('beforeend',
                 '<input type="hidden" name="items[' + i + '].id_menu" value="' + id + '">' +
                 '<input type="hidden" name="items[' + i + '].cantidad" value="' + it.cant + '">');
         });
         document.getElementById('total').textContent = soles(total);
-        document.getElementById('cobrar').disabled = ids.length === 0;
+        botones.forEach(function (b) { b.disabled = ids.length === 0; });
         document.querySelectorAll('.pos-plato').forEach(function (b) {
             var c = carrito[b.dataset.id], badge = b.querySelector('.badge-cant');
             badge.textContent = c ? c.cant : '';
             badge.classList.toggle('d-none', !c);
+            b.classList.toggle('en-pedido', !!c);
         });
     }
 
@@ -172,21 +203,28 @@
 
     function limpiar() {
         carrito = {};
-        document.getElementById('formVenta').reset();
+        form.reset();
         document.querySelectorAll('[data-toggle=buttons] .active').forEach(function (l) { l.classList.remove('active'); });
         render();
     }
     document.getElementById('limpiar').onclick = limpiar;
 
-    // El ticket se abre en otra pestaña; esta pantalla queda lista para el siguiente pedido
-    document.getElementById('formVenta').addEventListener('submit', function (e) {
-        if (!this.querySelector('input[name=id_tipago]:checked')) {
-            e.preventDefault();
-            alert('Seleccione el tipo de pago.');
-            return;
+    var accionElegida = 'cobrar';
+    botones.forEach(function (b) { b.addEventListener('click', function () { accionElegida = b.dataset.accion; }); });
+
+    form.addEventListener('submit', function (e) {
+        document.getElementById('accion').value = accionElegida;
+        if (accionElegida === 'cobrar') {
+            if (!form.querySelector('input[name=id_tipago]:checked')) { e.preventDefault(); alert('Seleccione el tipo de pago.'); return; }
+            // El ticket se abre en otra pestaña; esta pantalla queda lista para el siguiente pedido
+            form.target = '_blank';
+            setTimeout(limpiar, 100);
+        } else {
+            form.target = '';
         }
-        setTimeout(limpiar, 100);
     });
+
+    render();
 })();
 </script>
 }

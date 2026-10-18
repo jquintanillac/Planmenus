@@ -1,0 +1,54 @@
+@using Planmenus.Data.Entities
+@model Planmenus.Models.VMCocina
+@if (Model.comandas.Count == 0)
+{
+    <div class="card"><div class="card-body vacio">
+        <i data-feather="coffee"></i>
+        <p class="mb-0">No hay comandas pendientes. ¡Cocina al día!</p>
+    </div></div>
+}
+else
+{
+    <div class="comandas">
+        @foreach (var c in Model.comandas)
+        {
+            var min = (int)(Model.ahora - c.desde).TotalMinutes;
+            var tono = min >= 20 ? "t-alto" : min >= 10 ? "t-medio" : "t-ok";
+            var listo = c.estado == EstadoCocina.Listo;
+            var destino = !string.IsNullOrWhiteSpace(c.mesa) ? c.mesa : !string.IsNullOrWhiteSpace(c.delivery) ? "Delivery · " + c.delivery : "Para llevar";
+            <article class="comanda @tono @(listo ? "listo" : "")">
+                <div class="comanda-cab">
+                    <div>
+                        <strong>@destino</strong>
+                        <div class="small" style="opacity:.85">N° @c.id_caja.ToString("D6") · @c.desde.ToString("HH:mm")</div>
+                    </div>
+                    <span class="tiempo">@(listo ? "Listo" : min + " min")</span>
+                </div>
+                <div class="comanda-cuerpo">
+                    <ul>
+                        @foreach (var p in c.platos)
+                        {
+                            <li><span class="cant">@p.cantidad×</span><span>@p.descripcion</span></li>
+                        }
+                    </ul>
+                    @if (!string.IsNullOrWhiteSpace(c.obs)) { <div class="comanda-obs">⚠ @c.obs</div> }
+                </div>
+                <div class="comanda-pie">
+                    <form asp-controller="Cocina" asp-action="Estado" method="post">
+                        <input type="hidden" name="id" value="@c.id_caja" />
+                        @if (listo)
+                        {
+                            <input type="hidden" name="estado" value="@EstadoCocina.Entregado" />
+                            <button class="btn btn-secondary btn-block">Entregado</button>
+                        }
+                        else
+                        {
+                            <input type="hidden" name="estado" value="@EstadoCocina.Listo" />
+                            <button class="btn btn-success btn-block">Marcar listo</button>
+                        }
+                    </form>
+                </div>
+            </article>
+        }
+    </div>
+}

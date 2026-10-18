@@ -4,85 +4,100 @@
     ViewData["Title"] = "Inicio";
     var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
     string Soles(decimal m) => "S/ " + m.ToString("N2", peru);
+    var hora = Fechas.AhoraPeru().Hour;
+    var saludo = hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
+    var primerNombre = (SessionHelper.GetName(User) ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
 }
 
 <style>
-    .kpi { font-size: 26px; font-weight: 700; line-height: 1.1; }
-    .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #6c757d; }
-    .barra-fila { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
-    .barra-fila .nombre { flex: 0 0 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .barra-fila .pista { flex: 1; background: #eef1f5; border-radius: 4px; height: 14px; }
-    .barra-fila .relleno { background: #3b6fd8; border-radius: 4px; height: 14px; }
-    .barra-fila .valor { flex: 0 0 auto; min-width: 86px; text-align: right; font-variant-numeric: tabular-nums; }
-    .horas { display: flex; align-items: flex-end; gap: 6px; height: 140px; }
-    .horas .col-h { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-size: 11px; }
-    .horas .col-h .b { width: 100%; max-width: 36px; background: #3b6fd8; border-radius: 4px 4px 0 0; }
+    .barra-fila { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .barra-fila .nombre { flex: 0 0 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .barra-fila .pista { flex: 1; background: var(--crema); border-radius: 6px; height: 12px; overflow: hidden; }
+    .barra-fila .relleno { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--aji), var(--mostaza)); }
+    .barra-fila .valor { flex: 0 0 auto; min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .horas { display: flex; align-items: flex-end; gap: 6px; height: 160px; }
+    .horas .col-h { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-size: 11px; color: var(--gris); gap: 4px; }
+    .horas .col-h .b { width: 100%; max-width: 38px; border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, var(--mostaza), var(--aji)); min-height: 3px; }
+    .acciones-rapidas { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .accion-rapida { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 14px; background: var(--papel); border: 1px solid var(--borde); color: var(--tinta); font-weight: 600; text-decoration: none !important; box-shadow: var(--sombra); transition: transform .12s, border-color .15s; }
+    .accion-rapida:hover { transform: translateY(-2px); border-color: var(--aji); color: var(--tinta); }
+    .accion-rapida span.ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #fff; flex: 0 0 auto; }
+    .accion-rapida svg { width: 19px; height: 19px; }
 </style>
 
-<div class="mb-3">
-    <h2 class="mb-0">Bienvenido(a), @SessionHelper.GetName(User)</h2>
-    <span class="text-muted">@Fechas.HoyPeru().ToString("dddd d 'de' MMMM 'de' yyyy", peru)</span>
+<div class="saludo">
+    <h2>@saludo@(string.IsNullOrEmpty(primerNombre) ? "" : ", " + primerNombre) 👋</h2>
+    <span class="fecha">@Fechas.HoyPeru().ToString("dddd d 'de' MMMM 'de' yyyy", peru)</span>
 </div>
 
-@if (Model == null)
-{
-    <div class="card"><div class="card-body">Seleccione una opción del menú lateral para comenzar.</div></div>
-}
-else
+<div class="acciones-rapidas">
+    @if (User.HasClaim("submenu3_1", "S")) { <a class="accion-rapida" asp-controller="MDCajas" asp-action="Create"><span class="ic" style="background:var(--aji)"><i data-feather="shopping-bag"></i></span>Nueva venta</a> }
+    @if (User.HasClaim("submenu3_8", "S")) { <a class="accion-rapida" asp-controller="Salon" asp-action="Index"><span class="ic" style="background:var(--hierba)"><i data-feather="grid"></i></span>Salón y mesas</a> }
+    @if (User.HasClaim("submenu3_9", "S")) { <a class="accion-rapida" asp-controller="Cocina" asp-action="Index"><span class="ic" style="background:var(--mostaza)"><i data-feather="bell"></i></span>Cocina</a> }
+    @if (User.HasClaim("submenu2_1", "S")) { <a class="accion-rapida" asp-controller="MDMenus" asp-action="Create"><span class="ic" style="background:var(--carbon-3)"><i data-feather="book-open"></i></span>Programar plato</a> }
+    @if (User.HasClaim("submenu3_10", "S")) { <a class="accion-rapida" asp-controller="Turnos" asp-action="Index"><span class="ic" style="background:var(--vino)"><i data-feather="lock"></i></span>Abrir / cerrar caja</a> }
+</div>
+
+@if (Model != null)
 {
     var variacion = Model.ventas_ayer == 0 ? (decimal?)null : Math.Round((Model.ventas - Model.ventas_ayer) / Model.ventas_ayer * 100, 0);
     <div class="row">
-        <div class="col-sm-6 col-xl-3 mb-3"><div class="card h-100"><div class="card-body">
+        <div class="col-sm-6 col-xl-3"><div class="card kpi-card"><div class="card-body">
+            <div class="kpi-icono"><i data-feather="trending-up"></i></div>
             <div class="kpi-label">Ventas de hoy</div>
             <div class="kpi">@Soles(Model.ventas)</div>
             <small class="text-muted">
                 @if (variacion == null) { <text>Sin ventas ayer</text> }
-                else { <span class="@(variacion >= 0 ? "text-success" : "text-danger")">@(variacion >= 0 ? "▲" : "▼") @Math.Abs(variacion.Value)%</span> <text>vs. ayer (@Soles(Model.ventas_ayer))</text> }
+                else { <span style="color:@(variacion >= 0 ? "var(--hierba)" : "var(--vino)");font-weight:700">@(variacion >= 0 ? "▲" : "▼") @Math.Abs(variacion.Value)%</span> <text>vs. ayer</text> }
             </small>
         </div></div></div>
-        <div class="col-sm-6 col-xl-3 mb-3"><div class="card h-100"><div class="card-body">
-            <div class="kpi-label">Tickets</div>
-            <div class="kpi">@Model.tickets</div>
+        <div class="col-sm-6 col-xl-3"><div class="card kpi-card" style="--fondo-kpi:var(--hierba-suave)"><div class="card-body">
+            <div class="kpi-icono" style="--color-kpi:var(--hierba)"><i data-feather="file-text"></i></div>
+            <div class="kpi-label">Tickets · promedio</div>
+            <div class="kpi">@Model.tickets <small class="text-muted" style="font-size:16px">· @Soles(Model.ticket_promedio)</small></div>
             <small class="text-muted">@Model.anulados anulado(s)</small>
         </div></div></div>
-        <div class="col-sm-6 col-xl-3 mb-3"><div class="card h-100"><div class="card-body">
-            <div class="kpi-label">Ticket promedio</div>
-            <div class="kpi">@Soles(Model.ticket_promedio)</div>
+        <div class="col-sm-6 col-xl-3"><div class="card kpi-card" style="--fondo-kpi:var(--mostaza-suave)"><div class="card-body">
+            <div class="kpi-icono" style="--color-kpi:var(--mostaza)"><i data-feather="clock"></i></div>
+            <div class="kpi-label">Por cobrar</div>
+            <div class="kpi">@Soles(Model.por_cobrar)</div>
+            <small class="text-muted">@Model.abiertos pedido(s) abierto(s)</small>
         </div></div></div>
-        <div class="col-sm-6 col-xl-3 mb-3"><div class="card h-100"><div class="card-body">
-            <div class="kpi-label">Platos programados hoy</div>
+        <div class="col-sm-6 col-xl-3"><div class="card kpi-card" style="--fondo-kpi:#efe9e3"><div class="card-body">
+            <div class="kpi-icono" style="--color-kpi:var(--carbon-3)"><i data-feather="book-open"></i></div>
+            <div class="kpi-label">Platos de hoy</div>
             <div class="kpi">@Model.platos_programados</div>
-            @if (Model.platos_programados == 0) { <small class="text-danger">Programe el menú del día</small> }
-            else if (User.HasClaim("submenu3_1", "S")) { <a class="btn btn-sm btn-success mt-1" asp-controller="MDCajas" asp-action="Create">Nueva venta</a> }
+            @if (Model.platos_programados == 0) { <small style="color:var(--vino);font-weight:600">Programe el menú del día</small> }
+            else { <small class="text-muted">en la carta</small> }
         </div></div></div>
     </div>
 
     <div class="row">
-        <div class="col-lg-6 mb-3"><div class="card h-100">
-            <div class="card-header"><strong>Platos más vendidos hoy</strong></div>
+        <div class="col-lg-6"><div class="card h-100">
+            <div class="card-header"><strong>Lo más pedido hoy</strong></div>
             <div class="card-body">
-                @if (Model.top_platos.Count == 0) { <span class="text-muted">Aún no hay ventas.</span> }
+                @if (Model.top_platos.Count == 0) { <div class="vacio"><i data-feather="coffee"></i><div>Aún no hay ventas hoy.</div></div> }
                 @{ var maxPlato = Model.top_platos.Count == 0 ? 1 : Model.top_platos.Max(x => x.cantidad); }
                 @foreach (var f in Model.top_platos)
                 {
-                    <div class="barra-fila" title="@f.etiqueta: @f.cantidad unid. - @Soles(f.monto)">
+                    <div class="barra-fila" title="@f.etiqueta: @f.cantidad unid. · @Soles(f.monto)">
                         <span class="nombre">@f.etiqueta</span>
-                        <span class="pista"><span class="relleno d-block" style="width:@(f.cantidad * 100 / maxPlato)%"></span></span>
+                        <span class="pista"><span class="relleno" style="width:@(f.cantidad * 100 / maxPlato)%"></span></span>
                         <span class="valor">@f.cantidad unid.</span>
                     </div>
                 }
             </div>
         </div></div>
-        <div class="col-lg-6 mb-3"><div class="card h-100">
-            <div class="card-header"><strong>Ventas por tipo de pago</strong></div>
+        <div class="col-lg-6"><div class="card h-100">
+            <div class="card-header"><strong>Cómo pagan hoy</strong></div>
             <div class="card-body">
-                @if (Model.por_tipo_pago.Count == 0) { <span class="text-muted">Aún no hay ventas.</span> }
+                @if (Model.por_tipo_pago.Count == 0) { <div class="vacio"><i data-feather="credit-card"></i><div>Aún no hay pagos hoy.</div></div> }
                 @{ var maxPago = Model.por_tipo_pago.Count == 0 ? 1 : Math.Max(1, Model.por_tipo_pago.Max(x => x.monto)); }
                 @foreach (var f in Model.por_tipo_pago)
                 {
                     <div class="barra-fila" title="@f.etiqueta: @f.cantidad ticket(s)">
                         <span class="nombre">@f.etiqueta</span>
-                        <span class="pista"><span class="relleno d-block" style="width:@((int)(f.monto * 100 / maxPago))%"></span></span>
+                        <span class="pista"><span class="relleno" style="width:@((int)(f.monto * 100 / maxPago))%"></span></span>
                         <span class="valor">@Soles(f.monto)</span>
                     </div>
                 }
@@ -93,7 +108,7 @@ else
     @if (Model.por_hora.Count > 0)
     {
         var maxHora = Math.Max(1, Model.por_hora.Max(x => x.monto));
-        <div class="card mb-3">
+        <div class="card mt-4">
             <div class="card-header"><strong>Ventas por hora</strong></div>
             <div class="card-body">
                 <div class="horas">

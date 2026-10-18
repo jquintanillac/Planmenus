@@ -48,7 +48,7 @@
         @if (!string.IsNullOrWhiteSpace(Model.direccion)) { <div class="c">@Model.direccion</div> }
         @if (!string.IsNullOrWhiteSpace(Model.telefono)) { <div class="c">Tel: @Model.telefono</div> }
         <div class="sep"></div>
-        <div><span class="b">TICKET N° @Model.ticket.ToString("D6")</span></div>
+        <div><span class="b">@(Model.pagado ? "TICKET" : "PRE-CUENTA") N° @Model.ticket.ToString("D6")</span></div>
         <div>Fecha: @Model.fecha.ToString("dd/MM/yyyy HH:mm")</div>
         @if (!string.IsNullOrWhiteSpace(Model.mesa)) { <div>Mesa: @Model.mesa</div> }
         @if (!string.IsNullOrWhiteSpace(Model.delivery)) { <div>Reparto: @Model.delivery</div> }
@@ -72,7 +72,8 @@
         <table>
             <tr class="b grande"><td>TOTAL</td><td class="r">@Soles(Model.total)</td></tr>
         </table>
-        @if (!string.IsNullOrWhiteSpace(Model.tipo_pago)) { <div>Pago: @Model.tipo_pago</div> }
+        @if (Model.pagado && !string.IsNullOrWhiteSpace(Model.tipo_pago)) { <div>Pago: @Model.tipo_pago</div> }
+        @if (!Model.pagado) { <div class="c b">PENDIENTE DE PAGO</div> }
         @if (!string.IsNullOrWhiteSpace(Model.observacion)) { <div>Obs: @Model.observacion</div> }
         <div class="sep"></div>
         <div class="c">@Model.pie</div>

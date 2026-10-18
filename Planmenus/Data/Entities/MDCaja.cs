@@ -13,7 +13,7 @@ namespace Planmenus.Data.Entities
         [Display(Name ="Menu")]
         public int? id_menu { get; set; }
         [Display(Name = "Tipo de pago")]
-        public int id_tipago { get; set; }
+        public int? id_tipago { get; set; }
         [Display(Name = "Delivery")]
         public int? id_deliv { get; set; }
         [Display(Name = "Mesa")]
@@ -29,5 +29,23 @@ namespace Planmenus.Data.Entities
         [Display(Name = "Usuario")]
         [StringLength(50)]
         public string caja_usuario { get; set; }
+        /// <summary>false = pedido abierto (en mesa o por cobrar)</summary>
+        [Display(Name = "Pagado")]
+        public bool caja_pagado { get; set; } = true;
+        [Display(Name = "Fecha de cobro")]
+        public DateTime? caja_fecha_pago { get; set; }
+        /// <summary>Estado en cocina, ver <see cref="EstadoCocina"/></summary>
+        [Display(Name = "Cocina")]
+        public byte caja_cocina { get; set; }
+    }
+}
+
+namespace Planmenus.Data.Entities
+{
+    public static class EstadoCocina
+    {
+        public const byte EnCocina = 0;
+        public const byte Listo = 1;
+        public const byte Entregado = 2;
     }
 }
