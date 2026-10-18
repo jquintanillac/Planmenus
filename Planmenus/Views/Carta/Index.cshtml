@@ -20,7 +20,8 @@
         body { margin: 0; background: var(--fondo); color: var(--texto); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
         header { padding: 32px 16px 16px; text-align: center; }
         h1 { margin: 0; font-size: 26px; letter-spacing: .5px; }
-        .fecha { margin-top: 6px; color: var(--suave); text-transform: capitalize; }
+        .fecha { margin-top: 6px; color: var(--suave); }
+        .fecha::first-letter { text-transform: uppercase; }
         main { max-width: 560px; margin: 0 auto; padding: 0 16px 32px; }
         .seccion { margin: 18px 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--acento); font-weight: 700; }
         .plato { display: flex; justify-content: space-between; gap: 12px; padding: 14px 16px; margin-bottom: 10px; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 10px; }

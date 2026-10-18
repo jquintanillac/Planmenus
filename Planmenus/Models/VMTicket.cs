@@ -13,6 +13,8 @@ namespace Planmenus.Models
         public string delivery { get; set; }
         public string observacion { get; set; }
         public bool anulado { get; set; }
+        /// <summary>false = pre-cuenta de un pedido abierto</summary>
+        public bool pagado { get; set; } = true;
         public decimal total { get; set; }
         public List<VMTicketItem> items { get; set; } = new();
 
@@ -26,6 +28,7 @@ namespace Planmenus.Models
 
     public class VMTicketItem
     {
+        public int id_detalle { get; set; }
         public string descripcion { get; set; }
         public int cantidad { get; set; }
         public decimal precio { get; set; }

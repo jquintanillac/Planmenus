@@ -1,0 +1,169 @@
+@using Planmenus.Data.Entities
+@model MDGenerales
+@{
+    ViewData["Title"] = "Configuración";
+    var tipos = (List<MDTipo_pago>)ViewBag.tipos_pago;
+    var tieneIp = !string.IsNullOrWhiteSpace(Model.gene_impresora_ip);
+}
+<style>
+    .conf-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--borde); margin-bottom: 20px; }
+    .conf-tabs a { padding: 10px 16px; border-radius: 10px 10px 0 0; color: var(--gris); font-weight: 600; text-decoration: none; border-bottom: 3px solid transparent; display: inline-flex; gap: 8px; align-items: center; }
+    .conf-tabs a svg { width: 16px; height: 16px; }
+    .conf-tabs a.active { color: var(--aji-osc); border-bottom-color: var(--aji); background: var(--papel); }
+    .conf-tabs a:hover { color: var(--tinta); }
+    .opcion-ancho { display: flex; gap: 12px; }
+    .opcion-ancho label { flex: 1; border: 2px solid var(--borde); border-radius: 14px; padding: 14px; cursor: pointer; text-align: center; font-weight: 600; transition: border-color .15s, background .15s; }
+    .opcion-ancho input { position: absolute; opacity: 0; }
+    .opcion-ancho input:checked + span { color: var(--aji-osc); }
+    .opcion-ancho label:has(input:checked) { border-color: var(--aji); background: var(--aji-suave); }
+    .opcion-ancho .papel { display: block; margin: 0 auto 8px; height: 46px; background: repeating-linear-gradient(180deg, #fff 0 6px, var(--crema) 6px 8px); border: 1px solid var(--borde); border-radius: 4px; }
+    .estado-ticketera { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; }
+</style>
+
+<form asp-action="Index" method="post">
+    <div asp-validation-summary="All" class="alert alert-danger" style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+    <nav class="conf-tabs nav" role="tablist">
+        <a class="active" data-toggle="tab" href="#t-negocio" role="tab"><i data-feather="briefcase"></i> Negocio</a>
+        <a data-toggle="tab" href="#t-ticket" role="tab"><i data-feather="printer"></i> Ticket y ticketera</a>
+        <a data-toggle="tab" href="#t-pagos" role="tab"><i data-feather="credit-card"></i> Pagos</a>
+        <a data-toggle="tab" href="#t-carta" role="tab"><i data-feather="smartphone"></i> Carta digital</a>
+    </nav>
+
+    <div class="tab-content">
+        <section class="tab-pane fade show active" id="t-negocio" role="tabpanel">
+            <div class="card"><div class="card-body">
+                <p class="text-muted">Estos datos salen en el ticket, el cuadre de caja y la carta digital.</p>
+                <div class="form-row">
+                    <div class="form-group col-md-8">
+                        <label asp-for="gene_empre">Nombre del negocio *</label>
+                        <input asp-for="gene_empre" class="form-control" placeholder="Ej.: Cevichería Doña Pepa" required maxlength="100" />
+                        <span asp-validation-for="gene_empre" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label asp-for="gene_ruc">RUC</label>
+                        <input asp-for="gene_ruc" class="form-control" inputmode="numeric" maxlength="11" placeholder="11 dígitos" />
+                        <span asp-validation-for="gene_ruc" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-8">
+                        <label asp-for="gene_direc">Dirección</label>
+                        <input asp-for="gene_direc" class="form-control" placeholder="Av. Larco 123, Miraflores" />
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label asp-for="gene_telef">Teléfono / WhatsApp</label>
+                        <input asp-for="gene_telef" class="form-control" inputmode="tel" placeholder="987 654 321" />
+                    </div>
+                </div>
+                <div class="form-group mb-0">
+                    <label asp-for="gene_url">Página web o redes</label>
+                    <input asp-for="gene_url" class="form-control" placeholder="instagram.com/minegocio" />
+                </div>
+            </div></div>
+        </section>
+
+        <section class="tab-pane fade" id="t-ticket" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card"><div class="card-body">
+                        <h4 class="mb-3">Formato del ticket</h4>
+                        <label>Ancho del papel</label>
+                        <div class="opcion-ancho mb-3">
+                            <label><input type="radio" name="gene_ticket_ancho" value="80" @(Model.gene_ticket_ancho != 58 ? "checked" : "") /><span><span class="papel" style="width:70px"></span>80 mm<br /><small class="text-muted">el más común</small></span></label>
+                            <label><input type="radio" name="gene_ticket_ancho" value="58" @(Model.gene_ticket_ancho == 58 ? "checked" : "") /><span><span class="papel" style="width:50px"></span>58 mm<br /><small class="text-muted">portátiles</small></span></label>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="gene_ticket_pie">Mensaje al pie</label>
+                            <input asp-for="gene_ticket_pie" class="form-control" maxlength="80" placeholder="¡Gracias por su preferencia!" />
+                        </div>
+                        <a class="btn btn-light" asp-action="VistaPrevia" target="_blank"><i data-feather="eye" style="width:16px;height:16px"></i> Vista previa del ticket</a>
+                        <small class="form-text text-muted">Guarde primero para ver los cambios en la vista previa.</small>
+                    </div></div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card"><div class="card-body">
+                        <h4 class="mb-1">Ticketera de red (opcional)</h4>
+                        <p class="text-muted small">Impresión directa ESC/POS (Epson, Xprinter, Bixolon…). Solo funciona si esta aplicación corre en una PC del mismo local que la ticketera. Si usa la app desde internet, deje la IP vacía e imprima desde el navegador.</p>
+                        <div class="estado-ticketera mb-3" style="background:@(tieneIp ? "var(--hierba-suave)" : "var(--crema)")">
+                            <i data-feather="@(tieneIp ? "check-circle" : "info")" style="color:@(tieneIp ? "var(--hierba)" : "var(--gris)")"></i>
+                            <span>@(tieneIp ? $"Configurada en {Model.gene_impresora_ip}:{Model.gene_impresora_puerto}" : "Sin ticketera de red: se imprime desde el navegador")</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-8">
+                                <label asp-for="gene_impresora_ip">Dirección IP</label>
+                                <input asp-for="gene_impresora_ip" class="form-control" placeholder="192.168.1.100" inputmode="decimal" />
+                                <span asp-validation-for="gene_impresora_ip" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group col-4">
+                                <label asp-for="gene_impresora_puerto">Puerto</label>
+                                <input asp-for="gene_impresora_puerto" class="form-control" type="number" min="1" max="65535" />
+                            </div>
+                        </div>
+                        <details class="small text-muted">
+                            <summary>¿Cómo encuentro la IP de mi ticketera?</summary>
+                            <ol class="pl-3 mt-2 mb-0">
+                                <li>Apague la ticketera, mantenga presionado el botón FEED y enciéndala: imprimirá una hoja de configuración.</li>
+                                <li>Busque “IP Address” en esa hoja.</li>
+                                <li>El puerto casi siempre es 9100.</li>
+                            </ol>
+                        </details>
+                    </div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="tab-pane fade" id="t-pagos" role="tabpanel">
+            <div class="card"><div class="card-body">
+                <h4 class="mb-1">¿Qué pagos son efectivo?</h4>
+                <p class="text-muted">Marque los que entran a la gaveta. El cierre de caja suma solo estos al calcular el efectivo esperado.</p>
+                @foreach (var tp in tipos)
+                {
+                    <div class="custom-control custom-switch mb-2">
+                        <input type="checkbox" class="custom-control-input" id="ef-@tp.id_tipago" name="efectivo" value="@tp.id_tipago" @(tp.tipago_efectivo ? "checked" : "") />
+                        <label class="custom-control-label" for="ef-@tp.id_tipago">@tp.tipago_desc @if (!tp.tipago_act) { <span class="badge badge-anul ml-1">inactivo</span> }</label>
+                    </div>
+                }
+                <a class="small" asp-controller="MDTipo_pago" asp-action="Index">Agregar o editar tipos de pago →</a>
+            </div></div>
+        </section>
+
+        <section class="tab-pane fade" id="t-carta" role="tabpanel">
+            <div class="card"><div class="card-body d-flex flex-wrap align-items-center" style="gap:16px">
+                <div class="flex-fill">
+                    <h4 class="mb-1">Carta digital</h4>
+                    <p class="text-muted mb-2">Página pública con los platos de hoy, el nombre del negocio, la dirección y el teléfono de esta configuración.</p>
+                    <code>@ViewBag.url_carta</code>
+                </div>
+                <a class="btn btn-light" href="@ViewBag.url_carta" target="_blank">Ver carta</a>
+                <a class="btn btn-mostaza" asp-controller="Carta" asp-action="Qr">Imprimir QR</a>
+            </div></div>
+        </section>
+    </div>
+
+    <div class="d-flex align-items-center flex-wrap" style="gap:10px">
+        <button type="submit" class="btn btn-primary btn-lg"><i data-feather="save" style="width:18px;height:18px"></i> Guardar configuración</button>
+        <span class="text-muted small">Los cambios se guardan para todas las pestañas.</span>
+    </div>
+</form>
+
+@if (tieneIp)
+{
+    <form asp-action="ProbarTicketera" method="post" class="mt-3">
+        <button type="submit" class="btn btn-light"><i data-feather="printer" style="width:16px;height:16px"></i> Imprimir ticket de prueba</button>
+    </form>
+}
+
+@section Scripts {
+<script>
+    // Recuerda la pestaña abierta y muestra la que tiene errores de validacion
+    (function () {
+        var tabs = $('.conf-tabs a');
+        tabs.on('shown.bs.tab', function (e) { try { sessionStorage.setItem('conf-tab', e.target.getAttribute('href')); } catch (x) { } });
+        var conError = $('.tab-pane .text-danger:not(:empty)').first().closest('.tab-pane').attr('id');
+        var guardada = null; try { guardada = sessionStorage.getItem('conf-tab'); } catch (x) { }
+        var destino = conError ? '#' + conError : guardada;
+        if (destino) tabs.filter('[href="' + destino + '"]').tab('show');
+    })();
+</script>
+}

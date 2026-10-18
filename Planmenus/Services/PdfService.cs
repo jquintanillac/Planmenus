@@ -39,7 +39,7 @@ namespace Planmenus.Services
                         if (!string.IsNullOrWhiteSpace(t.telefono)) col.Item().AlignCenter().Text($"Tel: {t.telefono}");
 
                         col.Item().PaddingVertical(2).LineHorizontal(0.5f);
-                        col.Item().Text(txt => { txt.Span("TICKET N° ").Bold(); txt.Span(t.ticket.ToString("D6")); });
+                        col.Item().Text(txt => { txt.Span(t.pagado ? "TICKET N° " : "PRE-CUENTA N° ").Bold(); txt.Span(t.ticket.ToString("D6")); });
                         col.Item().Text($"Fecha: {t.fecha:dd/MM/yyyy HH:mm}");
                         if (!string.IsNullOrWhiteSpace(t.mesa)) col.Item().Text($"Mesa: {t.mesa}");
                         if (!string.IsNullOrWhiteSpace(t.delivery)) col.Item().Text($"Reparto: {t.delivery}");
@@ -79,7 +79,8 @@ namespace Planmenus.Services
                             row.RelativeItem().Text("TOTAL").Bold().FontSize(fuente + 2);
                             row.AutoItem().Text(Soles(t.total)).Bold().FontSize(fuente + 2);
                         });
-                        if (!string.IsNullOrWhiteSpace(t.tipo_pago)) col.Item().Text($"Pago: {t.tipo_pago}");
+                        if (t.pagado && !string.IsNullOrWhiteSpace(t.tipo_pago)) col.Item().Text($"Pago: {t.tipo_pago}");
+                        if (!t.pagado) col.Item().AlignCenter().Text("Pendiente de pago").Bold();
                         if (!string.IsNullOrWhiteSpace(t.observacion)) col.Item().Text($"Obs: {t.observacion}").Italic();
 
                         col.Item().PaddingTop(4).AlignCenter().Text(t.pie);

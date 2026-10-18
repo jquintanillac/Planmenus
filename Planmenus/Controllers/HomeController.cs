@@ -40,15 +40,17 @@ namespace Planmenus.Controllers
             var manana = hoy.AddDays(1);
             var ayer = hoy.AddDays(-1);
             var cajasHoy = _contex.Cajas.Where(c => c.caja_fecha >= hoy && c.caja_fecha < manana);
-            var activasHoy = cajasHoy.Where(c => c.caja_act);
+            var activasHoy = cajasHoy.Where(c => c.caja_act && c.caja_pagado);
 
             var dashboard = new VMDashboard
             {
                 ventas = await activasHoy.SumAsync(c => (decimal?)c.caja_monto) ?? 0,
                 tickets = await activasHoy.CountAsync(),
                 anulados = await cajasHoy.CountAsync(c => !c.caja_act),
-                ventas_ayer = await _contex.Cajas.Where(c => c.caja_act && c.caja_fecha >= ayer && c.caja_fecha < hoy).SumAsync(c => (decimal?)c.caja_monto) ?? 0,
+                ventas_ayer = await _contex.Cajas.Where(c => c.caja_act && c.caja_pagado && c.caja_fecha >= ayer && c.caja_fecha < hoy).SumAsync(c => (decimal?)c.caja_monto) ?? 0,
                 platos_programados = await _contex.Menus.CountAsync(m => m.menu_fecha >= hoy && m.menu_fecha < manana),
+                abiertos = await _contex.Cajas.CountAsync(c => c.caja_act && !c.caja_pagado),
+                por_cobrar = await _contex.Cajas.Where(c => c.caja_act && !c.caja_pagado).SumAsync(c => (decimal?)c.caja_monto) ?? 0,
                 top_platos = await (from c in activasHoy
                                     join d in _contex.Caja_Detalles on c.id_caja equals d.id_caja
                                     join m in _contex.Menus on d.id_menu equals m.id_menu

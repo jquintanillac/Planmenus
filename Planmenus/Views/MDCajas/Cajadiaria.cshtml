@@ -94,14 +94,9 @@
                         @item.caja_fecha
                     </td>
                      <td>                        
-                        @if (item.caja_act)
-                        {
-                           <label>Activo</label>
-                        }
-                        else
-                        {
-                            <label class="text-danger">Anulado</label>
-                        }
+                        @if (!item.caja_act) { <span class="badge badge-anul">Anulado</span> }
+                        else if (!item.caja_pagado) { <a class="badge badge-pend" asp-controller="Salon" asp-action="Pedido" asp-route-id="@item.id_caja">Por cobrar</a> }
+                        else { <span class="badge badge-ok">Cobrado</span> }
                     </td>
                     <td>
                         @item.caja_usuario

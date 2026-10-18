@@ -25,6 +25,7 @@ namespace Planmenus.Data
         public virtual DbSet<MDRol> Rols { get; set; }
         public virtual DbSet<MDRol_Usuario> Rol_Usuarios { get; set; }
         public virtual DbSet<MDRol_Permisos> Rol_Permisos { get; set; }
+        public virtual DbSet<MDTurno_Caja> Turnos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +37,10 @@ namespace Planmenus.Data
             modelBuilder.Entity<MDEgresos>().Property(x => x.egre_costo).HasPrecision(18, 2);
             modelBuilder.Entity<MDIngresos>().Property(x => x.ingre_monto).HasPrecision(18, 2);
             modelBuilder.Entity<MDInicial>().Property(x => x.ini_monto).HasPrecision(18, 2);
+            modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_monto_inicial).HasPrecision(18, 2);
+            modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_esperado).HasPrecision(18, 2);
+            modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_contado).HasPrecision(18, 2);
+            modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_diferencia).HasPrecision(18, 2);
 
             // Relaciones: una venta no puede apuntar a catalogos inexistentes
             modelBuilder.Entity<MDCaja>().HasOne<MDTipo_pago>().WithMany().HasForeignKey(x => x.id_tipago).OnDelete(DeleteBehavior.Restrict);
@@ -54,6 +59,7 @@ namespace Planmenus.Data
 
             modelBuilder.Entity<MDUsuarios>().HasIndex(x => x.Usua_user).IsUnique();
             modelBuilder.Entity<MDCaja>().HasIndex(x => x.caja_fecha);
+            modelBuilder.Entity<MDCaja>().HasIndex(x => new { x.caja_pagado, x.caja_act });
         }
     }
 }

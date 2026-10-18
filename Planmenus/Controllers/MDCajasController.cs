@@ -168,74 +168,50 @@ namespace Planmenus.Controllers
             return View(mDCaja);
         }
 
-        // GET: MDCajas/Create
+        // GET: MDCajas/Create - pantalla de venta. Con id_caja agrega platos a un pedido abierto; con id_mesa la preselecciona.
         [Permiso("submenu3_1")]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? id_caja, int? id_mesa, [FromServices] VentaService ventas, [FromServices] TurnoService turnos)
         {
+            if (id_caja > 0)
+            {
+                var pedido = await ventas.PedidoAbiertoAsync(id_caja.Value);
+                if (pedido == null)
+                {
+                    TempData["error"] = "El pedido ya fue cobrado o anulado.";
+                    return RedirectToAction("Index", "Salon");
+                }
+                ViewBag.pedido = pedido;
+                ViewBag.pedido_mesa = await _context.Mesas.Where(m => m.id_mesa == pedido.id_mesa).Select(m => m.mesa_desc).FirstOrDefaultAsync();
+            }
+
             var hoy = Fechas.HoyPeru();
             ViewBag.menu = await _context.Menus.Where(x => x.menu_fecha.Date == hoy).OrderBy(x => x.menu_desc).ToListAsync();
             ViewBag.delivery = await _context.Deliveries.Where(x => x.deliv_act).ToListAsync();
             ViewBag.tipago = await _context.Tipo_Pagos.Where(x => x.tipago_act).ToListAsync();
             ViewBag.mesa = await _context.Mesas.Where(x => x.mesa_act).OrderBy(x => x.mesa_nro).ToListAsync();
+            ViewBag.id_mesa = id_mesa;
+            ViewBag.caja_abierta = await turnos.AbiertoAsync() != null;
             return View();
         }
 
         // POST: MDCajas/Create
-        // Registra un pedido con uno o varios platos. El total se calcula con los precios de la base de datos.
+        // accion=cobrar: se cobra y se imprime el ticket. accion=cocina: queda abierto para cobrarlo despues desde Salon.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Permiso("submenu3_1")]
-        public async Task<IActionResult> Create(VMVenta venta)
+        public async Task<IActionResult> Create(VMVenta venta, [FromServices] VentaService ventas)
         {
-            var items = (venta.items ?? new())
-                .Where(i => i.cantidad > 0)
-                .GroupBy(i => i.id_menu)
-                .Select(g => new VMVentaItem { id_menu = g.Key, cantidad = g.Sum(i => i.cantidad) })
-                .ToList();
-            if (items.Count == 0 || items.Any(i => i.cantidad > 999))
+            var resultado = await ventas.RegistrarAsync(venta, SessionHelper.GetNameIdentifier(User));
+            if (!resultado.Ok)
             {
-                return BadRequest("El pedido no tiene platos válidos.");
+                return BadRequest(resultado.Error);
             }
-
-            var hoy = Fechas.HoyPeru();
-            var ids = items.Select(i => i.id_menu).ToList();
-            var precios = await _context.Menus
-                .Where(m => ids.Contains(m.id_menu) && m.menu_fecha.Date == hoy)
-                .ToDictionaryAsync(m => m.id_menu, m => m.menu_precio);
-            if (precios.Count != ids.Count || !await _context.Tipo_Pagos.AnyAsync(t => t.id_tipago == venta.id_tipago))
+            if (venta.Cobrar && venta.id_caja == null)
             {
-                return BadRequest("El pedido contiene platos o tipo de pago no disponibles.");
+                return RedirectToAction(nameof(Ticket), new { id = resultado.Caja.id_caja, imprimir = true });
             }
-
-            var detalle = items.Select(i => new MDCaja_Detalle
-            {
-                id_menu = i.id_menu,
-                det_cant = i.cantidad,
-                det_precio = precios[i.id_menu],
-                det_subtotal = precios[i.id_menu] * i.cantidad
-            }).ToList();
-
-            var oCaja = new MDCaja
-            {
-                id_tipago = venta.id_tipago,
-                id_mesa = venta.id_mesa > 0 ? venta.id_mesa : null,
-                id_deliv = venta.id_deliv > 0 ? venta.id_deliv : null,
-                caja_obs = venta.caja_obs,
-                caja_monto = detalle.Sum(d => d.det_subtotal),
-                caja_fecha = Fechas.AhoraPeru(),
-                caja_usuario = SessionHelper.GetNameIdentifier(User),
-                caja_act = true
-            };
-
-            await using var tx = await _context.Database.BeginTransactionAsync();
-            _context.Cajas.Add(oCaja);
-            await _context.SaveChangesAsync();
-            detalle.ForEach(d => d.id_caja = oCaja.id_caja);
-            _context.Caja_Detalles.AddRange(detalle);
-            await _context.SaveChangesAsync();
-            await tx.CommitAsync();
-
-            return RedirectToAction(nameof(Ticket), new { id = oCaja.id_caja, imprimir = true });
+            TempData["success"] = $"Pedido N° {resultado.Caja.id_caja:D6} enviado a cocina.";
+            return RedirectToAction("Pedido", "Salon", new { id = resultado.Caja.id_caja });
         }
 
         // GET: MDCajas/Ticket/5 - ticket en HTML listo para la ticketera (impresion desde el navegador)

@@ -1,0 +1,61 @@
+@model Planmenus.Models.VMCocina
+@{
+    ViewData["Title"] = "Cocina";
+}
+<style>
+    .comandas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; align-items: start; }
+    .comanda { background: var(--papel); border-radius: 16px; border: 1px solid var(--borde); box-shadow: var(--sombra); overflow: hidden; }
+    .comanda-cab { padding: 12px 16px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+    .comanda-cab strong { font-family: var(--fuente-titulo); font-size: 20px; }
+    .comanda-cab .tiempo { font-weight: 700; font-size: 14px; background: rgba(255,255,255,.2); padding: 3px 10px; border-radius: 999px; }
+    .t-ok .comanda-cab { background: var(--hierba); }
+    .t-medio .comanda-cab { background: #d98a1c; }
+    .t-alto .comanda-cab { background: var(--vino); }
+    .comanda.listo { opacity: .8; }
+    .comanda.listo .comanda-cab { background: var(--carbon-3); }
+    .comanda-cuerpo { padding: 12px 16px; }
+    .comanda-cuerpo ul { list-style: none; margin: 0; padding: 0; }
+    .comanda-cuerpo li { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--borde); font-size: 16px; }
+    .comanda-cuerpo li:last-child { border-bottom: 0; }
+    .comanda-cuerpo .cant { font-weight: 800; min-width: 28px; color: var(--aji-osc); }
+    .comanda-obs { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: var(--mostaza-suave); color: #6b4507; font-weight: 600; font-size: 14px; }
+    .comanda-pie { padding: 0 16px 14px; }
+    .cocina-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .cocina-top .reloj { font-family: var(--fuente-titulo); font-size: 22px; font-weight: 600; }
+</style>
+
+<div class="cocina-top">
+    <span class="reloj" id="reloj">@Model.ahora.ToString("HH:mm")</span>
+    <span class="text-muted small" id="actualizado">Se actualiza cada 15 s</span>
+    <span class="flex-fill"></span>
+    <button type="button" class="btn btn-sm btn-light" id="pantallaCompleta"><i data-feather="maximize" style="width:15px;height:15px"></i> Pantalla completa</button>
+</div>
+
+<div id="comandas">
+    <partial name="_Comandas" model="Model" />
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    var cont = document.getElementById('comandas');
+    function refrescar() {
+        fetch('@Url.Action("Comandas")', { credentials: 'same-origin', headers: { 'X-Requested-With': 'fetch' } })
+            .then(function (r) { if (r.redirected || !r.ok) throw new Error(); return r.text(); })
+            .then(function (html) {
+                cont.innerHTML = html;
+                if (window.feather) feather.replace();
+                document.getElementById('actualizado').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            })
+            .catch(function () { document.getElementById('actualizado').textContent = 'Sin conexión, reintentando…'; });
+    }
+    setInterval(refrescar, 15000);
+    setInterval(function () {
+        document.getElementById('reloj').textContent = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima' });
+    }, 10000);
+    document.getElementById('pantallaCompleta').addEventListener('click', function () {
+        if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    });
+})();
+</script>
+}

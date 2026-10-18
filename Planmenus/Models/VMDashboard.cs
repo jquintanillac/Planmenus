@@ -11,6 +11,8 @@ namespace Planmenus.Models
         public int anulados { get; set; }
         public decimal ventas_ayer { get; set; }
         public int platos_programados { get; set; }
+        public int abiertos { get; set; }
+        public decimal por_cobrar { get; set; }
         public List<VMDashboardFila> top_platos { get; set; } = new();
         public List<VMDashboardFila> por_tipo_pago { get; set; } = new();
         public List<VMDashboardFila> por_hora { get; set; } = new();

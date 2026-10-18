@@ -1,0 +1,103 @@
+@using Planmenus.Data.Entities
+@model Planmenus.Models.VMTicket
+@{
+    ViewData["Title"] = "Pedido de mesa";
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    string Soles(decimal m) => "S/ " + m.ToString("N2", peru);
+    byte cocina = ViewBag.cocina;
+    bool puedeVender = User.HasClaim("submenu3_1", "S");
+}
+<div class="row">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header d-flex align-items-center flex-wrap" style="gap:10px">
+                <strong>Pedido N° @Model.ticket.ToString("D6")</strong>
+                @if (!string.IsNullOrWhiteSpace(Model.mesa)) { <span class="badge badge-coc">@Model.mesa</span> }
+                else { <span class="badge badge-pend">Para llevar</span> }
+                <span class="badge @(cocina == EstadoCocina.Listo ? "badge-pend" : cocina == EstadoCocina.Entregado ? "badge-ok" : "badge-coc")">
+                    @(cocina == EstadoCocina.EnCocina ? "En cocina" : cocina == EstadoCocina.Listo ? "Listo para servir" : "Servido")
+                </span>
+                <span class="flex-fill"></span>
+                <small class="text-muted">Desde @Model.fecha.ToString("HH:mm") · @Model.usuario</small>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead><tr><th style="width:70px">Cant.</th><th>Plato</th><th class="text-right">Precio</th><th class="text-right">Importe</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var i in Model.items)
+                        {
+                            <tr>
+                                <td class="font-weight-bold">@i.cantidad</td>
+                                <td>@i.descripcion</td>
+                                <td class="text-right">@Soles(i.precio)</td>
+                                <td class="text-right">@Soles(i.subtotal)</td>
+                                <td class="text-right">
+                                    @if (puedeVender)
+                                    {
+                                        <form asp-action="Quitar" method="post" class="d-inline" onsubmit="return confirm('¿Quitar @i.descripcion del pedido?')">
+                                            <input type="hidden" name="id" value="@Model.ticket" />
+                                            <input type="hidden" name="id_detalle" value="@i.id_detalle" />
+                                            <button class="btn btn-sm btn-link text-danger" title="Quitar plato">✕</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @if (Model.items.Count == 0) { <tr><td colspan="5" class="vacio">El pedido no tiene platos.</td></tr> }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-body d-flex align-items-center flex-wrap border-top" style="gap:10px">
+                @if (puedeVender) { <a class="btn btn-light" asp-controller="MDCajas" asp-action="Create" asp-route-id_caja="@Model.ticket"><i data-feather="plus" style="width:16px;height:16px"></i> Agregar platos</a> }
+                <a class="btn btn-light" asp-controller="MDCajas" asp-action="Ticket" asp-route-id="@Model.ticket" asp-route-imprimir="true" target="_blank"><i data-feather="printer" style="width:16px;height:16px"></i> Pre-cuenta</a>
+                <span class="flex-fill"></span>
+                <a class="btn btn-link" asp-action="Index">Volver al salón</a>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.observacion)) { <div class="card-body border-top"><strong class="small text-uppercase text-muted">Observación</strong><div>@Model.observacion</div></div> }
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><strong>Cobrar</strong></div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-end mb-3">
+                    <span class="text-muted">Total a cobrar</span>
+                    <span class="kpi" style="color:var(--aji-osc)">@Soles(Model.total)</span>
+                </div>
+                @if (puedeVender)
+                {
+                    <form asp-action="Cobrar" method="post" target="_blank" id="formCobro">
+                        <input type="hidden" name="id" value="@Model.ticket" />
+                        <label>Tipo de pago</label>
+                        <div class="btn-group-toggle d-flex flex-wrap mb-3" data-toggle="buttons" style="gap:8px">
+                            @foreach (MDTipo_pago tp in ViewBag.tipago)
+                            {
+                                <label class="btn btn-outline-primary flex-fill mb-0">
+                                    <input type="radio" name="id_tipago" value="@tp.id_tipago" autocomplete="off" /> @tp.tipago_desc
+                                </label>
+                            }
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block btn-lg" @(Model.items.Count == 0 ? "disabled" : "")>Cobrar e imprimir ticket</button>
+                    </form>
+                    <p class="small text-muted mt-3 mb-0">Para anular el pedido completo use <a asp-controller="MDCajas" asp-action="Edit" asp-route-id="@Model.ticket">Anular ticket</a>.</p>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Su rol no tiene permiso para cobrar.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    var f = document.getElementById('formCobro');
+    if (f) f.addEventListener('submit', function (e) {
+        if (!f.querySelector('input[name=id_tipago]:checked')) { e.preventDefault(); alert('Seleccione el tipo de pago.'); return; }
+        // Tras cobrar, esta pestaña vuelve al salón (el ticket se abre en otra)
+        setTimeout(function () { location.href = '@Url.Action("Index")'; }, 600);
+    });
+</script>
+}

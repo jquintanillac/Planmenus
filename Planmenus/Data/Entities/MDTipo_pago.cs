@@ -13,5 +13,7 @@ namespace Planmenus.Data.Entities
         public string tipago_desc { get; set; }
         [Display(Name = "Activo")]
         public bool tipago_act { get; set; }
+        [Display(Name = "Es efectivo")]
+        public bool tipago_efectivo { get; set; }
     }
 }

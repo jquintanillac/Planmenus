@@ -37,6 +37,7 @@ namespace Planmenus.Services
                                orderby d.id_detalle
                                select new VMTicketItem
                                {
+                                   id_detalle = d.id_detalle,
                                    descripcion = m.menu_desc,
                                    cantidad = d.det_cant,
                                    precio = d.det_precio,
@@ -61,6 +62,7 @@ namespace Planmenus.Services
                 delivery = await _context.Deliveries.Where(d => d.id_deliv == caja.id_deliv).Select(d => d.deliv_nombcom).FirstOrDefaultAsync(),
                 observacion = caja.caja_obs,
                 anulado = !caja.caja_act,
+                pagado = caja.caja_pagado,
                 total = caja.caja_monto,
                 items = items,
                 empresa = empresa.gene_empre,

@@ -1,0 +1,127 @@
+@using Planmenus.Data.Entities
+@using Planmenus.Services
+@{
+    ViewData["Title"] = "Apertura y cierre de caja";
+    var peru = System.Globalization.CultureInfo.GetCultureInfo("es-PE");
+    string Soles(decimal? m) => "S/ " + (m ?? 0).ToString("N2", peru);
+    var r = (TurnoService.Resumen)ViewBag.resumen;
+    var historial = (List<MDTurno_Caja>)ViewBag.historial;
+}
+
+@if (r == null)
+{
+    <div class="row">
+        <div class="col-lg-5">
+            <div class="card kpi-card" style="--fondo-kpi:var(--hierba-suave)">
+                <div class="card-body">
+                    <div class="kpi-icono" style="--color-kpi:var(--hierba)"><i data-feather="unlock"></i></div>
+                    <h3 class="mb-1">Abrir caja</h3>
+                    <p class="text-muted">La caja está cerrada. Cuente el sencillo con el que empieza el turno.</p>
+                    <form asp-action="Abrir" method="post">
+                        <label for="fondo">Fondo inicial (S/)</label>
+                        <input id="fondo" name="fondo" type="number" min="0" step="0.10" value="0" class="form-control form-control-lg mb-3" required />
+                        <button class="btn btn-success btn-block btn-lg">Abrir caja</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card"><div class="card-body">
+                <h4 class="mb-2">¿Cómo funciona?</h4>
+                <ol class="mb-0 pl-3">
+                    <li class="mb-1">Al empezar, abra la caja con el dinero que hay en la gaveta.</li>
+                    <li class="mb-1">Durante el turno, venda y registre egresos e ingresos normalmente.</li>
+                    <li class="mb-1">Al terminar, cuente el efectivo y ciérrela: el sistema calcula si sobra o falta.</li>
+                </ol>
+            </div></div>
+        </div>
+    </div>
+}
+else
+{
+    var t = r.turno;
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header d-flex align-items-center flex-wrap" style="gap:8px">
+                    <strong>Caja abierta</strong>
+                    <span class="badge badge-ok">desde @t.turno_apertura.ToString("dd/MM HH:mm")</span>
+                    <span class="flex-fill"></span>
+                    <small class="text-muted">por @t.turno_usuario_apertura</small>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3 mb-3"><div class="kpi-label">Fondo</div><div class="kpi" style="font-size:22px">@Soles(t.turno_monto_inicial)</div></div>
+                        <div class="col-6 col-md-3 mb-3"><div class="kpi-label">Ventas</div><div class="kpi" style="font-size:22px">@Soles(r.ventas_total)</div></div>
+                        <div class="col-6 col-md-3 mb-3"><div class="kpi-label">Ingresos</div><div class="kpi" style="font-size:22px">@Soles(r.ingresos)</div></div>
+                        <div class="col-6 col-md-3 mb-3"><div class="kpi-label">Egresos</div><div class="kpi" style="font-size:22px">@Soles(r.egresos)</div></div>
+                    </div>
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Tipo de pago</th><th class="text-right">Tickets</th><th class="text-right">Monto</th></tr></thead>
+                        <tbody>
+                            @foreach (var p in r.por_tipo_pago)
+                            {
+                                <tr><td>@p.tipo @if (p.efectivo) { <span class="badge badge-ok ml-1">efectivo</span> }</td><td class="text-right">@p.tickets</td><td class="text-right">@Soles(p.monto)</td></tr>
+                            }
+                            @if (r.por_tipo_pago.Count == 0) { <tr><td colspan="3" class="text-muted">Aún no hay ventas cobradas en este turno.</td></tr> }
+                        </tbody>
+                    </table>
+                    @if (!r.por_tipo_pago.Any(p => p.efectivo) && r.por_tipo_pago.Count > 0)
+                    {
+                        <div class="alert alert-warning mt-3 mb-0">Ningún tipo de pago está marcado como efectivo. Márquelo en <a asp-controller="Configuracion" asp-action="Index">Configuración</a> para que el arqueo sea correcto.</div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card kpi-card" style="--fondo-kpi:var(--mostaza-suave)">
+                <div class="card-body">
+                    <div class="kpi-icono" style="--color-kpi:var(--mostaza)"><i data-feather="lock"></i></div>
+                    <h3 class="mb-1">Cerrar caja</h3>
+                    @if (r.pedidos_abiertos > 0)
+                    {
+                        <div class="alert alert-warning">Hay @r.pedidos_abiertos pedido(s) sin cobrar. <a asp-controller="Salon" asp-action="Index">Revíselos en el salón</a> antes de cerrar.</div>
+                    }
+                    <form asp-action="Cerrar" method="post" onsubmit="return confirm('¿Cerrar la caja con el monto contado?')">
+                        <input type="hidden" name="id" value="@t.id_turno" />
+                        <label for="contado">Efectivo contado en gaveta (S/)</label>
+                        <input id="contado" name="contado" type="number" min="0" step="0.10" class="form-control form-control-lg" required />
+                        <small class="form-text text-muted mb-2">Cuente el dinero antes de ver el monto esperado.</small>
+                        <details class="mb-3">
+                            <summary class="small">Ver efectivo esperado</summary>
+                            <div class="mt-2">Fondo @Soles(t.turno_monto_inicial) + ventas en efectivo @Soles(r.ventas_efectivo) + ingresos @Soles(r.ingresos) − egresos @Soles(r.egresos) = <strong>@Soles(r.esperado)</strong></div>
+                        </details>
+                        <label for="obs">Observación</label>
+                        <textarea id="obs" name="obs" class="form-control mb-3" rows="2" maxlength="300" placeholder="Ej.: faltan S/ 2 por vuelto"></textarea>
+                        <button class="btn btn-primary btn-block btn-lg">Cerrar caja</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header"><strong>Turnos anteriores</strong></div>
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead><tr><th>Apertura</th><th>Cierre</th><th>Cajero</th><th class="text-right">Esperado</th><th class="text-right">Contado</th><th class="text-right">Diferencia</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var h in historial)
+                {
+                    var dif = h.turno_diferencia ?? 0;
+                    <tr>
+                        <td>@h.turno_apertura.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@h.turno_cierre?.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@h.turno_usuario_cierre</td>
+                        <td class="text-right">@Soles(h.turno_esperado)</td>
+                        <td class="text-right">@Soles(h.turno_contado)</td>
+                        <td class="text-right"><span class="badge @(dif == 0 ? "badge-ok" : dif > 0 ? "badge-pend" : "badge-anul")">@(dif > 0 ? "+" : "")@Soles(dif)</span></td>
+                        <td class="text-right"><a class="btn btn-sm btn-light" asp-action="Detalle" asp-route-id="@h.id_turno">Ver</a></td>
+                    </tr>
+                }
+                @if (historial.Count == 0) { <tr><td colspan="7" class="text-muted">Todavía no hay turnos cerrados.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>
