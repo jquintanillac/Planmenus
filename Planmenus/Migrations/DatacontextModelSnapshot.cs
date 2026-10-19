@@ -1357,6 +1357,12 @@ namespace Planmenus.Migrations
                     b.Property<string>("Usua_pass")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("Usua_superadmin")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("Usua_ultimo_ingreso")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Usua_user")
                         .IsRequired()
                         .HasMaxLength(50)

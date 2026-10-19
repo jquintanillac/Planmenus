@@ -139,6 +139,11 @@
                     </ul>
                 </li>
             }
+
+            @if (Puede(SessionHelper.ClaimSuperadmin))
+            {
+                <li><a asp-controller="Plataforma" asp-action="Index" class="@(Activo("Plataforma", null) ? "activo" : "")"><i data-feather="globe"></i> Plataforma</a></li>
+            }
         </ul>
     </aside>
     <div class="app-velo" id="velo"></div>

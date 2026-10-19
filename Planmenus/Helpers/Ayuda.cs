@@ -270,6 +270,19 @@ namespace Planmenus.Helpers
                 Array.Empty<string>(),
                 new[] { "Si la mesa está ocupada en ese horario, elija otra o cambie la hora." }),
 
+            ["Registro/Bienvenida"] = new("Bienvenida",
+                "Asistente inicial de su restaurante: datos del local, cuántas mesas tiene y sus primeros platos del día.",
+                new[] { "Solo se crean los platos con nombre y precio mayor a cero." },
+                new[] { "Puede omitirlo y completar todo después en Configuración, Plano del salón y Programación del menú.",
+                        "Cree usuarios para su caja y sus mozos en Administración → Usuarios, con su propio rol." }),
+
+            ["Plataforma"] = new("Plataforma",
+                "Panel del dueño del sistema: todos los restaurantes registrados con sus usuarios, ventas de los últimos 30 días y último ingreso. Desde aquí se suspende o reactiva un restaurante, se cambia su plan o se crea uno nuevo.",
+                new[] { "Solo lo ven los usuarios marcados como superadministrador.",
+                        "Su propia empresa no se puede suspender." },
+                new[] { "Al suspender un restaurante sus usuarios no pueden ingresar y las sesiones abiertas se cierran en menos de un minuto; sus datos se conservan.",
+                        "Su carta pública también deja de mostrarse mientras esté suspendido." }),
+
             ["Carta/Qr"] = new("Carta digital (QR)",
                 "Código QR que lleva a la carta pública con los platos de hoy y sus precios. Se actualiza sola al programar el menú.",
                 new[] { "La carta usa los datos del negocio de Configuración." },

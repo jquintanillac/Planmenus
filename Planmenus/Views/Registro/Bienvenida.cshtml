@@ -1,0 +1,72 @@
+@model Planmenus.Models.VMBienvenida
+@{
+    ViewData["Title"] = "Bienvenida";
+    var empresa = (Planmenus.Data.Entities.MDGenerales)ViewBag.empresa;
+}
+<style>
+    .paso { display: flex; gap: 14px; align-items: flex-start; }
+    .paso-nro { flex: 0 0 34px; height: 34px; border-radius: 50%; background: var(--aji-suave); color: var(--aji-osc); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .plato-fila { display: grid; grid-template-columns: 1fr 130px; gap: 10px; margin-bottom: 10px; }
+</style>
+
+<div class="mb-4">
+    <h2 class="titulo-serif mb-1">¡Bienvenido a @(empresa?.gene_empre ?? "su restaurante")!</h2>
+    <p class="text-muted mb-0">Complete estos tres pasos para empezar. Todo se puede cambiar después.</p>
+</div>
+
+<form asp-action="Bienvenida" method="post">
+    <div class="card mb-3"><div class="card-body paso">
+        <span class="paso-nro">1</span>
+        <div class="flex-fill">
+            <h5 class="mb-3">Datos del local</h5>
+            <div class="form-row">
+                <div class="form-group col-md-8">
+                    <label asp-for="direccion">Dirección</label>
+                    <input asp-for="direccion" class="form-control" placeholder="Av. Principal 123, Miraflores" />
+                </div>
+                <div class="form-group col-md-4">
+                    <label asp-for="telefono">Teléfono</label>
+                    <input asp-for="telefono" class="form-control" inputmode="tel" />
+                </div>
+            </div>
+        </div>
+    </div></div>
+
+    <div class="card mb-3"><div class="card-body paso">
+        <span class="paso-nro">2</span>
+        <div class="flex-fill">
+            <h5 class="mb-3">Sus mesas</h5>
+            <div class="form-row">
+                <div class="form-group col-sm-6">
+                    <label asp-for="mesas">¿Cuántas mesas tiene?</label>
+                    <input asp-for="mesas" type="number" min="0" max="60" class="form-control" />
+                </div>
+                <div class="form-group col-sm-6">
+                    <label asp-for="capacidad">Personas por mesa</label>
+                    <input asp-for="capacidad" type="number" min="1" max="20" class="form-control" />
+                </div>
+            </div>
+            <small class="text-muted">Se crean en el Plano del salón; luego puede moverlas, cambiar su forma y asignar mozos.</small>
+        </div>
+    </div></div>
+
+    <div class="card mb-4"><div class="card-body paso">
+        <span class="paso-nro">3</span>
+        <div class="flex-fill">
+            <h5 class="mb-3">Sus primeros platos de hoy</h5>
+            @for (int i = 0; i < Model.platos.Count; i++)
+            {
+                <div class="plato-fila">
+                    <input asp-for="platos[i].nombre" class="form-control" placeholder="@(i == 0 ? "Ej.: Lomo saltado" : "Plato")" />
+                    <input asp-for="platos[i].precio" type="number" step="0.10" min="0" class="form-control" placeholder="S/ 0.00" />
+                </div>
+            }
+            <small class="text-muted">Los que deje vacíos no se crean. Los demás días se programan en Programación del menú.</small>
+        </div>
+    </div></div>
+
+    <div class="d-flex flex-wrap" style="gap:10px">
+        <button type="submit" class="btn btn-primary">Guardar y empezar</button>
+        <a asp-controller="Home" asp-action="Inicio" class="btn btn-light">Omitir por ahora</a>
+    </div>
+</form>

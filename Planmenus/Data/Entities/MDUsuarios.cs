@@ -28,5 +28,8 @@ namespace Planmenus.Data.Entities
 
         [Display(Name = "Activo")]
         public bool Usua_act { get; set; }
+        /// <summary>Administrador de la plataforma (ve y gestiona todas las empresas)</summary>
+        public bool Usua_superadmin { get; set; }
+        public DateTime? Usua_ultimo_ingreso { get; set; }
     }
 }

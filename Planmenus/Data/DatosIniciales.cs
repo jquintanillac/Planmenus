@@ -50,7 +50,9 @@ namespace Planmenus.Data
                 Usua_email = config["Seed:AdminEmail"] ?? "",
                 Usua_pass = hash.Password,
                 Usua_Hash = hash.Salt,
-                Usua_act = true
+                Usua_act = true,
+                // El primer usuario del sistema administra la plataforma
+                Usua_superadmin = true
             };
             context.Usuarios.Add(admin);
             await context.SaveChangesAsync();
