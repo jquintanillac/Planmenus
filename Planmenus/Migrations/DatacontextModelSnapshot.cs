@@ -929,6 +929,10 @@ namespace Planmenus.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("pago_mp_id")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("pago_plan")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -947,6 +951,10 @@ namespace Planmenus.Migrations
                     b.HasKey("id_pago");
 
                     b.HasIndex("id_empresa");
+
+                    b.HasIndex("pago_mp_id")
+                        .IsUnique()
+                        .HasFilter("[pago_mp_id] IS NOT NULL");
 
                     b.ToTable("Pago_Suscripcion");
                 });

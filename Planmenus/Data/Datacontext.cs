@@ -65,6 +65,7 @@ namespace Planmenus.Data
             modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_contado).HasPrecision(18, 2);
             modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_diferencia).HasPrecision(18, 2);
             modelBuilder.Entity<MDPago_Suscripcion>().Property(x => x.pago_monto).HasPrecision(18, 2);
+            modelBuilder.Entity<MDPago_Suscripcion>().HasIndex(x => x.pago_mp_id).IsUnique().HasFilter("[pago_mp_id] IS NOT NULL");
 
             // Relaciones: una venta no puede apuntar a catalogos inexistentes
             modelBuilder.Entity<MDCaja>().HasOne<MDTipo_pago>().WithMany().HasForeignKey(x => x.id_tipago).OnDelete(DeleteBehavior.Restrict);

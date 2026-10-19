@@ -108,30 +108,14 @@ namespace Planmenus.Controllers
         {
             var p = _suscripcion.Todos.FirstOrDefault(x => x.Codigo == plan);
             if (p == null || meses is < 1 or > 24 || !MediosPago.Contains(medio)) return BadRequest();
-            var empresa = await _context.Empresas.FirstOrDefaultAsync(e => e.id_empresa == id);
+            var empresa = await _context.Empresas.AsNoTracking().FirstOrDefaultAsync(e => e.id_empresa == id);
             if (empresa == null) return NotFound();
-
-            var hoy = Fechas.HoyPeru();
-            var desde = empresa.emp_vence > hoy ? empresa.emp_vence.Value : hoy;
-            empresa.emp_vence = desde.AddMonths(meses);
-            empresa.emp_plan = p.Codigo;
-            empresa.emp_activa = true;
-            await _context.SaveChangesAsync();
 
             // El pago pertenece a esa empresa: se guarda dentro de ella (asi lo ve en Mi suscripcion)
             var usuario = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            await _empresas.EnEmpresaAsync(id, async sp =>
-            {
-                var db = sp.GetRequiredService<Datacontext>();
-                db.Pagos_Suscripcion.Add(new MDPago_Suscripcion
-                {
-                    pago_fecha = Fechas.AhoraPeru(), pago_monto = Math.Round(monto ?? p.PrecioMes * meses, 2), pago_meses = meses,
-                    pago_plan = p.Codigo, pago_medio = medio, pago_referencia = referencia?.Trim(), pago_vence = empresa.emp_vence.Value, pago_usuario = usuario
-                });
-                return await db.SaveChangesAsync();
-            });
+            var vence = await _empresas.RegistrarPagoAsync(id, new EmpresaService.Pago(p.Codigo, meses, monto ?? p.PrecioMes * meses, medio, referencia, usuario));
             _cache.Remove(EstadoEmpresa.Clave(id));
-            TempData["success"] = $"Pago registrado: {empresa.emp_nombre} en plan {p.Nombre} hasta el {empresa.emp_vence:dd/MM/yyyy}.";
+            TempData["success"] = $"Pago registrado: {empresa.emp_nombre} en plan {p.Nombre} hasta el {vence:dd/MM/yyyy}.";
             return RedirectToAction(nameof(Index));
         }
 

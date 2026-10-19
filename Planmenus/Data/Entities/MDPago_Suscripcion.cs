@@ -24,5 +24,8 @@ namespace Planmenus.Data.Entities
         public DateTime pago_vence { get; set; }
         [StringLength(50)]
         public string pago_usuario { get; set; }
+        /// <summary>Id del pago en Mercado Pago (unico: un pago nunca se aplica dos veces)</summary>
+        [StringLength(30)]
+        public string pago_mp_id { get; set; }
     }
 }

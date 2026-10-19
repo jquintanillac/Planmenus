@@ -287,7 +287,8 @@ namespace Planmenus.Helpers
                 "Su plan actual, hasta cuándo está vigente, cuánto usa de cada límite (usuarios, mesas y comprobantes del mes) y cómo renovar o cambiar de plan.",
                 new[] { "Al vencer tiene unos días de gracia con aviso; después solo puede entrar a esta pantalla hasta renovar.",
                         "Los usuarios y mesas inactivos no cuentan para el límite." },
-                new[] { "Renueve antes de la fecha de vencimiento: los días pagados se suman a los que le quedan.",
+                new[] { "Pague con Mercado Pago (tarjeta, Yape y otros): al aprobarse, la suscripción se renueva sola.",
+                        "Renueve antes de la fecha de vencimiento: los días pagados se suman a los que le quedan.",
                         "Si llega al límite de mesas o usuarios, desactive los que ya no use o mejore su plan." }),
 
             ["Carta/Qr"] = new("Carta digital (QR)",

@@ -111,6 +111,46 @@ namespace Planmenus.Services
             return await tarea(scope.ServiceProvider);
         }
 
+        public record Pago(string Plan, int Meses, decimal Monto, string Medio, string Referencia, string Usuario, string MercadoPagoId = null);
+
+        /// <summary>
+        /// Registra un pago de la suscripcion: fija el plan y extiende el vencimiento desde hoy o desde el
+        /// vencimiento actual si todavia no llega. Devuelve el nuevo vencimiento, o null si ese pago de
+        /// Mercado Pago ya estaba registrado.
+        /// </summary>
+        public Task<DateTime?> RegistrarPagoAsync(int idEmpresa, Pago p) => EnEmpresaAsync(idEmpresa, async sp =>
+        {
+            var db = sp.GetRequiredService<Datacontext>();
+            if (p.MercadoPagoId != null && await db.Pagos_Suscripcion.IgnoreQueryFilters().AnyAsync(x => x.pago_mp_id == p.MercadoPagoId))
+            {
+                return (DateTime?)null;
+            }
+            await using var tx = await db.Database.BeginTransactionAsync();
+            var empresa = await db.Empresas.FirstAsync(e => e.id_empresa == idEmpresa);
+            var hoy = Fechas.HoyPeru();
+            var desde = empresa.emp_vence > hoy ? empresa.emp_vence.Value : hoy;
+            empresa.emp_vence = desde.AddMonths(p.Meses);
+            empresa.emp_plan = p.Plan;
+            empresa.emp_activa = true;
+            db.Pagos_Suscripcion.Add(new MDPago_Suscripcion
+            {
+                pago_fecha = Fechas.AhoraPeru(), pago_monto = Math.Round(p.Monto, 2), pago_meses = p.Meses, pago_plan = p.Plan,
+                pago_medio = p.Medio, pago_referencia = p.Referencia?.Trim(), pago_vence = empresa.emp_vence.Value,
+                pago_usuario = p.Usuario, pago_mp_id = p.MercadoPagoId
+            });
+            try
+            {
+                await db.SaveChangesAsync();
+            }
+            catch (DbUpdateException) when (p.MercadoPagoId != null)
+            {
+                // La notificacion y el retorno llegaron a la vez: el otro ya lo registro
+                return null;
+            }
+            await tx.CommitAsync();
+            return empresa.emp_vence;
+        });
+
         /// <summary>"Cevichería Doña Pepa" → "cevicheria-dona-pepa"</summary>
         public static string Codigo(string texto)
         {

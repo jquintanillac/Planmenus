@@ -34,6 +34,14 @@ namespace Planmenus.Tests
                 {
                     services.Remove(d);
                 }
+                // Mercado Pago simulado: las pruebas nunca llaman a la API real
+                foreach (var d in services.Where(d => d.ServiceType == typeof(Planmenus.Services.Pagos.IMercadoPago)).ToList())
+                {
+                    services.Remove(d);
+                }
+                services.AddSingleton<MercadoPagoFalso>();
+                services.AddSingleton<Planmenus.Services.Pagos.IMercadoPago>(sp => sp.GetRequiredService<MercadoPagoFalso>());
+                services.PostConfigure<Planmenus.Services.Pagos.MercadoPagoOptions>(o => o.ClaveWebhook = MercadoPagoFalso.ClaveWebhook);
                 services.AddAuthentication(Esquema).AddScheme<AuthenticationSchemeOptions, UsuarioPruebas>(Esquema, _ => { });
                 services.PostConfigure<AuthenticationOptions>(o =>
                 {

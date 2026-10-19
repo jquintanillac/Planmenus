@@ -6,6 +6,8 @@
     var pagos = (List<Planmenus.Data.Entities.MDPago_Suscripcion>)ViewBag.pagos;
     var dias = PlanService.DiasParaVencer(Model.Empresa.emp_vence);
     var bloqueada = PlanService.Bloqueada(Model.Empresa.emp_vence, opciones.DiasGracia);
+    var mercadopago = (bool)ViewBag.mercadopago;
+    var puedePagar = (bool)ViewBag.puede_pagar;
     string Limite(int n, string que) => n <= 0 ? $"{que} ilimitados" : $"Hasta {n} {que}";
 }
 <style>
@@ -53,12 +55,44 @@
     <div class="col-lg-7 mb-4">
         <div class="card h-100"><div class="card-body">
             <h5>Cómo pagar o cambiar de plan</h5>
-            @if (string.IsNullOrWhiteSpace(opciones.InstruccionesPago))
+            @if (mercadopago && puedePagar)
+            {
+                <form asp-action="Pagar" method="post" class="mb-3" id="formPago">
+                    <div class="form-row">
+                        <div class="form-group col-sm-6">
+                            <label for="plan">Plan</label>
+                            <select id="plan" name="plan" class="custom-select">
+                                @foreach (var p in opciones.Todos)
+                                {
+                                    <option value="@p.Codigo" data-precio="@p.PrecioMes.ToString(System.Globalization.CultureInfo.InvariantCulture)" selected="@(p.Codigo == Model.Plan.Codigo)">@p.Nombre · S/ @p.PrecioMes.ToString("0.00") al mes</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-sm-6">
+                            <label for="meses">Tiempo</label>
+                            <select id="meses" name="meses" class="custom-select">
+                                @foreach (var m in Planmenus.Services.Pagos.CobroService.MesesPermitidos)
+                                {
+                                    <option value="@m">@m @(m == 1 ? "mes" : "meses")</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Pagar <span id="totalPago"></span> con Mercado Pago</button>
+                    <div class="small text-muted mt-2">Tarjeta, Yape u otros medios de Mercado Pago. Al aprobarse, su suscripción se renueva al instante.</div>
+                </form>
+            }
+            else if (mercadopago)
+            {
+                <p class="text-muted">Pídale al administrador de su restaurante que realice el pago.</p>
+            }
+            @if (string.IsNullOrWhiteSpace(opciones.InstruccionesPago) && !mercadopago)
             {
                 <p class="text-muted mb-0">Comuníquese con soporte para renovar o cambiar su plan.</p>
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(opciones.InstruccionesPago))
             {
+                if (mercadopago) { <h6 class="mt-3">Otros medios</h6> }
                 <p style="white-space:pre-line" class="mb-0">@opciones.InstruccionesPago</p>
             }
             <p class="small text-muted mt-3 mb-0">Indique el nombre de su restaurante (<strong>@Model.Empresa.emp_nombre</strong>) y el plan. Al confirmarse el pago, su vencimiento se extiende desde la fecha actual de vencimiento.</p>
@@ -102,4 +136,20 @@
             </tbody>
         </table>
     </div></div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var plan = document.getElementById('plan'), meses = document.getElementById('meses'), total = document.getElementById('totalPago');
+            if (!plan) return;
+            function calcular() {
+                var precio = parseFloat(plan.selectedOptions[0].dataset.precio) * parseInt(meses.value, 10);
+                total.textContent = 'S/ ' + precio.toFixed(2);
+            }
+            plan.addEventListener('change', calcular);
+            meses.addEventListener('change', calcular);
+            calcular();
+        })();
+    </script>
 }
