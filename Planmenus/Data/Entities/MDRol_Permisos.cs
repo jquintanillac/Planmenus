@@ -4,8 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Planmenus.Data.Entities
 {
     [Table("Rol_Permisos")]
-    public class MDRol_Permisos
+    public class MDRol_Permisos : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_rolper { get; set; }

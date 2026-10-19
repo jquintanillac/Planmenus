@@ -87,10 +87,24 @@ namespace Planmenus.Controllers
         {
             try
             {
-                var xUsuario = await _contex.Usuarios.SingleOrDefaultAsync(x => x.Usua_user == Usua_user && x.Usua_act);
-                if (xUsuario == null || !await ValidarPassword(xUsuario, Usua_pass))
+                // El usuario se busca en todas las empresas (el nombre de usuario es unico en el sistema)
+                var xUsuario = await _contex.Usuarios.IgnoreQueryFilters().SingleOrDefaultAsync(x => x.Usua_user == Usua_user && x.Usua_act);
+                if (xUsuario == null)
                 {
                     TempData["error"] = "Usuario/clave incorrectos.";
+                    return RedirectToAction("Index", "Home");
+                }
+                // A partir de aqui todas las consultas son de la empresa del usuario
+                HttpContext.RequestServices.GetRequiredService<EmpresaActual>().Establecer(xUsuario.id_empresa);
+                if (!await ValidarPassword(xUsuario, Usua_pass))
+                {
+                    TempData["error"] = "Usuario/clave incorrectos.";
+                    return RedirectToAction("Index", "Home");
+                }
+                var empresa = await _contex.Empresas.AsNoTracking().FirstOrDefaultAsync(e => e.id_empresa == xUsuario.id_empresa);
+                if (empresa == null || !empresa.emp_activa)
+                {
+                    TempData["error"] = "La empresa de este usuario está suspendida. Comuníquese con soporte.";
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -109,6 +123,7 @@ namespace Planmenus.Controllers
                 identity.AddClaim(new Claim(ClaimTypes.Name, xUsuario.Usua_nombres ?? xUsuario.Usua_user));
                 identity.AddClaim(new Claim(ClaimTypes.Email, xUsuario.Usua_email ?? ""));
                 identity.AddClaim(new Claim(ClaimTypes.Role, rol.rol_desc));
+                identity.AddClaim(new Claim(SessionHelper.ClaimEmpresa, xUsuario.id_empresa.ToString()));
 
                 var permisos = await _contex.Rol_Permisos
                     .Where(x => x.id_rol == rol.id_rol && x.rolper_act)

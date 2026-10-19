@@ -11,10 +11,12 @@ namespace Planmenus.Data.DataSql
     public class SP_Menus
     {
         private readonly string _connectionString;
+        private readonly EmpresaActual _empresa;
 
-        public SP_Menus(IConfiguration configuration)
+        public SP_Menus(IConfiguration configuration, EmpresaActual empresa)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _empresa = empresa;
         }
 
         public Task<List<VMCaja_Q01>> mReporteQ01(DateTime fecini, DateTime fecfin) =>
@@ -99,6 +101,8 @@ namespace Planmenus.Data.DataSql
             using var cmd = new SqlCommand(sp, conex) { CommandType = CommandType.StoredProcedure };
             cmd.Parameters.Add("@FECINI", SqlDbType.Date).Value = fecini.Date;
             cmd.Parameters.Add("@FECFIN", SqlDbType.Date).Value = fecfin.Date;
+            // Los reportes son siempre de la empresa del usuario conectado
+            cmd.Parameters.Add("@ID_EMPRESA", SqlDbType.Int).Value = _empresa.Id ?? throw new InvalidOperationException("No hay una empresa establecida.");
             await conex.OpenAsync();
             using var rdr = await cmd.ExecuteReaderAsync();
             while (await rdr.ReadAsync())

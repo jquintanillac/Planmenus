@@ -46,28 +46,35 @@ namespace Planmenus.Tests
 
         public Cliente Cliente() => new(CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true }), this);
 
-        public T Con<T>(Func<Datacontext, T> accion)
+        /// <summary>Acceso directo a la base dentro de una empresa (1 por defecto)</summary>
+        public async Task Con(Func<Datacontext, Task> accion, int empresa = 1)
         {
             using var scope = Services.CreateScope();
-            return accion(scope.ServiceProvider.GetRequiredService<Datacontext>());
-        }
-
-        public async Task Con(Func<Datacontext, Task> accion)
-        {
-            using var scope = Services.CreateScope();
+            scope.ServiceProvider.GetRequiredService<EmpresaActual>().Establecer(empresa);
             await accion(scope.ServiceProvider.GetRequiredService<Datacontext>());
         }
 
-        public async Task<T> Con<T>(Func<Datacontext, Task<T>> accion)
+        public async Task<T> Con<T>(Func<Datacontext, Task<T>> accion, int empresa = 1)
         {
             using var scope = Services.CreateScope();
+            scope.ServiceProvider.GetRequiredService<EmpresaActual>().Establecer(empresa);
             return await accion(scope.ServiceProvider.GetRequiredService<Datacontext>());
+        }
+
+        /// <summary>Cliente que trabaja como la empresa indicada</summary>
+        public Cliente ClienteDe(int empresa)
+        {
+            var c = Cliente();
+            c.Http.DefaultRequestHeaders.Add(UsuarioPruebas.CabeceraEmpresa, empresa.ToString());
+            return c;
         }
     }
 
     /// <summary>Usuario "admin" con todos los permisos del menu</summary>
     public class UsuarioPruebas : AuthenticationHandler<AuthenticationSchemeOptions>
     {
+        public const string CabeceraEmpresa = "X-Prueba-Empresa";
+
         public UsuarioPruebas(IOptionsMonitor<AuthenticationSchemeOptions> o, ILoggerFactory l, UrlEncoder e) : base(o, l, e) { }
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -76,7 +83,9 @@ namespace Planmenus.Tests
             {
                 new(ClaimTypes.NameIdentifier, "admin"),
                 new(ClaimTypes.Name, "Pruebas automatizadas"),
-                new(ClaimTypes.Role, "Administrador")
+                new(ClaimTypes.Role, "Administrador"),
+                // Empresa 1 por defecto; las pruebas de aislamiento usan la cabecera X-Prueba-Empresa
+                new(Planmenus.Helpers.SessionHelper.ClaimEmpresa, Request.Headers.TryGetValue(CabeceraEmpresa, out var e) ? e.ToString() : "1")
             };
             for (int m = 1; m <= 3; m++) claims.Add(new Claim("menu" + m, "S"));
             for (int m = 1; m <= 3; m++)

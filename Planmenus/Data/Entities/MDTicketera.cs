@@ -7,8 +7,9 @@ namespace Planmenus.Data.Entities
     /// Configuracion de la ticketera y del formato del ticket (un solo registro).
     /// </summary>
     [Table("Ticketera")]
-    public class MDTicketera
+    public class MDTicketera : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_ticketera { get; set; }
@@ -91,8 +92,9 @@ namespace Planmenus.Data.Entities
     /// Trabajo de impresion pendiente para el agente local.
     /// </summary>
     [Table("Impresion_Cola")]
-    public class MDImpresion_Cola
+    public class MDImpresion_Cola : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_trabajo { get; set; }

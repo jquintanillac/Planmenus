@@ -6,9 +6,17 @@ namespace Planmenus.Data
 {
     public class Datacontext : DbContext, IDataProtectionKeyContext
     {
-        public Datacontext(DbContextOptions<Datacontext> options) : base(options)
+        private readonly EmpresaActual _empresa;
+
+        public Datacontext(DbContextOptions<Datacontext> options, EmpresaActual empresa) : base(options)
         {
+            _empresa = empresa;
         }
+
+        /// <summary>Empresa usada por los filtros globales (EF la evalua en cada consulta)</summary>
+        public int? EmpresaId => _empresa?.Id;
+
+        public virtual DbSet<MDEmpresa> Empresas { get; set; }
         public virtual DbSet<MDCaja> Cajas { get; set; }
         public virtual DbSet<MDCaja_Detalle> Caja_Detalles { get; set; }
         public virtual DbSet<MDMenu> Menus  { get; set; }
@@ -84,14 +92,75 @@ namespace Planmenus.Data
             modelBuilder.Entity<MDReserva_Mesa>().HasIndex(x => new { x.id_reserva, x.id_mesa }).IsUnique();
             modelBuilder.Entity<MDReserva>().HasIndex(x => new { x.res_inicio, x.res_estado });
             modelBuilder.Entity<MDCorreo_Log>().HasIndex(x => x.cor_fecha);
+
+            // ---- Multiempresa ----
+            modelBuilder.Entity<MDEmpresa>().HasIndex(x => x.emp_codigo).IsUnique();
+            modelBuilder.Entity<MDSerie>().HasKey(x => new { x.id_empresa, x.serie_clave });
+            modelBuilder.Entity<MDComprobante>().HasIndex(x => new { x.id_empresa, x.comp_tipo, x.comp_serie, x.comp_numero }).IsUnique();
+            foreach (var tipo in modelBuilder.Model.GetEntityTypes().Where(t => typeof(IEmpresa).IsAssignableFrom(t.ClrType)).Select(t => t.ClrType).ToList())
+            {
+                modelBuilder.Entity(tipo).HasOne(typeof(MDEmpresa)).WithMany().HasForeignKey(nameof(IEmpresa.id_empresa)).OnDelete(DeleteBehavior.Restrict);
+                modelBuilder.Entity(tipo).HasIndex(nameof(IEmpresa.id_empresa));
+                // Va en el WHERE de cada UPDATE/DELETE: un registro de otra empresa nunca se modifica
+                modelBuilder.Entity(tipo).Property(nameof(IEmpresa.id_empresa)).IsConcurrencyToken();
+                // Cada empresa solo ve sus datos; sin empresa establecida no se ve nada
+                var p = System.Linq.Expressions.Expression.Parameter(tipo, "e");
+                var filtro = System.Linq.Expressions.Expression.Lambda(
+                    System.Linq.Expressions.Expression.Equal(
+                        System.Linq.Expressions.Expression.Convert(System.Linq.Expressions.Expression.Property(p, nameof(IEmpresa.id_empresa)), typeof(int?)),
+                        System.Linq.Expressions.Expression.Property(System.Linq.Expressions.Expression.Constant(this), nameof(EmpresaId))),
+                    p);
+                modelBuilder.Entity(tipo).HasQueryFilter(filtro);
+            }
             modelBuilder.Entity<MDImpresion_Cola>().HasIndex(x => new { x.imp_estado, x.imp_creado });
 
-            modelBuilder.Entity<MDComprobante>().HasIndex(x => new { x.comp_tipo, x.comp_serie, x.comp_numero }).IsUnique();
             modelBuilder.Entity<MDComprobante>().HasIndex(x => x.id_caja);
             modelBuilder.Entity<MDComprobante>().HasIndex(x => new { x.comp_estado, x.comp_fecha });
             modelBuilder.Entity<MDComprobante>().HasOne<MDCaja>().WithMany().HasForeignKey(x => x.id_caja).OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<MDComprobante>().HasOne<MDComprobante>().WithMany().HasForeignKey(x => x.ref_id_comp).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<MDComprobante_Detalle>().HasOne<MDComprobante>().WithMany().HasForeignKey(x => x.id_comp).OnDelete(DeleteBehavior.Cascade);
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            AsignarEmpresa();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            AsignarEmpresa();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        /// <summary>
+        /// Los registros nuevos toman la empresa actual; no se permite mover un registro a otra empresa.
+        /// </summary>
+        private void AsignarEmpresa()
+        {
+            foreach (var e in ChangeTracker.Entries<IEmpresa>())
+            {
+                if (e.State == EntityState.Added && e.Entity.id_empresa == 0)
+                {
+                    e.Entity.id_empresa = EmpresaId ?? throw new InvalidOperationException(
+                        $"No se puede guardar {e.Entity.GetType().Name}: no hay una empresa establecida.");
+                }
+                else if (e.State is EntityState.Modified or EntityState.Deleted && EmpresaId != null)
+                {
+                    var prop = e.Property(x => x.id_empresa);
+                    if (e.Entity.id_empresa == 0)
+                    {
+                        // Objeto armado desde un formulario (Update sin cargarlo): pertenece a la empresa actual
+                        prop.CurrentValue = EmpresaId.Value;
+                        prop.OriginalValue = EmpresaId.Value;
+                        prop.IsModified = false;
+                    }
+                    else if (e.Entity.id_empresa != EmpresaId || (int)prop.OriginalValue != EmpresaId)
+                    {
+                        throw new InvalidOperationException("No se puede modificar un registro de otra empresa.");
+                    }
+                }
+            }
         }
     }
 }

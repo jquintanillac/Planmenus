@@ -89,7 +89,7 @@ namespace Planmenus.Controllers
         private async Task CargarAsync()
         {
             ViewBag.tipos_pago = await _context.Tipo_Pagos.OrderBy(t => t.tipago_desc).ToListAsync();
-            ViewBag.url_carta = Url.Action("Index", "Carta", null, Request.Scheme);
+            ViewBag.url_carta = $"{Request.Scheme}://{Request.Host}{Request.PathBase}/c/" + await _context.Empresas.Where(e => e.id_empresa == HttpContext.RequestServices.GetRequiredService<EmpresaActual>().Id).Select(e => e.emp_codigo).FirstOrDefaultAsync();
             ViewBag.correo = _correo.Opciones;
             ViewBag.formato = await HttpContext.RequestServices.GetRequiredService<TicketService>().ObtenerFormatoAsync();
             ViewBag.fe = await HttpContext.RequestServices.GetRequiredService<Planmenus.Services.Facturacion.FacturacionService>().ConfigAsync();

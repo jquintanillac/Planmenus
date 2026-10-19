@@ -4,8 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Planmenus.Data.Entities
 {
     [Table("Reserva")]
-    public class MDReserva
+    public class MDReserva : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_reserva { get; set; }
@@ -46,8 +47,9 @@ namespace Planmenus.Data.Entities
     }
 
     [Table("Reserva_Mesa")]
-    public class MDReserva_Mesa
+    public class MDReserva_Mesa : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_resmesa { get; set; }

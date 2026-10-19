@@ -63,7 +63,8 @@ namespace Planmenus.Controllers
             {
                 ModelState.AddModelError(nameof(MDUsuarios.Usua_pass), "Ingrese una contraseña.");
             }
-            if (await _context.Usuarios.AnyAsync(u => u.Usua_user == mDUsuarios.Usua_user))
+            // El usuario es unico en todo el sistema (todas las empresas): con el se identifica la empresa al ingresar
+            if (await _context.Usuarios.IgnoreQueryFilters().AnyAsync(u => u.Usua_user == mDUsuarios.Usua_user))
             {
                 ModelState.AddModelError(nameof(MDUsuarios.Usua_user), "El usuario ya existe.");
             }
@@ -119,6 +120,10 @@ namespace Planmenus.Controllers
                 return NotFound();
             }
 
+            if (await _context.Usuarios.IgnoreQueryFilters().AnyAsync(u => u.Usua_user == mDUsuarios.Usua_user && u.IdUsuario != id))
+            {
+                ModelState.AddModelError(nameof(MDUsuarios.Usua_user), "Ese nombre de usuario ya está en uso.");
+            }
             if (ModelState.IsValid)
             {
                 var usuario = await _context.Usuarios.FindAsync(id);

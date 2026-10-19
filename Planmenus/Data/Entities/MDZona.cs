@@ -7,8 +7,9 @@ namespace Planmenus.Data.Entities
     /// Ambiente del local (Salon, Terraza, 2do piso...). Cada zona tiene su propio plano.
     /// </summary>
     [Table("Zona")]
-    public class MDZona
+    public class MDZona : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_zona { get; set; }

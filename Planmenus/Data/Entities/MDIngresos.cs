@@ -5,8 +5,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Planmenus.Data.Entities
 {
     [Table("Ingresos")]
-    public class MDIngresos
+    public class MDIngresos : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_ingre { get; set; }

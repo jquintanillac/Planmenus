@@ -55,12 +55,18 @@ namespace Planmenus.Migrations
                     b.Property<DateTime>("asig_fecha")
                         .HasColumnType("date");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<int>("id_mesa")
                         .HasColumnType("int");
 
                     b.HasKey("id_asig");
 
                     b.HasIndex("IdUsuario");
+
+                    b.HasIndex("id_empresa");
 
                     b.HasIndex("id_mesa");
 
@@ -111,6 +117,10 @@ namespace Planmenus.Migrations
                     b.Property<int?>("id_deliv")
                         .HasColumnType("int");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<int?>("id_menu")
                         .HasColumnType("int");
 
@@ -125,6 +135,8 @@ namespace Planmenus.Migrations
                     b.HasIndex("caja_fecha");
 
                     b.HasIndex("id_deliv");
+
+                    b.HasIndex("id_empresa");
 
                     b.HasIndex("id_menu");
 
@@ -159,12 +171,18 @@ namespace Planmenus.Migrations
                     b.Property<int>("id_caja")
                         .HasColumnType("int");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<int>("id_menu")
                         .HasColumnType("int");
 
                     b.HasKey("id_detalle");
 
                     b.HasIndex("id_caja");
+
+                    b.HasIndex("id_empresa");
 
                     b.HasIndex("id_menu");
 
@@ -258,6 +276,10 @@ namespace Planmenus.Migrations
                     b.Property<int?>("id_caja")
                         .HasColumnType("int");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<string>("nc_motivo")
                         .HasMaxLength(2)
                         .HasColumnType("nvarchar(2)");
@@ -273,11 +295,13 @@ namespace Planmenus.Migrations
 
                     b.HasIndex("id_caja");
 
+                    b.HasIndex("id_empresa");
+
                     b.HasIndex("ref_id_comp");
 
                     b.HasIndex("comp_estado", "comp_fecha");
 
-                    b.HasIndex("comp_tipo", "comp_serie", "comp_numero")
+                    b.HasIndex("id_empresa", "comp_tipo", "comp_serie", "comp_numero")
                         .IsUnique()
                         .HasFilter("[comp_tipo] IS NOT NULL AND [comp_serie] IS NOT NULL");
 
@@ -302,6 +326,10 @@ namespace Planmenus.Migrations
                     b.Property<int>("id_comp")
                         .HasColumnType("int");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<decimal>("igv")
                         .HasColumnType("decimal(18,2)");
 
@@ -323,6 +351,8 @@ namespace Planmenus.Migrations
                     b.HasKey("id_compdet");
 
                     b.HasIndex("id_comp");
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Comprobante_Detalle");
                 });
@@ -357,12 +387,18 @@ namespace Planmenus.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<int?>("id_reserva")
                         .HasColumnType("int");
 
                     b.HasKey("id_correo");
 
                     b.HasIndex("cor_fecha");
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Correo_Log");
                 });
@@ -387,7 +423,13 @@ namespace Planmenus.Migrations
                     b.Property<string>("deliv_nombcom")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.HasKey("id_deliv");
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Delivery");
                 });
@@ -410,9 +452,55 @@ namespace Planmenus.Migrations
                     b.Property<DateTime>("egre_fecha")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.HasKey("id_egre");
 
+                    b.HasIndex("id_empresa");
+
                     b.ToTable("Egresos");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDEmpresa", b =>
+                {
+                    b.Property<int>("id_empresa")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_empresa"));
+
+                    b.Property<bool>("emp_activa")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("emp_codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("emp_creada")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("emp_nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("emp_plan")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("emp_ruc")
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.HasKey("id_empresa");
+
+                    b.HasIndex("emp_codigo")
+                        .IsUnique();
+
+                    b.ToTable("Empresa");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDEventos", b =>
@@ -435,6 +523,10 @@ namespace Planmenus.Migrations
                     b.Property<DateTime>("StarDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<int>("id_menu")
                         .HasColumnType("int");
 
@@ -442,6 +534,8 @@ namespace Planmenus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id");
+
+                    b.HasIndex("id_empresa");
 
                     b.HasIndex("id_menu");
 
@@ -533,7 +627,13 @@ namespace Planmenus.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.HasKey("id_fe");
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Facturacion");
                 });
@@ -571,7 +671,13 @@ namespace Planmenus.Migrations
                     b.Property<string>("gene_url")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.HasKey("id_gene");
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Generales");
                 });
@@ -585,6 +691,10 @@ namespace Planmenus.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_trabajo"));
 
                     b.Property<int?>("id_caja")
+                        .HasColumnType("int");
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<DateTime>("imp_creado")
@@ -619,6 +729,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_trabajo");
 
+                    b.HasIndex("id_empresa");
+
                     b.HasIndex("imp_estado", "imp_creado");
 
                     b.ToTable("Impresion_Cola");
@@ -632,6 +744,10 @@ namespace Planmenus.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ingre"));
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<string>("ingre_desc")
                         .HasColumnType("nvarchar(max)");
 
@@ -644,6 +760,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_ingre");
 
+                    b.HasIndex("id_empresa");
+
                     b.ToTable("Ingresos");
                 });
 
@@ -654,6 +772,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ini"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<string>("ini_desc")
                         .HasColumnType("nvarchar(max)");
@@ -667,6 +789,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_ini");
 
+                    b.HasIndex("id_empresa");
+
                     b.ToTable("Inicial");
                 });
 
@@ -677,6 +801,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_menu"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<string>("menu_desc")
                         .HasColumnType("nvarchar(max)");
@@ -692,6 +820,8 @@ namespace Planmenus.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("id_menu");
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Menu");
                 });
@@ -722,6 +852,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_mesa"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<int?>("id_zona")
                         .HasColumnType("int");
@@ -759,6 +893,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_mesa");
 
+                    b.HasIndex("id_empresa");
+
                     b.HasIndex("id_zona");
 
                     b.ToTable("Mesas");
@@ -771,6 +907,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_reserva"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<string>("res_cliente")
                         .IsRequired()
@@ -823,6 +963,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_reserva");
 
+                    b.HasIndex("id_empresa");
+
                     b.HasIndex("res_inicio", "res_estado");
 
                     b.ToTable("Reserva");
@@ -836,6 +978,10 @@ namespace Planmenus.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_resmesa"));
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<int>("id_mesa")
                         .HasColumnType("int");
 
@@ -843,6 +989,8 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("id_resmesa");
+
+                    b.HasIndex("id_empresa");
 
                     b.HasIndex("id_mesa");
 
@@ -860,6 +1008,10 @@ namespace Planmenus.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rol"));
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<bool>("rol_act")
                         .HasColumnType("bit");
 
@@ -867,6 +1019,8 @@ namespace Planmenus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id_rol");
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Rol");
                 });
@@ -878,6 +1032,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_rolper"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<int>("id_menprin")
                         .HasColumnType("int");
@@ -892,6 +1050,8 @@ namespace Planmenus.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("id_rolper");
+
+                    b.HasIndex("id_empresa");
 
                     b.HasIndex("id_menprin");
 
@@ -913,12 +1073,18 @@ namespace Planmenus.Migrations
                     b.Property<int>("IdUsuario")
                         .HasColumnType("int");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<int>("id_rol")
                         .HasColumnType("int");
 
                     b.HasKey("id_roluser");
 
                     b.HasIndex("IdUsuario");
+
+                    b.HasIndex("id_empresa");
 
                     b.HasIndex("id_rol");
 
@@ -927,6 +1093,10 @@ namespace Planmenus.Migrations
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDSerie", b =>
                 {
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<string>("serie_clave")
                         .HasMaxLength(7)
                         .HasColumnType("nvarchar(7)");
@@ -934,7 +1104,9 @@ namespace Planmenus.Migrations
                     b.Property<int>("serie_ultimo")
                         .HasColumnType("int");
 
-                    b.HasKey("serie_clave");
+                    b.HasKey("id_empresa", "serie_clave");
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Serie");
                 });
@@ -970,6 +1142,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_ticketera"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<string>("tk_agente_clave_hash")
                         .HasMaxLength(100)
@@ -1066,6 +1242,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_ticketera");
 
+                    b.HasIndex("id_empresa");
+
                     b.ToTable("Ticketera");
                 });
 
@@ -1076,6 +1254,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_tipago"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<bool>("tipago_act")
                         .HasColumnType("bit");
@@ -1088,6 +1270,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_tipago");
 
+                    b.HasIndex("id_empresa");
+
                     b.ToTable("Tipo_Pago");
                 });
 
@@ -1098,6 +1282,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_turno"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<bool>("turno_abierto")
                         .HasColumnType("bit");
@@ -1138,6 +1326,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_turno");
 
+                    b.HasIndex("id_empresa");
+
                     b.ToTable("Turno_Caja");
                 });
 
@@ -1172,10 +1362,16 @@ namespace Planmenus.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.HasKey("IdUsuario");
 
                     b.HasIndex("Usua_user")
                         .IsUnique();
+
+                    b.HasIndex("id_empresa");
 
                     b.ToTable("Usuarios");
                 });
@@ -1187,6 +1383,10 @@ namespace Planmenus.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_zona"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
 
                     b.Property<bool>("zona_act")
                         .HasColumnType("bit");
@@ -1201,6 +1401,8 @@ namespace Planmenus.Migrations
 
                     b.HasKey("id_zona");
 
+                    b.HasIndex("id_empresa");
+
                     b.ToTable("Zona");
                 });
 
@@ -1210,6 +1412,12 @@ namespace Planmenus.Migrations
                         .WithMany()
                         .HasForeignKey("IdUsuario")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Planmenus.Data.Entities.MDMesas", null)
@@ -1225,6 +1433,12 @@ namespace Planmenus.Migrations
                         .WithMany()
                         .HasForeignKey("id_deliv")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Planmenus.Data.Entities.MDMenu", null)
                         .WithMany()
@@ -1250,6 +1464,12 @@ namespace Planmenus.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Planmenus.Data.Entities.MDMenu", null)
                         .WithMany()
                         .HasForeignKey("id_menu")
@@ -1264,6 +1484,12 @@ namespace Planmenus.Migrations
                         .HasForeignKey("id_caja")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Planmenus.Data.Entities.MDComprobante", null)
                         .WithMany()
                         .HasForeignKey("ref_id_comp")
@@ -1277,10 +1503,49 @@ namespace Planmenus.Migrations
                         .HasForeignKey("id_comp")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDCorreo_Log", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDDelivery", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDEgresos", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDEventos", b =>
                 {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Planmenus.Data.Entities.MDMenu", null)
                         .WithMany()
                         .HasForeignKey("id_menu")
@@ -1288,16 +1553,91 @@ namespace Planmenus.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDFacturacion", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDGenerales", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDImpresion_Cola", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDIngresos", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDInicial", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDMenu", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDMesas", b =>
                 {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Planmenus.Data.Entities.MDZona", null)
                         .WithMany()
                         .HasForeignKey("id_zona")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDReserva", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDReserva_Mesa", b =>
                 {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Planmenus.Data.Entities.MDMesas", null)
                         .WithMany()
                         .HasForeignKey("id_mesa")
@@ -1311,8 +1651,23 @@ namespace Planmenus.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Planmenus.Data.Entities.MDRol", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Planmenus.Data.Entities.MDRol_Permisos", b =>
                 {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Planmenus.Data.Entities.MDMenuprin", null)
                         .WithMany()
                         .HasForeignKey("id_menprin")
@@ -1340,9 +1695,24 @@ namespace Planmenus.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Planmenus.Data.Entities.MDRol", null)
                         .WithMany()
                         .HasForeignKey("id_rol")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDSerie", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1352,6 +1722,51 @@ namespace Planmenus.Migrations
                     b.HasOne("Planmenus.Data.Entities.MDMenuprin", null)
                         .WithMany()
                         .HasForeignKey("id_menprin")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDTicketera", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDTipo_pago", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDTurno_Caja", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDUsuarios", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDZona", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

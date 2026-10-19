@@ -4,8 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Planmenus.Data.Entities
 {
     [Table("Tipo_Pago")]
-    public class MDTipo_pago
+    public class MDTipo_pago : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_tipago { get; set; }
