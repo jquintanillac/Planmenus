@@ -7,8 +7,9 @@ namespace Planmenus.Data.Entities
     /// Turno de caja: apertura con fondo inicial y cierre con arqueo del efectivo contado.
     /// </summary>
     [Table("Turno_Caja")]
-    public class MDTurno_Caja
+    public class MDTurno_Caja : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_turno { get; set; }

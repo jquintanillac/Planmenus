@@ -5,6 +5,9 @@ namespace Planmenus.Helpers
 {
     public class SessionHelper
     {
+        /// <summary>Claim con el id de la empresa del usuario</summary>
+        public const string ClaimEmpresa = "empresa";
+
         public static string GetValue(IPrincipal User, string Property)
         {
             var r = ((ClaimsIdentity)User.Identity).FindFirst(Property);

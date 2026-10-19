@@ -129,14 +129,15 @@ namespace Planmenus.Controllers
             {
                 return null;
             }
-            var f = await _context.Ticketeras.OrderBy(t => t.id_ticketera).FirstOrDefaultAsync();
-            if (f?.tk_agente_clave_hash == null)
+            // La clave identifica a la empresa: se busca en todas y luego se trabaja solo con la suya
+            var hash = Hash(clave);
+            var f = await _context.Ticketeras.IgnoreQueryFilters().FirstOrDefaultAsync(t => t.tk_agente_clave_hash == hash);
+            if (f == null || !CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(f.tk_agente_clave_hash), Encoding.ASCII.GetBytes(hash)))
             {
                 return null;
             }
-            var esperado = Encoding.ASCII.GetBytes(f.tk_agente_clave_hash);
-            var recibido = Encoding.ASCII.GetBytes(Hash(clave));
-            return CryptographicOperations.FixedTimeEquals(esperado, recibido) ? f : null;
+            HttpContext.RequestServices.GetRequiredService<EmpresaActual>().Establecer(f.id_empresa);
+            return f;
         }
 
         private static string Recortar(string s, int max) => s == null || s.Length <= max ? s : s[..max];

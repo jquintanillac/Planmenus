@@ -20,10 +20,18 @@ namespace Planmenus.Data
             var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
             var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(DatosIniciales));
 
-            if (await context.Usuarios.AnyAsync())
+            // Se revisa en todas las empresas: solo se crea el administrador si el sistema esta vacio
+            if (await context.Usuarios.IgnoreQueryFilters().AnyAsync())
             {
                 return;
             }
+            var empresa = await context.Empresas.OrderBy(e => e.id_empresa).FirstOrDefaultAsync();
+            if (empresa == null)
+            {
+                logger.LogWarning("No hay empresas registradas; aplique las migraciones antes de iniciar.");
+                return;
+            }
+            scope.ServiceProvider.GetRequiredService<EmpresaActual>().Establecer(empresa.id_empresa);
 
             var usuario = config["Seed:AdminUser"] ?? "admin";
             var password = config["Seed:AdminPassword"];
@@ -47,7 +55,8 @@ namespace Planmenus.Data
             context.Usuarios.Add(admin);
             await context.SaveChangesAsync();
 
-            context.Rol_Usuarios.Add(new MDRol_Usuario { IdUsuario = admin.IdUsuario, id_rol = RolAdministrador });
+            var rol = await context.Rols.Where(r => r.rol_desc == "Administrador").Select(r => (int?)r.id_rol).FirstOrDefaultAsync() ?? RolAdministrador;
+            context.Rol_Usuarios.Add(new MDRol_Usuario { IdUsuario = admin.IdUsuario, id_rol = rol });
             await context.SaveChangesAsync();
 
             logger.LogInformation("Usuario administrador '{Usuario}' creado.", usuario);

@@ -7,8 +7,9 @@ namespace Planmenus.Data.Entities
     /// Mozo que atiende cada mesa en una fecha (planificacion del dia).
     /// </summary>
     [Table("Asignacion_Mozo")]
-    public class MDAsignacion_Mozo
+    public class MDAsignacion_Mozo : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_asig { get; set; }

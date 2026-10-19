@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
 using Planmenus.Data.DataSql;
@@ -12,10 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddScoped<EmpresaActual>();
 builder.Services.AddDbContext<Datacontext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<SP_Menus>();
 builder.Services.AddScoped<TicketService>();
 builder.Services.AddScoped<PlanoService>();
+builder.Services.AddScoped<EmpresaService>();
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<TurnoService>();
 builder.Services.AddScoped<CorreoService>();
@@ -79,6 +82,25 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
+// Empresa de la peticion: la del usuario conectado (claim "empresa")
+app.Use(async (ctx, next) =>
+{
+    if (ctx.User.Identity?.IsAuthenticated == true)
+    {
+        if (int.TryParse(ctx.User.FindFirst(Planmenus.Helpers.SessionHelper.ClaimEmpresa)?.Value, out var idEmpresa))
+        {
+            ctx.RequestServices.GetRequiredService<EmpresaActual>().Establecer(idEmpresa);
+        }
+        else
+        {
+            // Sesion anterior a la multiempresa: se pide ingresar de nuevo
+            await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            ctx.Response.Redirect("/Home/Index");
+            return;
+        }
+    }
+    await next();
+});
 app.UseAuthorization();
 app.UseSession();
 app.MapControllerRoute(

@@ -24,11 +24,14 @@ namespace Planmenus.Services.Facturacion
                 try
                 {
                     using var scope = _scopes.CreateScope();
-                    var fe = scope.ServiceProvider.GetRequiredService<FacturacionService>();
-                    foreach (var id in await fe.PorReenviarAsync())
+                    await scope.ServiceProvider.GetRequiredService<EmpresaService>().PorCadaEmpresaAsync(async sp =>
                     {
-                        await fe.ReenviarAsync(id);
-                    }
+                        var fe = sp.GetRequiredService<FacturacionService>();
+                        foreach (var id in await fe.PorReenviarAsync())
+                        {
+                            await fe.ReenviarAsync(id);
+                        }
+                    }, stoppingToken);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {

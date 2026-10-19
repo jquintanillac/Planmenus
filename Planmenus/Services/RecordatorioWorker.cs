@@ -27,12 +27,15 @@ namespace Planmenus.Services
                 try
                 {
                     using var scope = _scopes.CreateScope();
-                    var reservas = scope.ServiceProvider.GetRequiredService<ReservaService>();
-                    var enviados = await reservas.EnviarRecordatoriosAsync(stoppingToken);
-                    if (enviados > 0)
+                    // Cada empresa con sus reservas, su configuracion y sus correos
+                    await scope.ServiceProvider.GetRequiredService<EmpresaService>().PorCadaEmpresaAsync(async sp =>
                     {
-                        _logger.LogInformation("Recordatorios de reserva procesados: {Cantidad}", enviados);
-                    }
+                        var enviados = await sp.GetRequiredService<ReservaService>().EnviarRecordatoriosAsync(stoppingToken);
+                        if (enviados > 0)
+                        {
+                            _logger.LogInformation("Recordatorios de reserva procesados: {Cantidad}", enviados);
+                        }
+                    }, stoppingToken);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {

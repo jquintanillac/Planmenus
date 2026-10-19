@@ -22,10 +22,27 @@ namespace Planmenus.Controllers
             _tickets = tickets;
         }
 
-        // GET: /Carta - publica, la abre el cliente al escanear el QR
+        // GET: /c/{codigo} - publica, la abre el cliente al escanear el QR de su restaurante.
+        // /Carta sin codigo sigue funcionando cuando el sistema tiene una sola empresa (QR antiguos).
         [AllowAnonymous]
-        public async Task<IActionResult> Index()
+        [Route("c/{codigo}")]
+        [Route("Carta")]
+        [Route("Carta/Index")]
+        public async Task<IActionResult> Index(string codigo)
         {
+            var actual = HttpContext.RequestServices.GetRequiredService<EmpresaActual>();
+            if (!string.IsNullOrWhiteSpace(codigo))
+            {
+                var emp = await _context.Empresas.AsNoTracking().FirstOrDefaultAsync(e => e.emp_codigo == codigo.ToLower() && e.emp_activa);
+                if (emp == null) return NotFound();
+                actual.Establecer(emp.id_empresa);
+            }
+            else if (actual.Id == null)
+            {
+                var activas = await _context.Empresas.AsNoTracking().Where(e => e.emp_activa).Select(e => e.id_empresa).Take(2).ToListAsync();
+                if (activas.Count != 1) return NotFound();
+                actual.Establecer(activas[0]);
+            }
             var hoy = Fechas.HoyPeru();
             ViewBag.empresa = await _tickets.ObtenerEmpresaAsync();
             ViewBag.fecha = hoy;
@@ -53,6 +70,12 @@ namespace Planmenus.Controllers
             return File(png, "image/png");
         }
 
-        private string UrlCarta() => Url.Action(nameof(Index), "Carta", null, Request.Scheme);
+        /// <summary>Direccion publica de la carta de la empresa actual: /c/{codigo}</summary>
+        private string UrlCarta()
+        {
+            var id = HttpContext.RequestServices.GetRequiredService<EmpresaActual>().Id;
+            var codigo = _context.Empresas.Where(e => e.id_empresa == id).Select(e => e.emp_codigo).FirstOrDefault();
+            return $"{Request.Scheme}://{Request.Host}{Request.PathBase}/c/{codigo}";
+        }
     }
 }

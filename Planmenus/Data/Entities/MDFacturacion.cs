@@ -8,8 +8,9 @@ namespace Planmenus.Data.Entities
     /// Las claves se guardan cifradas con ASP.NET Data Protection.
     /// </summary>
     [Table("Facturacion")]
-    public class MDFacturacion
+    public class MDFacturacion : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_fe { get; set; }
@@ -117,8 +118,9 @@ namespace Planmenus.Data.Entities
     }
 
     [Table("Comprobante")]
-    public class MDComprobante
+    public class MDComprobante : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_comp { get; set; }
@@ -179,8 +181,9 @@ namespace Planmenus.Data.Entities
     }
 
     [Table("Comprobante_Detalle")]
-    public class MDComprobante_Detalle
+    public class MDComprobante_Detalle : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_compdet { get; set; }
@@ -206,8 +209,9 @@ namespace Planmenus.Data.Entities
 
     /// <summary>Correlativo de cada serie</summary>
     [Table("Serie")]
-    public class MDSerie
+    public class MDSerie : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [StringLength(7)]
         public string serie_clave { get; set; }

@@ -7,8 +7,9 @@ namespace Planmenus.Data.Entities
     /// Registro de cada correo enviado (o fallido), para auditar y no duplicar avisos.
     /// </summary>
     [Table("Correo_Log")]
-    public class MDCorreo_Log
+    public class MDCorreo_Log : IEmpresa
     {
+        public int id_empresa { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id_correo { get; set; }
