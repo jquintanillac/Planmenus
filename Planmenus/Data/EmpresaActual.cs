@@ -8,6 +8,9 @@ namespace Planmenus.Data
     {
         public int? Id { get; private set; }
 
+        /// <summary>Fin de la suscripcion pagada o de la prueba (null = no vence). Lo carga el middleware.</summary>
+        public DateTime? Vence { get; set; }
+
         public void Establecer(int idEmpresa) => Id = idEmpresa;
     }
 }

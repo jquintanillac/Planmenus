@@ -46,6 +46,7 @@ namespace Planmenus.Data
         public virtual DbSet<MDComprobante> Comprobantes { get; set; }
         public virtual DbSet<MDComprobante_Detalle> Comprobante_Detalles { get; set; }
         public virtual DbSet<MDSerie> Series { get; set; }
+        public virtual DbSet<MDPago_Suscripcion> Pagos_Suscripcion { get; set; }
         /// <summary>Llaves de ASP.NET Data Protection (cookies de sesion y datos cifrados)</summary>
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
@@ -63,6 +64,7 @@ namespace Planmenus.Data
             modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_esperado).HasPrecision(18, 2);
             modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_contado).HasPrecision(18, 2);
             modelBuilder.Entity<MDTurno_Caja>().Property(x => x.turno_diferencia).HasPrecision(18, 2);
+            modelBuilder.Entity<MDPago_Suscripcion>().Property(x => x.pago_monto).HasPrecision(18, 2);
 
             // Relaciones: una venta no puede apuntar a catalogos inexistentes
             modelBuilder.Entity<MDCaja>().HasOne<MDTipo_pago>().WithMany().HasForeignKey(x => x.id_tipago).OnDelete(DeleteBehavior.Restrict);

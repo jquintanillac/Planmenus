@@ -15,10 +15,12 @@ namespace Planmenus.Services
     public class EmpresaService
     {
         private readonly IServiceScopeFactory _scopes;
+        private readonly SuscripcionOptions _suscripcion;
 
-        public EmpresaService(IServiceScopeFactory scopes)
+        public EmpresaService(IServiceScopeFactory scopes, Microsoft.Extensions.Options.IOptions<SuscripcionOptions> suscripcion)
         {
             _scopes = scopes;
+            _suscripcion = suscripcion.Value;
         }
 
         public record Alta(string Nombre, string Codigo, string Ruc, string AdminUsuario, string AdminNombre, string AdminClave, string AdminEmail = null);
@@ -46,7 +48,9 @@ namespace Planmenus.Services
             if (await db.Usuarios.IgnoreQueryFilters().AnyAsync(u => u.Usua_user == usuario)) return new Resultado(null, $"El usuario \"{usuario}\" ya existe.");
 
             await using var tx = await db.Database.BeginTransactionAsync();
-            var empresa = new MDEmpresa { emp_nombre = a.Nombre.Trim(), emp_codigo = codigo, emp_ruc = a.Ruc?.Trim(), emp_activa = true, emp_creada = Fechas.AhoraPeru() };
+            var empresa = new MDEmpresa { emp_nombre = a.Nombre.Trim(), emp_codigo = codigo, emp_ruc = a.Ruc?.Trim(), emp_activa = true, emp_creada = Fechas.AhoraPeru(),
+                // Periodo de prueba: el plan basico gratis por unos dias
+                emp_plan = _suscripcion.Todos[0].Codigo, emp_vence = Fechas.HoyPeru().AddDays(_suscripcion.DiasPrueba) };
             db.Empresas.Add(empresa);
             await db.SaveChangesAsync();
 
@@ -97,6 +101,14 @@ namespace Planmenus.Services
                 scope.ServiceProvider.GetRequiredService<EmpresaActual>().Establecer(id);
                 await tarea(scope.ServiceProvider);
             }
+        }
+
+        /// <summary>Ejecuta una tarea dentro de una empresa concreta (por ejemplo, desde el panel de la plataforma)</summary>
+        public async Task<T> EnEmpresaAsync<T>(int idEmpresa, Func<IServiceProvider, Task<T>> tarea)
+        {
+            using var scope = _scopes.CreateScope();
+            scope.ServiceProvider.GetRequiredService<EmpresaActual>().Establecer(idEmpresa);
+            return await tarea(scope.ServiceProvider);
         }
 
         /// <summary>"Cevichería Doña Pepa" → "cevicheria-dona-pepa"</summary>

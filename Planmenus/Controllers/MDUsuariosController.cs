@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
 using Planmenus.Data.Entities;
+using Planmenus.Services;
 using Planmenus.Helpers;
 
 namespace Planmenus.Controllers
@@ -67,6 +68,10 @@ namespace Planmenus.Controllers
             if (await _context.Usuarios.IgnoreQueryFilters().AnyAsync(u => u.Usua_user == mDUsuarios.Usua_user))
             {
                 ModelState.AddModelError(nameof(MDUsuarios.Usua_user), "El usuario ya existe.");
+            }
+            if (mDUsuarios.Usua_act && await HttpContext.RequestServices.GetRequiredService<PlanService>().PuedeAgregarAsync(Recurso.Usuario) is string limite)
+            {
+                ModelState.AddModelError("", limite);
             }
 
             if (ModelState.IsValid)
@@ -130,6 +135,12 @@ namespace Planmenus.Controllers
                 if (usuario == null)
                 {
                     return NotFound();
+                }
+                // Reactivar un usuario cuenta para el limite del plan
+                if (!usuario.Usua_act && mDUsuarios.Usua_act && await HttpContext.RequestServices.GetRequiredService<PlanService>().PuedeAgregarAsync(Recurso.Usuario) is string limite)
+                {
+                    ModelState.AddModelError("", limite);
+                    return View(mDUsuarios);
                 }
 
                 usuario.Usua_user = mDUsuarios.Usua_user;

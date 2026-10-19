@@ -60,7 +60,7 @@ namespace Planmenus.Tests
             await Borrar<MDRol_Usuario>(); await Borrar<MDRol_Permisos>(); await Borrar<MDUsuarios>(); await Borrar<MDRol>();
             await Borrar<MDTipo_pago>(); await Borrar<MDGenerales>(); await Borrar<MDTicketera>(); await Borrar<MDCorreo_Log>();
             await Borrar<MDTurno_Caja>(); await Borrar<MDEgresos>(); await Borrar<MDIngresos>(); await Borrar<MDInicial>();
-            await Borrar<MDDelivery>(); await Borrar<MDSerie>(); await Borrar<MDFacturacion>();
+            await Borrar<MDDelivery>(); await Borrar<MDSerie>(); await Borrar<MDFacturacion>(); await Borrar<MDPago_Suscripcion>();
             await db.Empresas.Where(e => e.id_empresa == id).ExecuteDeleteAsync();
         });
 

@@ -495,6 +495,9 @@ namespace Planmenus.Migrations
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar(11)");
 
+                    b.Property<DateTime?>("emp_vence")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("id_empresa");
 
                     b.HasIndex("emp_codigo")
@@ -898,6 +901,54 @@ namespace Planmenus.Migrations
                     b.HasIndex("id_zona");
 
                     b.ToTable("Mesas");
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDPago_Suscripcion", b =>
+                {
+                    b.Property<int>("id_pago")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id_pago"));
+
+                    b.Property<int>("id_empresa")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("pago_fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("pago_medio")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("pago_meses")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("pago_monto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("pago_plan")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("pago_referencia")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("pago_usuario")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("pago_vence")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("id_pago");
+
+                    b.HasIndex("id_empresa");
+
+                    b.ToTable("Pago_Suscripcion");
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDReserva", b =>
@@ -1625,6 +1676,15 @@ namespace Planmenus.Migrations
                         .WithMany()
                         .HasForeignKey("id_zona")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Planmenus.Data.Entities.MDPago_Suscripcion", b =>
+                {
+                    b.HasOne("Planmenus.Data.Entities.MDEmpresa", null)
+                        .WithMany()
+                        .HasForeignKey("id_empresa")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Planmenus.Data.Entities.MDReserva", b =>

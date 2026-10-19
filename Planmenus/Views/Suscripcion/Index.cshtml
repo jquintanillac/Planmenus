@@ -1,0 +1,105 @@
+@using Planmenus.Services
+@model PlanService.Estado
+@{
+    ViewData["Title"] = "Mi suscripción";
+    var opciones = (SuscripcionOptions)ViewBag.opciones;
+    var pagos = (List<Planmenus.Data.Entities.MDPago_Suscripcion>)ViewBag.pagos;
+    var dias = PlanService.DiasParaVencer(Model.Empresa.emp_vence);
+    var bloqueada = PlanService.Bloqueada(Model.Empresa.emp_vence, opciones.DiasGracia);
+    string Limite(int n, string que) => n <= 0 ? $"{que} ilimitados" : $"Hasta {n} {que}";
+}
+<style>
+    .uso { margin-bottom: 14px; }
+    .uso .progress { height: 10px; border-radius: 999px; background: var(--crema); }
+    .planes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    .plan { border: 2px solid var(--borde); border-radius: 16px; padding: 18px; background: var(--papel, #fff); }
+    .plan.actual { border-color: var(--aji); }
+    .plan .precio { font-family: Fraunces, serif; font-size: 30px; font-weight: 600; }
+    .plan ul { padding-left: 18px; margin: 10px 0 0; }
+</style>
+
+@if (bloqueada)
+{
+    <div class="alert alert-danger"><strong>Su suscripción venció el @Model.Empresa.emp_vence?.ToString("dd/MM/yyyy").</strong> Renueve su plan para seguir usando el sistema; sus datos están guardados.</div>
+}
+
+<div class="row">
+    <div class="col-lg-5 mb-4">
+        <div class="card h-100"><div class="card-body">
+            <span class="text-muted small">Plan actual</span>
+            <h3 class="titulo-serif mb-1">@Model.Plan.Nombre</h3>
+            <p class="mb-3">
+                @if (dias == null) { <span class="text-muted">Sin vencimiento</span> }
+                else if (dias < 0) { <span class="text-danger">Venció el @Model.Empresa.emp_vence?.ToString("dd/MM/yyyy")</span> }
+                else { <span class="@(dias <= 5 ? "text-warning" : "text-muted")">Vigente hasta el @Model.Empresa.emp_vence?.ToString("dd/MM/yyyy") (@dias días)</span> }
+            </p>
+
+            @foreach (var (titulo, uso) in new[] { ("Usuarios activos", Model.Usuarios), ("Mesas activas", Model.Mesas), ("Comprobantes este mes", Model.Comprobantes) })
+            {
+                <div class="uso">
+                    <div class="d-flex justify-content-between small"><span>@titulo</span><strong>@uso.Usado @(uso.SinLimite ? "" : "de " + uso.Limite)</strong></div>
+                    @if (!uso.SinLimite)
+                    {
+                        <div class="progress" role="progressbar" aria-label="@titulo" aria-valuenow="@uso.Porcentaje" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar @(uso.Lleno ? "bg-danger" : uso.Porcentaje >= 80 ? "bg-warning" : "")" style="width:@uso.Porcentaje%"></div>
+                        </div>
+                    }
+                    else { <div class="small text-muted">Sin límite</div> }
+                </div>
+            }
+        </div></div>
+    </div>
+
+    <div class="col-lg-7 mb-4">
+        <div class="card h-100"><div class="card-body">
+            <h5>Cómo pagar o cambiar de plan</h5>
+            @if (string.IsNullOrWhiteSpace(opciones.InstruccionesPago))
+            {
+                <p class="text-muted mb-0">Comuníquese con soporte para renovar o cambiar su plan.</p>
+            }
+            else
+            {
+                <p style="white-space:pre-line" class="mb-0">@opciones.InstruccionesPago</p>
+            }
+            <p class="small text-muted mt-3 mb-0">Indique el nombre de su restaurante (<strong>@Model.Empresa.emp_nombre</strong>) y el plan. Al confirmarse el pago, su vencimiento se extiende desde la fecha actual de vencimiento.</p>
+        </div></div>
+    </div>
+</div>
+
+<h5 class="mb-3">Planes</h5>
+<div class="planes mb-4">
+    @foreach (var p in opciones.Todos)
+    {
+        <div class="plan @(p.Codigo == Model.Plan.Codigo ? "actual" : "")">
+            <div class="d-flex justify-content-between align-items-start">
+                <strong>@p.Nombre</strong>
+                @if (p.Codigo == Model.Plan.Codigo) { <span class="badge badge-primary">Su plan</span> }
+            </div>
+            <div class="precio">S/ @p.PrecioMes.ToString("0")<small class="text-muted" style="font-size:14px"> /mes</small></div>
+            <div class="small text-muted">@p.Descripcion</div>
+            <ul class="small">
+                <li>@Limite(p.Usuarios, "usuarios")</li>
+                <li>@Limite(p.Mesas, "mesas")</li>
+                <li>@Limite(p.ComprobantesMes, "comprobantes al mes")</li>
+                <li>Carta con QR, reservas, cocina y ticketera</li>
+            </ul>
+        </div>
+    }
+</div>
+
+@if (pagos.Count > 0)
+{
+    <h5 class="mb-3">Sus pagos</h5>
+    <div class="card"><div class="table-responsive">
+        <table class="table mb-0">
+            <thead><tr><th>Fecha</th><th>Plan</th><th class="text-right">Meses</th><th class="text-right">Monto</th><th>Medio</th><th>Vigente hasta</th></tr></thead>
+            <tbody>
+                @foreach (var p in pagos)
+                {
+                    <tr><td>@p.pago_fecha.ToString("dd/MM/yyyy")</td><td>@opciones.Buscar(p.pago_plan).Nombre</td><td class="text-right">@p.pago_meses</td>
+                        <td class="text-right">S/ @p.pago_monto.ToString("N2")</td><td>@p.pago_medio</td><td>@p.pago_vence.ToString("dd/MM/yyyy")</td></tr>
+                }
+            </tbody>
+        </table>
+    </div></div>
+}

@@ -112,7 +112,8 @@ namespace Planmenus.Controllers
             // Mesas en una grilla del plano (se pueden reacomodar despues en Plano del salon)
             var zona = await _context.Zonas.Where(z => z.zona_act).OrderBy(z => z.zona_orden).Select(z => (int?)z.id_zona).FirstOrDefaultAsync();
             var siguiente = (await _context.Mesas.MaxAsync(m => (int?)m.mesa_nro) ?? 0) + 1;
-            int cantidad = Math.Clamp(b.mesas, 0, 60), cap = Math.Clamp(b.capacidad, 1, 20);
+            var disponibles = await HttpContext.RequestServices.GetRequiredService<PlanService>().DisponiblesAsync(Recurso.Mesa);
+            int cantidad = Math.Min(Math.Clamp(b.mesas, 0, 60), disponibles), cap = Math.Clamp(b.capacidad, 1, 20);
             for (int i = 0; i < cantidad; i++)
             {
                 int nro = siguiente + i, col = i % 6, fila = i / 6;

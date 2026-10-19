@@ -277,11 +277,18 @@ namespace Planmenus.Helpers
                         "Cree usuarios para su caja y sus mozos en Administración → Usuarios, con su propio rol." }),
 
             ["Plataforma"] = new("Plataforma",
-                "Panel del dueño del sistema: todos los restaurantes registrados con sus usuarios, ventas de los últimos 30 días y último ingreso. Desde aquí se suspende o reactiva un restaurante, se cambia su plan o se crea uno nuevo.",
+                "Panel del dueño del sistema: todos los restaurantes registrados con su plan, vencimiento, usuarios, ventas de los últimos 30 días y último ingreso. Desde aquí se registran sus pagos, se suspende o reactiva un restaurante, se cambia su plan o se crea uno nuevo.",
                 new[] { "Solo lo ven los usuarios marcados como superadministrador.",
                         "Su propia empresa no se puede suspender." },
                 new[] { "Al suspender un restaurante sus usuarios no pueden ingresar y las sesiones abiertas se cierran en menos de un minuto; sus datos se conservan.",
                         "Su carta pública también deja de mostrarse mientras esté suspendido." }),
+
+            ["Suscripcion"] = new("Mi suscripción",
+                "Su plan actual, hasta cuándo está vigente, cuánto usa de cada límite (usuarios, mesas y comprobantes del mes) y cómo renovar o cambiar de plan.",
+                new[] { "Al vencer tiene unos días de gracia con aviso; después solo puede entrar a esta pantalla hasta renovar.",
+                        "Los usuarios y mesas inactivos no cuentan para el límite." },
+                new[] { "Renueve antes de la fecha de vencimiento: los días pagados se suman a los que le quedan.",
+                        "Si llega al límite de mesas o usuarios, desactive los que ya no use o mejore su plan." }),
 
             ["Carta/Qr"] = new("Carta digital (QR)",
                 "Código QR que lleva a la carta pública con los platos de hoy y sus precios. Se actualiza sola al programar el menú.",

@@ -1,8 +1,11 @@
+@using Planmenus.Services
 @model List<Planmenus.Controllers.PlataformaController.Fila>
 @{
     ViewData["Title"] = "Plataforma";
     var propia = (int)ViewBag.propia;
-    var planes = Planmenus.Controllers.PlataformaController.Planes;
+    var planes = (List<Plan>)ViewBag.planes;
+    var pagos = (List<(Planmenus.Data.Entities.MDPago_Suscripcion Pago, string Empresa)>)ViewBag.pagos;
+    string NombrePlan(string c) => planes.FirstOrDefault(p => p.Codigo == c)?.Nombre ?? c;
 }
 <style>
     .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
@@ -15,8 +18,8 @@
 <div class="kpis">
     <div class="card"><div class="card-body"><span class="text-muted small">Restaurantes</span><strong>@Model.Count</strong></div></div>
     <div class="card"><div class="card-body"><span class="text-muted small">Activos</span><strong>@Model.Count(f => f.Activa)</strong></div></div>
-    <div class="card"><div class="card-body"><span class="text-muted small">Usuarios activos</span><strong>@Model.Sum(f => f.Usuarios)</strong></div></div>
-    <div class="card"><div class="card-body"><span class="text-muted small">Ventas 30 días</span><strong>S/ @Model.Sum(f => f.Ventas30).ToString("N2")</strong></div></div>
+    <div class="card"><div class="card-body"><span class="text-muted small">Vencen en 7 días o vencidos</span><strong>@Model.Count(f => f.Activa && PlanService.DiasParaVencer(f.Vence) <= 7)</strong></div></div>
+    <div class="card"><div class="card-body"><span class="text-muted small">Cobrado este mes</span><strong>S/ @(((decimal)ViewBag.cobrado_mes).ToString("N2"))</strong></div></div>
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap:10px">
@@ -43,30 +46,38 @@
     </div></div>
 </div>
 
-<div class="card"><div class="table-responsive">
+<div class="card mb-4"><div class="table-responsive">
     <table class="table mb-0 tabla-plataforma">
         <thead>
-            <tr><th>Restaurante</th><th>Carta</th><th>Plan</th><th class="text-right">Usuarios</th><th class="text-right">Ventas 30 días</th><th>Último ingreso</th><th>Estado</th><th></th></tr>
+            <tr><th>Restaurante</th><th>Plan</th><th>Vence</th><th class="text-right">Usuarios</th><th class="text-right">Ventas 30 días</th><th>Último ingreso</th><th>Estado</th><th></th></tr>
         </thead>
         <tbody>
             @foreach (var f in Model)
             {
+                var dias = PlanService.DiasParaVencer(f.Vence);
                 <tr>
                     <td>
                         <strong>@f.Nombre</strong>
-                        <div class="text-muted small">@(string.IsNullOrEmpty(f.Ruc) ? "Sin RUC" : "RUC " + f.Ruc) · desde @f.Creada.ToString("dd/MM/yyyy")</div>
+                        <div class="text-muted small"><a href="~/c/@f.Codigo" target="_blank">/c/@f.Codigo</a> · @(string.IsNullOrEmpty(f.Ruc) ? "Sin RUC" : "RUC " + f.Ruc) · desde @f.Creada.ToString("dd/MM/yyyy")</div>
                     </td>
-                    <td><a href="~/c/@f.Codigo" target="_blank">/c/@f.Codigo</a></td>
                     <td>
                         <form asp-action="Plan" method="post" class="m-0">
                             <input type="hidden" name="id" value="@f.Id" />
                             <select name="plan" class="custom-select custom-select-sm" onchange="this.form.submit()" aria-label="Plan de @f.Nombre">
                                 @foreach (var p in planes)
                                 {
-                                    <option value="@p" selected="@(p == f.Plan)">@p</option>
+                                    <option value="@p.Codigo" selected="@(p.Codigo == f.Plan)">@p.Nombre</option>
                                 }
                             </select>
                         </form>
+                    </td>
+                    <td>
+                        @if (f.Vence == null) { <span class="text-muted">No vence</span> }
+                        else
+                        {
+                            @f.Vence.Value.ToString("dd/MM/yyyy")
+                            <div class="small @(dias < 0 ? "text-danger" : dias <= 5 ? "text-warning" : "text-muted")">@(dias < 0 ? $"vencido hace {-dias} d" : $"faltan {dias} d")</div>
+                        }
                     </td>
                     <td class="text-right">@f.Usuarios</td>
                     <td class="text-right">S/ @f.Ventas30.ToString("N2")<div class="text-muted small">@f.Tickets30 tickets</div></td>
@@ -74,20 +85,54 @@
                     <td>
                         @if (f.Activa) { <span class="badge badge-success">Activo</span> } else { <span class="badge badge-secondary">Suspendido</span> }
                     </td>
-                    <td class="text-right">
+                    <td class="text-right text-nowrap">
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-toggle="collapse" data-target="#pago-@f.Id" aria-expanded="false">Registrar pago</button>
                         @if (f.Id != propia)
                         {
-                            <form asp-action="Estado" method="post" class="m-0" onsubmit="return confirm('@(f.Activa ? "¿Suspender" : "¿Reactivar") @f.Nombre.Replace("'", "")?')">
+                            <form asp-action="Estado" method="post" class="d-inline m-0" onsubmit="return confirm('@(f.Activa ? "¿Suspender" : "¿Reactivar") @f.Nombre.Replace("'", "")?')">
                                 <input type="hidden" name="id" value="@f.Id" />
                                 <input type="hidden" name="activa" value="@(f.Activa ? "false" : "true")" />
                                 <button type="submit" class="btn btn-sm @(f.Activa ? "btn-outline-danger" : "btn-outline-success")">@(f.Activa ? "Suspender" : "Reactivar")</button>
                             </form>
                         }
-                        else
-                        {
-                            <span class="text-muted small">Su empresa</span>
-                        }
                     </td>
+                </tr>
+                <tr class="collapse" id="pago-@f.Id">
+                    <td colspan="8" style="background:var(--papel)">
+                        <form asp-action="Pago" method="post" class="form-row align-items-end m-0">
+                            <input type="hidden" name="id" value="@f.Id" />
+                            <div class="form-group col-sm-6 col-md-2"><label class="small">Plan</label>
+                                <select name="plan" class="custom-select custom-select-sm">
+                                    @foreach (var p in planes) { <option value="@p.Codigo" selected="@(p.Codigo == f.Plan)">@p.Nombre · S/ @p.PrecioMes.ToString("0.00")</option> }
+                                </select></div>
+                            <div class="form-group col-sm-6 col-md-1"><label class="small">Meses</label><input name="meses" type="number" min="1" max="24" value="1" class="form-control form-control-sm" /></div>
+                            <div class="form-group col-sm-6 col-md-2"><label class="small">Monto (vacío = precio del plan)</label><input name="monto" type="number" step="0.01" min="0" class="form-control form-control-sm" /></div>
+                            <div class="form-group col-sm-6 col-md-2"><label class="small">Medio</label>
+                                <select name="medio" class="custom-select custom-select-sm">
+                                    @foreach (var m in Planmenus.Controllers.PlataformaController.MediosPago) { <option>@m</option> }
+                                </select></div>
+                            <div class="form-group col-sm-8 col-md-3"><label class="small">Referencia / N.° de operación</label><input name="referencia" maxlength="100" class="form-control form-control-sm" /></div>
+                            <div class="form-group col-sm-4 col-md-2"><button type="submit" class="btn btn-sm btn-primary btn-block">Guardar pago</button></div>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div></div>
+
+<h5 class="mb-3">Últimos pagos</h5>
+<div class="card"><div class="table-responsive">
+    <table class="table mb-0">
+        <thead><tr><th>Fecha</th><th>Restaurante</th><th>Plan</th><th class="text-right">Meses</th><th class="text-right">Monto</th><th>Medio</th><th>Referencia</th><th>Vence</th></tr></thead>
+        <tbody>
+            @if (pagos.Count == 0) { <tr><td colspan="8" class="text-muted text-center py-4">Aún no hay pagos registrados.</td></tr> }
+            @foreach (var (p, empresa) in pagos)
+            {
+                <tr>
+                    <td>@p.pago_fecha.ToString("dd/MM/yyyy HH:mm")</td><td>@empresa</td><td>@NombrePlan(p.pago_plan)</td>
+                    <td class="text-right">@p.pago_meses</td><td class="text-right">S/ @p.pago_monto.ToString("N2")</td>
+                    <td>@p.pago_medio</td><td>@p.pago_referencia</td><td>@p.pago_vence.ToString("dd/MM/yyyy")</td>
                 </tr>
             }
         </tbody>

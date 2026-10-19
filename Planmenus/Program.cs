@@ -23,6 +23,8 @@ builder.Services.AddScoped<TicketService>();
 builder.Services.AddScoped<PlanoService>();
 builder.Services.AddScoped<EmpresaService>();
 builder.Services.AddScoped<SesionService>();
+builder.Services.AddScoped<PlanService>();
+builder.Services.Configure<SuscripcionOptions>(builder.Configuration.GetSection("Suscripcion"));
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<TurnoService>();
 builder.Services.AddScoped<CorreoService>();
@@ -81,6 +83,8 @@ builder.Services.AddRateLimiter(o =>
         ctx.Connection.RemoteIpAddress?.ToString() ?? "", _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(15) }));
     o.AddPolicy(Planmenus.Controllers.RegistroController.PoliticaRegistro + "-consulta", ctx => RateLimitPartition.GetFixedWindowLimiter(
         ctx.Connection.RemoteIpAddress?.ToString() ?? "", _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1) }));
+    o.AddPolicy(Planmenus.Controllers.RecuperarController.Politica, ctx => RateLimitPartition.GetFixedWindowLimiter(
+        ctx.Connection.RemoteIpAddress?.ToString() ?? "", _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(15) }));
 });
 
 var app = builder.Build();
@@ -110,16 +114,29 @@ app.Use(async (ctx, next) =>
             ctx.RequestServices.GetRequiredService<EmpresaActual>().Establecer(idEmpresa);
 
             // Empresa suspendida desde la plataforma: se cierran tambien las sesiones abiertas (cache de 1 minuto)
-            var activa = await ctx.RequestServices.GetRequiredService<IMemoryCache>().GetOrCreateAsync("empresa-activa-" + idEmpresa, async e =>
+            var estado = await ctx.RequestServices.GetRequiredService<IMemoryCache>().GetOrCreateAsync(EstadoEmpresa.Clave(idEmpresa), async e =>
             {
                 e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
                 return await ctx.RequestServices.GetRequiredService<Datacontext>().Empresas.AsNoTracking()
-                    .AnyAsync(x => x.id_empresa == idEmpresa && x.emp_activa);
+                    .Where(x => x.id_empresa == idEmpresa)
+                    .Select(x => new EstadoEmpresa(x.emp_activa, x.emp_vence)).FirstOrDefaultAsync();
             });
-            if (!activa)
+            if (estado?.Activa != true)
             {
                 await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 ctx.Response.Redirect("/Home/Index");
+                return;
+            }
+            ctx.RequestServices.GetRequiredService<EmpresaActual>().Vence = estado.Vence;
+
+            // Suscripcion vencida (pasada la gracia): solo puede ver Mi suscripcion para renovarla
+            var gracia = ctx.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<SuscripcionOptions>>().Value.DiasGracia;
+            var ruta = ctx.Request.Path;
+            if (PlanService.Bloqueada(estado.Vence, gracia)
+                && ctx.User.FindFirst(Planmenus.Helpers.SessionHelper.ClaimSuperadmin) == null
+                && !ruta.StartsWithSegments("/Suscripcion") && !ruta.StartsWithSegments("/Home/Logout"))
+            {
+                ctx.Response.Redirect("/Suscripcion");
                 return;
             }
         }
@@ -144,3 +161,9 @@ app.Run();
 
 // Permite que las pruebas de integracion (Planmenus.Tests) levanten la aplicacion
 public partial class Program { }
+
+/// <summary>Estado de la empresa que el middleware guarda en cache por un minuto</summary>
+public record EstadoEmpresa(bool Activa, DateTime? Vence)
+{
+    public static string Clave(int idEmpresa) => "empresa-estado-" + idEmpresa;
+}

@@ -1,0 +1,16 @@
+@{
+    Layout = "_Publico";
+    ViewData["Title"] = "Recuperar contraseña";
+}
+<h2 class="titulo-serif">¿Olvidó su contraseña?</h2>
+<p class="text-muted mb-4">Escriba su usuario o el correo con el que se registró. Le enviaremos un enlace para crear una nueva.</p>
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+<form asp-action="Index" method="post">
+    <div class="form-group">
+        <label for="dato">Usuario o correo</label>
+        <input type="text" class="form-control" id="dato" name="dato" autocomplete="username" autofocus required />
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">Enviar enlace</button>
+</form>
+<p class="text-muted small mt-4 mb-0">¿No tiene correo registrado? Pídale al administrador de su restaurante que cambie su contraseña desde Usuarios.</p>
+<p class="mt-3 mb-0"><a asp-controller="Home" asp-action="Index">Volver a ingresar</a></p>

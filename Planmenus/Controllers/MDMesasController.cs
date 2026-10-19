@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
 using Planmenus.Helpers;
 using Planmenus.Data.Entities;
+using Planmenus.Services;
 
 namespace Planmenus.Controllers
 {
@@ -58,6 +59,10 @@ namespace Planmenus.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("mesa_desc,mesa_nro,mesa_act,mesa_capacidad,id_zona")] MDMesas mDMesas)
         {
+            if (mDMesas.mesa_act && await HttpContext.RequestServices.GetRequiredService<PlanService>().PuedeAgregarAsync(Recurso.Mesa) is string limite)
+            {
+                ModelState.AddModelError("", limite);
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(mDMesas);
@@ -102,6 +107,12 @@ namespace Planmenus.Controllers
                 if (mesa == null)
                 {
                     return NotFound();
+                }
+                // Reactivar una mesa cuenta para el limite del plan
+                if (!mesa.mesa_act && mDMesas.mesa_act && await HttpContext.RequestServices.GetRequiredService<PlanService>().PuedeAgregarAsync(Recurso.Mesa) is string limite)
+                {
+                    ModelState.AddModelError("", limite);
+                    return View(mDMesas);
                 }
                 if (mesa.id_zona != mDMesas.id_zona)
                 {

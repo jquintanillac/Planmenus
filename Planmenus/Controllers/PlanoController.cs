@@ -76,6 +76,11 @@ namespace Planmenus.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NuevaMesa(string forma, int? zona)
         {
+            if (await HttpContext.RequestServices.GetRequiredService<PlanService>().PuedeAgregarAsync(Recurso.Mesa) is string limite)
+            {
+                TempData["error"] = limite;
+                return RedirectToAction(nameof(Index), new { zona });
+            }
             forma = FormaMesa.Todas.Contains(forma) ? forma : FormaMesa.Cuadrada;
             var nro = (await _context.Mesas.MaxAsync(m => (int?)m.mesa_nro) ?? 0) + 1;
             _context.Mesas.Add(new MDMesas

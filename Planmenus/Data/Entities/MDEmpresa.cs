@@ -23,6 +23,8 @@ namespace Planmenus.Data.Entities
         public DateTime emp_creada { get; set; }
         [StringLength(30)]
         public string emp_plan { get; set; } = "basico";
+        /// <summary>Fin de la prueba o de lo pagado; null = no vence (empresa propia de la plataforma)</summary>
+        public DateTime? emp_vence { get; set; }
     }
 
     /// <summary>Registro que pertenece a una empresa: se filtra y se asigna automaticamente</summary>

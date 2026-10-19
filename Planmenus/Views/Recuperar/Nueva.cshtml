@@ -1,0 +1,19 @@
+@{
+    Layout = "_Publico";
+    ViewData["Title"] = "Nueva contraseña";
+}
+<h2 class="titulo-serif">Nueva contraseña</h2>
+<p class="text-muted mb-4">Elija una contraseña de al menos 8 caracteres.</p>
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+<form asp-action="Nueva" method="post">
+    <input type="hidden" name="t" value="@ViewBag.t" />
+    <div class="form-group">
+        <label for="clave">Contraseña nueva</label>
+        <input type="password" class="form-control" id="clave" name="clave" minlength="8" autocomplete="new-password" autofocus required />
+    </div>
+    <div class="form-group">
+        <label for="clave2">Repita la contraseña</label>
+        <input type="password" class="form-control" id="clave2" name="clave2" minlength="8" autocomplete="new-password" required />
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">Guardar contraseña</button>
+</form>

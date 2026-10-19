@@ -1,5 +1,6 @@
 ﻿@using Planmenus.Helpers
 @inject Planmenus.Services.TicketService Tickets
+@inject Planmenus.Data.EmpresaActual EmpresaHoy
 @{
     var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
     var accion = ViewContext.RouteData.Values["action"]?.ToString();
@@ -97,6 +98,7 @@
                     new Op("submenu1_1", "Ticketera", null, "printer", "Ticketera"),
                     new Op("submenu1_1", "Facturacion", null, "award", "Facturación electrónica"),
                     new Op("submenu1_2", "MDUsuarios", null, "users", "Usuarios"),
+                    new Op("submenu1_1", "Suscripcion", null, "credit-card", "Mi suscripción"),
                     new Op(null, null, null, "shield", "Roles y permisos", Hijos: seguridad),
                 }),
             };
@@ -196,6 +198,14 @@
         }
 
         <main class="app-contenido">
+            @{ var diasVence = Planmenus.Services.PlanService.DiasParaVencer(EmpresaHoy.Vence); }
+            @if (diasVence <= 5 && !Activo("Suscripcion", null))
+            {
+                <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap" role="status" style="gap:10px">
+                    <span>@(diasVence < 0 ? $"Su suscripción venció hace {-diasVence} día(s)." : diasVence == 0 ? "Su suscripción vence hoy." : $"Su suscripción vence en {diasVence} día(s).") Renuévela para no perder el acceso.</span>
+                    <a asp-controller="Suscripcion" asp-action="Index" class="btn btn-sm btn-primary">Ver mi suscripción</a>
+                </div>
+            }
             @if (TempData["success"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">@TempData["success"]<button type="button" class="close" data-dismiss="alert" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button></div>

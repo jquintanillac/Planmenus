@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Planmenus.Data;
 using Planmenus.Data.Entities;
 using Planmenus.Helpers;
+using Planmenus.Services;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -20,14 +21,16 @@ namespace Planmenus.Services.Facturacion
         private readonly SunatClient _sunat;
         private readonly IDataProtector _protector;
         private readonly ILogger<FacturacionService> _logger;
+        private readonly PlanService _planes;
 
-        public FacturacionService(Datacontext context, UblService ubl, SunatClient sunat, IDataProtectionProvider proteccion, ILogger<FacturacionService> logger)
+        public FacturacionService(Datacontext context, UblService ubl, SunatClient sunat, IDataProtectionProvider proteccion, ILogger<FacturacionService> logger, PlanService planes)
         {
             _context = context;
             _ubl = ubl;
             _sunat = sunat;
             _protector = proteccion.CreateProtector("Planmenus.Facturacion");
             _logger = logger;
+            _planes = planes;
         }
 
         public record Cliente(string tipo_comprobante, string tipo_doc, string num_doc, string nombre, string direccion, string email);
@@ -329,6 +332,11 @@ namespace Planmenus.Services.Facturacion
 
         private async Task<Resultado> EmitirAsync(MDFacturacion fe, MDComprobante comp, List<MDComprobante_Detalle> lineas, MDComprobante referencia)
         {
+            // Las notas de credito (anulaciones) siempre se permiten; los comprobantes nuevos cuentan para el plan
+            if (referencia == null && await _planes.PuedeAgregarAsync(Recurso.Comprobante) is string limite)
+            {
+                return new Resultado(null, limite);
+            }
             using var certificado = Certificado(fe);
             await using (var tx = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable))
             {
