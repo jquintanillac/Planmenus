@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Planmenus.Data;
 using Planmenus.Data.Entities;
 using Planmenus.Helpers;
@@ -81,27 +83,46 @@ namespace Planmenus.Controllers
             return View();
         }
 
+        public const string PoliticaLogin = "login";
+        public const int IntentosPermitidos = 5;
+        public static readonly TimeSpan Bloqueo = TimeSpan.FromMinutes(15);
+
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting(PoliticaLogin)]
         public async Task<IActionResult> login(string Usua_user, string Usua_pass)
         {
             try
             {
+                // Tras varias contraseñas equivocadas el usuario queda bloqueado un rato (exista o no: no se revela cual existe)
+                var cache = HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
+                var claveFallos = "login-fallos-" + (Usua_user ?? "").Trim().ToLowerInvariant();
+                if (cache.TryGetValue(claveFallos, out int fallos) && fallos >= IntentosPermitidos)
+                {
+                    TempData["error"] = $"Demasiados intentos fallidos. Espere {Bloqueo.TotalMinutes:0} minutos o use “¿Olvidó su contraseña?”.";
+                    return RedirectToAction("Index", "Home");
+                }
+                IActionResult Fallo()
+                {
+                    cache.Set(claveFallos, fallos + 1, Bloqueo);
+                    TempData["error"] = "Usuario/clave incorrectos.";
+                    return RedirectToAction("Index", "Home");
+                }
+
                 // El usuario se busca en todas las empresas (el nombre de usuario es unico en el sistema)
                 var xUsuario = await _contex.Usuarios.IgnoreQueryFilters().SingleOrDefaultAsync(x => x.Usua_user == Usua_user && x.Usua_act);
                 if (xUsuario == null)
                 {
-                    TempData["error"] = "Usuario/clave incorrectos.";
-                    return RedirectToAction("Index", "Home");
+                    return Fallo();
                 }
                 // A partir de aqui todas las consultas son de la empresa del usuario
                 HttpContext.RequestServices.GetRequiredService<EmpresaActual>().Establecer(xUsuario.id_empresa);
                 if (!await ValidarPassword(xUsuario, Usua_pass))
                 {
-                    TempData["error"] = "Usuario/clave incorrectos.";
-                    return RedirectToAction("Index", "Home");
+                    return Fallo();
                 }
+                cache.Remove(claveFallos);
                 var error = await HttpContext.RequestServices.GetRequiredService<SesionService>().IniciarAsync(HttpContext, xUsuario);
                 if (error != null)
                 {

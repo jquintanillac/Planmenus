@@ -25,6 +25,10 @@ namespace Planmenus.Services
         /// <summary>Dias despues del vencimiento en que todavia se puede trabajar (con aviso)</summary>
         public int DiasGracia { get; set; } = 3;
         public string InstruccionesPago { get; set; }
+        /// <summary>Empresa de la plataforma que emite la boleta o factura de cada suscripcion pagada</summary>
+        public int EmpresaEmisora { get; set; } = 1;
+        /// <summary>Direccion publica del sistema para los enlaces de los correos (ej. https://app.planmenus.pe)</summary>
+        public string UrlSistema { get; set; }
         public List<Plan> Planes { get; set; } = new();
 
         /// <summary>Planes por defecto si appsettings no define ninguno</summary>

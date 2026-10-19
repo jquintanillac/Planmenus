@@ -124,15 +124,16 @@
 <h5 class="mb-3">Últimos pagos</h5>
 <div class="card"><div class="table-responsive">
     <table class="table mb-0">
-        <thead><tr><th>Fecha</th><th>Restaurante</th><th>Plan</th><th class="text-right">Meses</th><th class="text-right">Monto</th><th>Medio</th><th>Referencia</th><th>Vence</th></tr></thead>
+        <thead><tr><th>Fecha</th><th>Restaurante</th><th>Plan</th><th class="text-right">Meses</th><th class="text-right">Monto</th><th>Medio</th><th>Referencia</th><th>Vence</th><th>Comprobante y recibo</th></tr></thead>
         <tbody>
-            @if (pagos.Count == 0) { <tr><td colspan="8" class="text-muted text-center py-4">Aún no hay pagos registrados.</td></tr> }
+            @if (pagos.Count == 0) { <tr><td colspan="9" class="text-muted text-center py-4">Aún no hay pagos registrados.</td></tr> }
             @foreach (var (p, empresa) in pagos)
             {
                 <tr>
                     <td>@p.pago_fecha.ToString("dd/MM/yyyy HH:mm")</td><td>@empresa</td><td>@NombrePlan(p.pago_plan)</td>
                     <td class="text-right">@p.pago_meses</td><td class="text-right">S/ @p.pago_monto.ToString("N2")</td>
                     <td>@p.pago_medio</td><td>@p.pago_referencia</td><td>@p.pago_vence.ToString("dd/MM/yyyy")</td>
+                    <td>@if (!p.pago_procesado) { <span class="text-muted small">En proceso…</span> } else { <span>@(p.pago_comprobante ?? "—")</span> if (p.pago_nota != null) { <div class="small text-warning">@p.pago_nota</div> } }</td>
                 </tr>
             }
         </tbody>

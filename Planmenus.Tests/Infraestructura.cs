@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Planmenus.Data;
+using Planmenus.Services;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -34,6 +35,16 @@ namespace Planmenus.Tests
                 {
                     services.Remove(d);
                 }
+                // Correo y SUNAT simulados: nada sale a internet
+                services.AddSingleton<Buzon>();
+                foreach (var d in services.Where(d => d.ServiceType == typeof(CorreoService)).ToList())
+                {
+                    services.Remove(d);
+                }
+                services.AddScoped<CorreoService, CorreoFalso>();
+                services.PostConfigure<CorreoOptions>(o => { o.Host = "smtp.pruebas.local"; o.Remitente = "pruebas@planmenus.pe"; o.NombreRemitente = "Planmenus"; });
+                services.AddHttpClient<Planmenus.Services.Facturacion.SunatClient>().ConfigurePrimaryHttpMessageHandler(() => new SunatSinRed());
+
                 // Mercado Pago simulado: las pruebas nunca llaman a la API real
                 foreach (var d in services.Where(d => d.ServiceType == typeof(Planmenus.Services.Pagos.IMercadoPago)).ToList())
                 {

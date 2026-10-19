@@ -27,5 +27,13 @@ namespace Planmenus.Data.Entities
         /// <summary>Id del pago en Mercado Pago (unico: un pago nunca se aplica dos veces)</summary>
         [StringLength(30)]
         public string pago_mp_id { get; set; }
+        /// <summary>Ya se emitio su comprobante (si correspondia) y se envio el recibo por correo</summary>
+        public bool pago_procesado { get; set; }
+        /// <summary>Comprobante electronico emitido por la plataforma, ej. "B001-00000012"</summary>
+        [StringLength(20)]
+        public string pago_comprobante { get; set; }
+        /// <summary>Por que no se emitio el comprobante o no se envio el recibo</summary>
+        [StringLength(300)]
+        public string pago_nota { get; set; }
     }
 }

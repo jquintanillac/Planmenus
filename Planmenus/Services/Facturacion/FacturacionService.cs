@@ -239,6 +239,56 @@ namespace Planmenus.Services.Facturacion
             return await EmitirAsync(fe, comp, lineas, null);
         }
 
+        /// <summary>
+        /// Comprobante por un servicio sin venta de caja (por ejemplo, la suscripcion que la plataforma cobra
+        /// a un restaurante). El total incluye IGV. Factura si el cliente tiene RUC, si no boleta.
+        /// </summary>
+        public async Task<Resultado> EmitirServicioAsync(string descripcion, decimal total, Cliente cliente)
+        {
+            var fe = await ConfigAsync();
+            if (!fe.fe_activa)
+            {
+                return new Resultado(null, "La facturación electrónica no está activa.");
+            }
+            var faltan = Pendientes(fe);
+            if (faltan.Count > 0)
+            {
+                return new Resultado(null, "Complete la configuración de facturación: " + string.Join(", ", faltan) + ".");
+            }
+            var error = ValidarCliente(cliente, total);
+            if (error != null)
+            {
+                return new Resultado(null, error);
+            }
+
+            var tasa = fe.fe_igv / 100m;
+            var valor = Math.Round(total / (1 + tasa), 2, MidpointRounding.AwayFromZero);
+            var lineas = new List<MDComprobante_Detalle>
+            {
+                new()
+                {
+                    item = 1, descripcion = PdfService.Limpio(descripcion), cantidad = 1, precio = total,
+                    valor_unitario = Math.Round(total / (1 + tasa), 4, MidpointRounding.AwayFromZero), valor_venta = valor, igv = total - valor, total = total
+                }
+            };
+            var esFactura = cliente.tipo_comprobante == TipoComprobante.Factura;
+            var conDoc = !string.IsNullOrWhiteSpace(cliente.num_doc);
+            var comp = new MDComprobante
+            {
+                comp_tipo = esFactura ? TipoComprobante.Factura : TipoComprobante.Boleta,
+                comp_serie = esFactura ? fe.fe_serie_factura : fe.fe_serie_boleta,
+                comp_fecha = Fechas.AhoraPeru(),
+                cli_tipo_doc = esFactura ? "6" : conDoc ? (cliente.tipo_doc ?? "1") : "0",
+                cli_num_doc = conDoc ? cliente.num_doc.Trim() : "-",
+                cli_nombre = string.IsNullOrWhiteSpace(cliente.nombre) ? "CLIENTES VARIOS" : PdfService.Limpio(cliente.nombre.Trim()).ToUpperInvariant(),
+                cli_direccion = PdfService.Limpio(cliente.direccion?.Trim()),
+                cli_email = cliente.email?.Trim(),
+                comp_gravada = valor, comp_igv = total - valor, comp_total = total, comp_tasa_igv = fe.fe_igv,
+                comp_ambiente = fe.fe_ambiente, comp_estado = EstadoComprobante.PorEnviar
+            };
+            return await EmitirAsync(fe, comp, lineas, null);
+        }
+
         /// <summary>Anula un comprobante aceptado emitiendo una nota de credito por el total (motivo 01)</summary>
         public async Task<Resultado> AnularAsync(int id_comp, string sustento)
         {

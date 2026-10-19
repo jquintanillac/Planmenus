@@ -915,6 +915,10 @@ namespace Planmenus.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("int");
 
+                    b.Property<string>("pago_comprobante")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("pago_fecha")
                         .HasColumnType("datetime2");
 
@@ -933,9 +937,16 @@ namespace Planmenus.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("pago_nota")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<string>("pago_plan")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<bool>("pago_procesado")
+                        .HasColumnType("bit");
 
                     b.Property<string>("pago_referencia")
                         .HasMaxLength(100)

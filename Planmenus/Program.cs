@@ -27,6 +27,8 @@ builder.Services.AddScoped<PlanService>();
 builder.Services.Configure<Planmenus.Services.Pagos.MercadoPagoOptions>(builder.Configuration.GetSection("MercadoPago"));
 builder.Services.AddHttpClient<Planmenus.Services.Pagos.IMercadoPago, Planmenus.Services.Pagos.MercadoPagoClient>();
 builder.Services.AddScoped<Planmenus.Services.Pagos.CobroService>();
+builder.Services.AddScoped<Planmenus.Services.Pagos.AvisosSuscripcionService>();
+builder.Services.AddHostedService<Planmenus.Services.Pagos.SuscripcionWorker>();
 builder.Services.Configure<SuscripcionOptions>(builder.Configuration.GetSection("Suscripcion"));
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<TurnoService>();
@@ -88,6 +90,16 @@ builder.Services.AddRateLimiter(o =>
         ctx.Connection.RemoteIpAddress?.ToString() ?? "", _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1) }));
     o.AddPolicy(Planmenus.Controllers.RecuperarController.Politica, ctx => RateLimitPartition.GetFixedWindowLimiter(
         ctx.Connection.RemoteIpAddress?.ToString() ?? "", _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(15) }));
+    // Login: holgado porque todo el personal de un local sale por la misma IP; el bloqueo fino es por usuario
+    o.AddPolicy(Planmenus.Controllers.HomeController.PoliticaLogin, ctx => RateLimitPartition.GetFixedWindowLimiter(
+        ctx.Connection.RemoteIpAddress?.ToString() ?? "", _ => new FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(5) }));
+    o.OnRejected = async (ctx, ct) =>
+    {
+        ctx.HttpContext.Response.ContentType = "text/html; charset=utf-8";
+        await ctx.HttpContext.Response.WriteAsync("<!DOCTYPE html><html lang=\"es\"><meta charset=\"utf-8\"><title>Demasiados intentos</title>" +
+            "<body style=\"font-family:sans-serif;max-width:480px;margin:80px auto;padding:0 16px\"><h1>Demasiados intentos</h1>" +
+            "<p>Por seguridad se pausaron los intentos desde su conexión. Espere unos minutos y vuelva a intentarlo.</p><p><a href=\"/\">Volver</a></p></body></html>", ct);
+    };
 });
 
 var app = builder.Build();

@@ -46,7 +46,8 @@ namespace Planmenus.Services
         /// <summary>
         /// Envia el correo. Devuelve null si salio bien o el mensaje de error.
         /// </summary>
-        public async Task<string> EnviarAsync(string tipo, IEnumerable<string> para, string asunto, string html, int? id_reserva = null, CancellationToken ct = default)
+        public async Task<string> EnviarAsync(string tipo, IEnumerable<string> para, string asunto, string html, int? id_reserva = null, CancellationToken ct = default,
+                                              IEnumerable<(string Nombre, byte[] Datos, string Tipo)> adjuntos = null)
         {
             var destinos = Correos.Normalizar(para);
             string error = null;
@@ -69,18 +70,13 @@ namespace Planmenus.Services
                         mensaje.To.Add(MailboxAddress.Parse(d));
                     }
                     mensaje.Subject = asunto;
-                    mensaje.Body = new BodyBuilder { HtmlBody = html }.ToMessageBody();
-
-                    using var smtp = new SmtpClient();
-                    smtp.Timeout = 20000;
-                    var seguridad = _opciones.UsarSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTlsWhenAvailable;
-                    await smtp.ConnectAsync(_opciones.Host, _opciones.Puerto, seguridad, ct);
-                    if (!string.IsNullOrWhiteSpace(_opciones.Usuario))
+                    var cuerpo = new BodyBuilder { HtmlBody = html };
+                    foreach (var a in adjuntos ?? Enumerable.Empty<(string, byte[], string)>())
                     {
-                        await smtp.AuthenticateAsync(_opciones.Usuario, _opciones.Clave ?? "", ct);
+                        cuerpo.Attachments.Add(a.Nombre, a.Datos, ContentType.Parse(a.Tipo));
                     }
-                    await smtp.SendAsync(mensaje, ct);
-                    await smtp.DisconnectAsync(true, ct);
+                    mensaje.Body = cuerpo.ToMessageBody();
+                    await TransmitirAsync(mensaje, ct);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -101,6 +97,21 @@ namespace Planmenus.Services
             });
             await _context.SaveChangesAsync(ct);
             return error;
+        }
+
+        /// <summary>Entrega el mensaje al servidor SMTP (las pruebas lo reemplazan para no enviar correos reales)</summary>
+        protected virtual async Task TransmitirAsync(MimeMessage mensaje, CancellationToken ct)
+        {
+            using var smtp = new SmtpClient();
+            smtp.Timeout = 20000;
+            var seguridad = _opciones.UsarSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTlsWhenAvailable;
+            await smtp.ConnectAsync(_opciones.Host, _opciones.Puerto, seguridad, ct);
+            if (!string.IsNullOrWhiteSpace(_opciones.Usuario))
+            {
+                await smtp.AuthenticateAsync(_opciones.Usuario, _opciones.Clave ?? "", ct);
+            }
+            await smtp.SendAsync(mensaje, ct);
+            await smtp.DisconnectAsync(true, ct);
         }
 
         private static string Recortar(string s, int max) => s == null || s.Length <= max ? s : s[..max];
