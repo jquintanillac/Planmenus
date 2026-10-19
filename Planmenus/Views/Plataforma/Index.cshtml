@@ -1,0 +1,95 @@
+@model List<Planmenus.Controllers.PlataformaController.Fila>
+@{
+    ViewData["Title"] = "Plataforma";
+    var propia = (int)ViewBag.propia;
+    var planes = Planmenus.Controllers.PlataformaController.Planes;
+}
+<style>
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .kpis .card-body { padding: 16px; }
+    .kpis strong { font-size: 26px; display: block; }
+    .tabla-plataforma td { vertical-align: middle; }
+    .tabla-plataforma select { min-width: 110px; }
+</style>
+
+<div class="kpis">
+    <div class="card"><div class="card-body"><span class="text-muted small">Restaurantes</span><strong>@Model.Count</strong></div></div>
+    <div class="card"><div class="card-body"><span class="text-muted small">Activos</span><strong>@Model.Count(f => f.Activa)</strong></div></div>
+    <div class="card"><div class="card-body"><span class="text-muted small">Usuarios activos</span><strong>@Model.Sum(f => f.Usuarios)</strong></div></div>
+    <div class="card"><div class="card-body"><span class="text-muted small">Ventas 30 días</span><strong>S/ @Model.Sum(f => f.Ventas30).ToString("N2")</strong></div></div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap:10px">
+    <h5 class="mb-0">Restaurantes registrados</h5>
+    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#nueva" aria-expanded="false"><i data-feather="plus"></i> Nuevo restaurante</button>
+</div>
+
+<div class="collapse mb-3" id="nueva">
+    <div class="card"><div class="card-body">
+        <form asp-action="Crear" method="post">
+            <div class="form-row">
+                <div class="form-group col-md-4"><label>Nombre</label><input name="nombre" class="form-control" required maxlength="150" /></div>
+                <div class="form-group col-md-4"><label>Código (dirección de la carta)</label><input name="codigo" class="form-control" maxlength="50" placeholder="Se genera del nombre" /></div>
+                <div class="form-group col-md-4"><label>RUC</label><input name="ruc" class="form-control" maxlength="11" /></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-3"><label>Nombre del administrador</label><input name="admin_nombre" class="form-control" maxlength="100" /></div>
+                <div class="form-group col-md-3"><label>Correo</label><input name="email" type="email" class="form-control" maxlength="150" /></div>
+                <div class="form-group col-md-3"><label>Usuario</label><input name="usuario" class="form-control" required minlength="3" maxlength="50" /></div>
+                <div class="form-group col-md-3"><label>Contraseña</label><input name="clave" type="password" class="form-control" required minlength="8" autocomplete="new-password" /></div>
+            </div>
+            <button type="submit" class="btn btn-primary">Crear restaurante</button>
+        </form>
+    </div></div>
+</div>
+
+<div class="card"><div class="table-responsive">
+    <table class="table mb-0 tabla-plataforma">
+        <thead>
+            <tr><th>Restaurante</th><th>Carta</th><th>Plan</th><th class="text-right">Usuarios</th><th class="text-right">Ventas 30 días</th><th>Último ingreso</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var f in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@f.Nombre</strong>
+                        <div class="text-muted small">@(string.IsNullOrEmpty(f.Ruc) ? "Sin RUC" : "RUC " + f.Ruc) · desde @f.Creada.ToString("dd/MM/yyyy")</div>
+                    </td>
+                    <td><a href="~/c/@f.Codigo" target="_blank">/c/@f.Codigo</a></td>
+                    <td>
+                        <form asp-action="Plan" method="post" class="m-0">
+                            <input type="hidden" name="id" value="@f.Id" />
+                            <select name="plan" class="custom-select custom-select-sm" onchange="this.form.submit()" aria-label="Plan de @f.Nombre">
+                                @foreach (var p in planes)
+                                {
+                                    <option value="@p" selected="@(p == f.Plan)">@p</option>
+                                }
+                            </select>
+                        </form>
+                    </td>
+                    <td class="text-right">@f.Usuarios</td>
+                    <td class="text-right">S/ @f.Ventas30.ToString("N2")<div class="text-muted small">@f.Tickets30 tickets</div></td>
+                    <td>@(f.UltimoIngreso?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
+                    <td>
+                        @if (f.Activa) { <span class="badge badge-success">Activo</span> } else { <span class="badge badge-secondary">Suspendido</span> }
+                    </td>
+                    <td class="text-right">
+                        @if (f.Id != propia)
+                        {
+                            <form asp-action="Estado" method="post" class="m-0" onsubmit="return confirm('@(f.Activa ? "¿Suspender" : "¿Reactivar") @f.Nombre.Replace("'", "")?')">
+                                <input type="hidden" name="id" value="@f.Id" />
+                                <input type="hidden" name="activa" value="@(f.Activa ? "false" : "true")" />
+                                <button type="submit" class="btn btn-sm @(f.Activa ? "btn-outline-danger" : "btn-outline-success")">@(f.Activa ? "Suspender" : "Reactivar")</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted small">Su empresa</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div></div>

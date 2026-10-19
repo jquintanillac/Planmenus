@@ -46,7 +46,9 @@ namespace Planmenus.Tests
         }
 
         /// <summary>Elimina todos los datos de la empresa temporal (en orden para respetar las llaves foraneas)</summary>
-        private Task EliminarEmpresaAsync(int id) => _app.Con(async db =>
+        private Task EliminarEmpresaAsync(int id) => EliminarEmpresaAsync(_app, id);
+
+        internal static Task EliminarEmpresaAsync(AppFactory app, int id) => app.Con(async db =>
         {
             async Task Borrar<T>() where T : class, IEmpresa
             {

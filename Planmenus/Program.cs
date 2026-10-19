@@ -8,6 +8,9 @@ using Planmenus.Services;
 using Planmenus.Services.Facturacion;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +22,7 @@ builder.Services.AddScoped<SP_Menus>();
 builder.Services.AddScoped<TicketService>();
 builder.Services.AddScoped<PlanoService>();
 builder.Services.AddScoped<EmpresaService>();
+builder.Services.AddScoped<SesionService>();
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<TurnoService>();
 builder.Services.AddScoped<CorreoService>();
@@ -47,6 +51,8 @@ builder.Services.AddAuthentication(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
+builder.Services.AddAuthorization(o => o.AddPolicy(Planmenus.Controllers.PlataformaController.PoliticaSuperadmin,
+    p => p.RequireClaim(Planmenus.Helpers.SessionHelper.ClaimSuperadmin, "S")));
 builder.Services.AddSession(o =>
 {
     o.IdleTimeout = TimeSpan.FromSeconds(1800);
@@ -66,6 +72,17 @@ builder.Services.AddControllersWithViews(o =>
 // Llaves de proteccion en la base: las sesiones y los datos cifrados sobreviven a reinicios del hosting
 builder.Services.AddDataProtection().PersistKeysToDbContext<Datacontext>().SetApplicationName("Planmenus");
 
+// Registro publico de restaurantes: pocos intentos por IP para frenar abusos
+builder.Services.AddMemoryCache();
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    o.AddPolicy(Planmenus.Controllers.RegistroController.PoliticaRegistro, ctx => RateLimitPartition.GetFixedWindowLimiter(
+        ctx.Connection.RemoteIpAddress?.ToString() ?? "", _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(15) }));
+    o.AddPolicy(Planmenus.Controllers.RegistroController.PoliticaRegistro + "-consulta", ctx => RateLimitPartition.GetFixedWindowLimiter(
+        ctx.Connection.RemoteIpAddress?.ToString() ?? "", _ => new FixedWindowRateLimiterOptions { PermitLimit = 60, Window = TimeSpan.FromMinutes(1) }));
+});
+
 var app = builder.Build();
 
 await DatosIniciales.CrearAdministradorAsync(app.Services);
@@ -81,6 +98,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthentication();
 // Empresa de la peticion: la del usuario conectado (claim "empresa")
 app.Use(async (ctx, next) =>
@@ -90,6 +108,20 @@ app.Use(async (ctx, next) =>
         if (int.TryParse(ctx.User.FindFirst(Planmenus.Helpers.SessionHelper.ClaimEmpresa)?.Value, out var idEmpresa))
         {
             ctx.RequestServices.GetRequiredService<EmpresaActual>().Establecer(idEmpresa);
+
+            // Empresa suspendida desde la plataforma: se cierran tambien las sesiones abiertas (cache de 1 minuto)
+            var activa = await ctx.RequestServices.GetRequiredService<IMemoryCache>().GetOrCreateAsync("empresa-activa-" + idEmpresa, async e =>
+            {
+                e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
+                return await ctx.RequestServices.GetRequiredService<Datacontext>().Empresas.AsNoTracking()
+                    .AnyAsync(x => x.id_empresa == idEmpresa && x.emp_activa);
+            });
+            if (!activa)
+            {
+                await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                ctx.Response.Redirect("/Home/Index");
+                return;
+            }
         }
         else
         {

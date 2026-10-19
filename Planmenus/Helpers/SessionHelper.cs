@@ -7,6 +7,8 @@ namespace Planmenus.Helpers
     {
         /// <summary>Claim con el id de la empresa del usuario</summary>
         public const string ClaimEmpresa = "empresa";
+        /// <summary>Claim de los administradores de la plataforma</summary>
+        public const string ClaimSuperadmin = "superadmin";
 
         public static string GetValue(IPrincipal User, string Property)
         {

@@ -7,6 +7,7 @@ using Planmenus.Data;
 using Planmenus.Data.Entities;
 using Planmenus.Helpers;
 using Planmenus.Models;
+using Planmenus.Services;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -101,42 +102,12 @@ namespace Planmenus.Controllers
                     TempData["error"] = "Usuario/clave incorrectos.";
                     return RedirectToAction("Index", "Home");
                 }
-                var empresa = await _contex.Empresas.AsNoTracking().FirstOrDefaultAsync(e => e.id_empresa == xUsuario.id_empresa);
-                if (empresa == null || !empresa.emp_activa)
+                var error = await HttpContext.RequestServices.GetRequiredService<SesionService>().IniciarAsync(HttpContext, xUsuario);
+                if (error != null)
                 {
-                    TempData["error"] = "La empresa de este usuario está suspendida. Comuníquese con soporte.";
+                    TempData["error"] = error;
                     return RedirectToAction("Index", "Home");
                 }
-
-                var rol = await (from ru in _contex.Rol_Usuarios
-                                 join r in _contex.Rols on ru.id_rol equals r.id_rol
-                                 where ru.IdUsuario == xUsuario.IdUsuario && r.rol_act
-                                 select r).FirstOrDefaultAsync();
-                if (rol == null)
-                {
-                    TempData["error"] = "El usuario no tiene un rol activo asignado.";
-                    return RedirectToAction("Index", "Home");
-                }
-
-                var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, xUsuario.Usua_user));
-                identity.AddClaim(new Claim(ClaimTypes.Name, xUsuario.Usua_nombres ?? xUsuario.Usua_user));
-                identity.AddClaim(new Claim(ClaimTypes.Email, xUsuario.Usua_email ?? ""));
-                identity.AddClaim(new Claim(ClaimTypes.Role, rol.rol_desc));
-                identity.AddClaim(new Claim(SessionHelper.ClaimEmpresa, xUsuario.id_empresa.ToString()));
-
-                var permisos = await _contex.Rol_Permisos
-                    .Where(x => x.id_rol == rol.id_rol && x.rolper_act)
-                    .ToListAsync();
-
-                foreach (var claim in Permisos.ClaimsDe(permisos))
-                {
-                    identity.AddClaim(new Claim(claim, "S"));
-                }
-
-                var principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
-                new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddDays(2), IsPersistent = true });
                 return RedirectToAction("Inicio", "Home");
             }
             catch (Exception ex)

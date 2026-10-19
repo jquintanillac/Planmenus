@@ -68,6 +68,22 @@ namespace Planmenus.Tests
             c.Http.DefaultRequestHeaders.Add(UsuarioPruebas.CabeceraEmpresa, empresa.ToString());
             return c;
         }
+
+        /// <summary>Visitante sin sesion iniciada</summary>
+        public Cliente Anonimo()
+        {
+            var c = Cliente();
+            c.Http.DefaultRequestHeaders.Add(UsuarioPruebas.CabeceraAnonimo, "1");
+            return c;
+        }
+
+        /// <summary>Administrador de la empresa 1 que ademas administra la plataforma</summary>
+        public Cliente Superadmin()
+        {
+            var c = Cliente();
+            c.Http.DefaultRequestHeaders.Add(UsuarioPruebas.CabeceraSuperadmin, "1");
+            return c;
+        }
     }
 
     /// <summary>Usuario "admin" con todos los permisos del menu</summary>
@@ -77,8 +93,16 @@ namespace Planmenus.Tests
 
         public UsuarioPruebas(IOptionsMonitor<AuthenticationSchemeOptions> o, ILoggerFactory l, UrlEncoder e) : base(o, l, e) { }
 
+        public const string CabeceraAnonimo = "X-Prueba-Anonimo";
+        public const string CabeceraSuperadmin = "X-Prueba-Superadmin";
+
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            // Visitante sin sesion (registro publico, login)
+            if (Request.Headers.ContainsKey(CabeceraAnonimo))
+            {
+                return Task.FromResult(AuthenticateResult.NoResult());
+            }
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, "admin"),
@@ -91,6 +115,7 @@ namespace Planmenus.Tests
             for (int m = 1; m <= 3; m++)
                 for (int s = 1; s <= 15; s++)
                     claims.Add(new Claim($"submenu{m}_{s}", "S"));
+            if (Request.Headers.ContainsKey(CabeceraSuperadmin)) claims.Add(new Claim(Planmenus.Helpers.SessionHelper.ClaimSuperadmin, "S"));
             var identidad = new ClaimsIdentity(claims, AppFactory.Esquema, ClaimTypes.Name, ClaimTypes.Role);
             return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identidad), AppFactory.Esquema)));
         }

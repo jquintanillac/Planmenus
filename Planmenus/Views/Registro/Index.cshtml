@@ -1,0 +1,162 @@
+@model Planmenus.Models.VMRegistro
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crea tu restaurante · Planmenus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/tema.css" asp-append-version="true" />
+    <style>
+        .registro { display: grid; grid-template-columns: 1fr 1.1fr; min-height: 100vh; }
+        .registro-foto {
+            position: relative; color: #fff; padding: 48px;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            background: linear-gradient(180deg, rgba(31,26,23,.2) 0%, rgba(31,26,23,.88) 100%), url('@Url.Content("~/AdminX-master/demo/img/fondo.jpg")') center/cover;
+        }
+        .registro-foto h1 { color: #fff; font-size: clamp(30px, 3.6vw, 48px); line-height: 1.05; margin: 0 0 14px; max-width: 15ch; }
+        .registro-foto ol { padding-left: 20px; margin: 18px 0 0; opacity: .92; }
+        .registro-foto li { margin-bottom: 6px; }
+        .registro-form { display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
+        .registro-caja { width: 100%; max-width: 520px; }
+        .registro-caja h2 { font-size: 30px; margin: 0 0 6px; }
+        .registro-caja .form-control { height: 44px; }
+        .grupo { border: 1px solid var(--borde, #eadfd3); border-radius: 14px; padding: 16px 16px 4px; margin-bottom: 16px; }
+        .grupo legend { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--gris); width: auto; padding: 0 6px; margin: 0; }
+        .url-carta { font-size: 13px; }
+        .trampa { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+        @@media (max-width: 900px) {
+            .registro { grid-template-columns: 1fr; }
+            .registro-foto { min-height: 200px; padding: 28px 20px; }
+            .registro-foto ol { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="registro">
+        <section class="registro-foto">
+            <h1>Tu restaurante, listo en 2 minutos.</h1>
+            <p style="font-size:17px;max-width:44ch;opacity:.9;margin:0">Crea tu cuenta y empieza a tomar pedidos hoy. Tus datos quedan separados de los demás restaurantes.</p>
+            <ol>
+                <li>Registra tu restaurante y tu usuario.</li>
+                <li>Indica cuántas mesas tienes y tus primeros platos.</li>
+                <li>Toma tu primer pedido y comparte tu carta con QR.</li>
+            </ol>
+        </section>
+
+        <section class="registro-form">
+            <div class="registro-caja">
+                <h2>Crea tu restaurante</h2>
+                <p class="text-muted mb-4">¿Ya tienes cuenta? <a asp-controller="Home" asp-action="Index">Ingresa aquí</a>.</p>
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <form asp-action="Index" method="post" novalidate>
+                    <fieldset class="grupo">
+                        <legend>Tu restaurante</legend>
+                        <div class="form-group">
+                            <label asp-for="nombre"></label>
+                            <input asp-for="nombre" class="form-control" placeholder="Ej.: Cevichería Doña Pepa" autocomplete="organization" autofocus />
+                            <span asp-validation-for="nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-sm-7">
+                                <label asp-for="codigo"></label>
+                                <input asp-for="codigo" class="form-control" placeholder="dona-pepa" autocomplete="off" />
+                                <small id="estadoCodigo" class="url-carta text-muted">Su carta quedará en <strong>/c/<span id="vistaCodigo">…</span></strong></small>
+                                <span asp-validation-for="codigo" class="text-danger small d-block"></span>
+                            </div>
+                            <div class="form-group col-sm-5">
+                                <label asp-for="ruc"></label>
+                                <input asp-for="ruc" class="form-control" inputmode="numeric" maxlength="11" placeholder="20123456789" />
+                                <span asp-validation-for="ruc" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="grupo">
+                        <legend>Tu cuenta de administrador</legend>
+                        <div class="form-row">
+                            <div class="form-group col-sm-6">
+                                <label asp-for="admin_nombre"></label>
+                                <input asp-for="admin_nombre" class="form-control" autocomplete="name" />
+                                <span asp-validation-for="admin_nombre" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group col-sm-6">
+                                <label asp-for="email"></label>
+                                <input asp-for="email" class="form-control" type="email" autocomplete="email" />
+                                <span asp-validation-for="email" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="usuario"></label>
+                            <input asp-for="usuario" class="form-control" autocomplete="username" placeholder="Ej.: pepa" />
+                            <span asp-validation-for="usuario" class="text-danger small"></span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-sm-6">
+                                <label asp-for="clave"></label>
+                                <input asp-for="clave" class="form-control" autocomplete="new-password" />
+                                <span asp-validation-for="clave" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group col-sm-6">
+                                <label asp-for="clave2"></label>
+                                <input asp-for="clave2" class="form-control" autocomplete="new-password" />
+                                <span asp-validation-for="clave2" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="trampa" aria-hidden="true">
+                        <label for="sitio_web">No llenar</label>
+                        <input asp-for="sitio_web" tabindex="-1" autocomplete="off" />
+                    </div>
+
+                    <div class="custom-control custom-checkbox mb-3">
+                        <input asp-for="acepto" class="custom-control-input" />
+                        <label asp-for="acepto" class="custom-control-label">Acepto los <a asp-controller="Home" asp-action="Privacy" target="_blank">términos y la política de privacidad</a></label>
+                        <span asp-validation-for="acepto" class="text-danger small d-block"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" style="height:48px">Crear mi restaurante</button>
+                </form>
+            </div>
+        </section>
+    </div>
+    <script>
+        (function () {
+            var nombre = document.getElementById('nombre'), codigo = document.getElementById('codigo');
+            var vista = document.getElementById('vistaCodigo'), estado = document.getElementById('estadoCodigo');
+            var tocado = codigo.value !== '', espera;
+            function slug(t) {
+                return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
+            }
+            function revisar() {
+                var c = slug(codigo.value || nombre.value);
+                vista.textContent = c || '…';
+                clearTimeout(espera);
+                if (c.length < 3) { estado.className = 'url-carta text-muted'; return; }
+                espera = setTimeout(function () {
+                    fetch('@Url.Action("Disponible")?codigo=' + encodeURIComponent(c))
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (d) {
+                            if (!d) return;
+                            estado.className = 'url-carta ' + (d.disponible ? 'text-success' : 'text-danger');
+                            estado.lastChild && estado.lastChild.nodeType === 3 && estado.removeChild(estado.lastChild);
+                            estado.appendChild(document.createTextNode(d.disponible ? ' · disponible' : ' · ya está en uso'));
+                        });
+                }, 350);
+            }
+            nombre.addEventListener('input', function () { if (!tocado) codigo.value = slug(nombre.value); revisar(); });
+            codigo.addEventListener('input', function () { tocado = true; revisar(); });
+            revisar();
+        })();
+    </script>
+</body>
+</html>
