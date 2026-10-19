@@ -43,8 +43,8 @@ namespace Planmenus.Controllers
                 catch (JsonException) { }
             }
 
-            if (!string.IsNullOrEmpty(_opciones.ClaveWebhook)
-                && !MercadoPagoClient.FirmaValida(Request.Headers["x-signature"], Request.Headers["x-request-id"], Request.Query["data.id"].FirstOrDefault() ?? id, _opciones.ClaveWebhook))
+            if (!string.IsNullOrEmpty(_opciones.WebhookSecret)
+                && !MercadoPagoClient.FirmaValida(Request.Headers["x-signature"], Request.Headers["x-request-id"], Request.Query["data.id"].FirstOrDefault() ?? id, _opciones.WebhookSecret))
             {
                 _logger.LogWarning("Notificación de Mercado Pago con firma no válida (pago {Pago})", id);
                 return Unauthorized();

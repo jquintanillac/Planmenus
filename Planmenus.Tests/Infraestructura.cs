@@ -41,7 +41,7 @@ namespace Planmenus.Tests
                 }
                 services.AddSingleton<MercadoPagoFalso>();
                 services.AddSingleton<Planmenus.Services.Pagos.IMercadoPago>(sp => sp.GetRequiredService<MercadoPagoFalso>());
-                services.PostConfigure<Planmenus.Services.Pagos.MercadoPagoOptions>(o => o.ClaveWebhook = MercadoPagoFalso.ClaveWebhook);
+                services.PostConfigure<Planmenus.Services.Pagos.MercadoPagoOptions>(o => o.WebhookSecret = MercadoPagoFalso.ClaveWebhook);
                 services.AddAuthentication(Esquema).AddScheme<AuthenticationSchemeOptions, UsuarioPruebas>(Esquema, _ => { });
                 services.PostConfigure<AuthenticationOptions>(o =>
                 {

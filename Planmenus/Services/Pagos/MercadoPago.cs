@@ -14,14 +14,25 @@ namespace Planmenus.Services.Pagos
     /// </summary>
     public class MercadoPagoOptions
     {
-        /// <summary>Access Token de la aplicacion (TEST-... para pruebas, APP_USR-... en produccion)</summary>
+        /// <summary>true = se usan las credenciales de prueba (Sandbox*); false = produccion, cobros reales</summary>
+        public bool Sandbox { get; set; }
+        /// <summary>Access Token de produccion (APP_USR-...)</summary>
         public string AccessToken { get; set; }
+        /// <summary>Clave publica de produccion (solo la usa un checkout dentro de la pagina; Checkout Pro no la necesita)</summary>
+        public string PublicKey { get; set; }
+        /// <summary>Access Token de prueba (TEST-...)</summary>
+        public string SandboxAccessToken { get; set; }
+        public string SandboxPublicKey { get; set; }
         /// <summary>Clave secreta de las notificaciones (Webhooks) para validar la firma x-signature</summary>
-        public string ClaveWebhook { get; set; }
+        public string WebhookSecret { get; set; }
         /// <summary>Direccion publica del sistema (https://...) para recibir las notificaciones. Vacio = no se piden.</summary>
         public string UrlPublica { get; set; }
 
-        public bool Configurado => !string.IsNullOrWhiteSpace(AccessToken);
+        /// <summary>El token que corresponde al modo actual</summary>
+        public string Token => Sandbox ? SandboxAccessToken : AccessToken;
+
+        /// <summary>Hay un token real (no vacio ni el texto de ejemplo "REEMPLAZA")</summary>
+        public bool Configurado => !string.IsNullOrWhiteSpace(Token) && !Token.Contains("REEMPLAZA", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Lo que el sistema necesita de Mercado Pago (se reemplaza en las pruebas)</summary>
@@ -101,9 +112,9 @@ namespace Planmenus.Services.Pagos
 
         private HttpRequestMessage Solicitud(HttpMethod metodo, string ruta)
         {
-            if (!Configurado) throw new InvalidOperationException("Mercado Pago no está configurado (MercadoPago:AccessToken).");
+            if (!Configurado) throw new InvalidOperationException("Mercado Pago no está configurado (MercadoPago:AccessToken o, en modo Sandbox, MercadoPago:SandboxAccessToken).");
             var req = new HttpRequestMessage(metodo, ruta);
-            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _opciones.AccessToken);
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _opciones.Token);
             return req;
         }
 
