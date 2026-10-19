@@ -293,3 +293,17 @@ table.dataTable { border-collapse: collapse !important; }
 
 /* Subtitulos de pasos en formularios de cobro */
 .pos-paso { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gris); margin: 14px 0 6px; }
+
+/* ---------- Secciones del menu lateral (acordeon) ---------- */
+.app-nav-seccion { list-style: none; }
+.app-nav-seccion > ul { list-style: none; margin: 0; padding: 0; }
+button.app-nav-titulo {
+    display: flex; align-items: center; width: 100%;
+    margin: 14px 0 4px; padding: 6px 12px; border: 0; border-radius: 8px;
+    background: transparent; cursor: pointer; text-align: left;
+    font: 700 11px/1.2 var(--fuente); letter-spacing: .14em; text-transform: uppercase; color: #9c8f83;
+}
+button.app-nav-titulo:hover { color: #e9e1d8; background: var(--carbon-2); }
+button.app-nav-titulo:focus-visible { outline: 2px solid var(--mostaza); outline-offset: 1px; }
+button.app-nav-titulo .flecha { margin-left: auto; width: 15px; height: 15px; transition: transform .2s; opacity: .8; }
+button.app-nav-titulo[aria-expanded="false"] .flecha { transform: rotate(-90deg); }

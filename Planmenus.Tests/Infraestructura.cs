@@ -1,0 +1,155 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Planmenus.Data;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+
+namespace Planmenus.Tests
+{
+    /// <summary>
+    /// Levanta la aplicacion real (con la base configurada en user-secrets) y un usuario de pruebas
+    /// con todos los permisos. Los procesos en segundo plano (recordatorios, reenvio a SUNAT) se desactivan.
+    /// </summary>
+    public class AppFactory : WebApplicationFactory<Program>
+    {
+        public const string Esquema = "Pruebas";
+
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseEnvironment("Development");
+            builder.ConfigureTestServices(services =>
+            {
+                foreach (var d in services.Where(d => d.ServiceType == typeof(IHostedService)).ToList())
+                {
+                    services.Remove(d);
+                }
+                services.AddAuthentication(Esquema).AddScheme<AuthenticationSchemeOptions, UsuarioPruebas>(Esquema, _ => { });
+                services.PostConfigure<AuthenticationOptions>(o =>
+                {
+                    o.DefaultScheme = Esquema;
+                    o.DefaultAuthenticateScheme = Esquema;
+                    o.DefaultChallengeScheme = Esquema;
+                });
+            });
+        }
+
+        public Cliente Cliente() => new(CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false, HandleCookies = true }), this);
+
+        public T Con<T>(Func<Datacontext, T> accion)
+        {
+            using var scope = Services.CreateScope();
+            return accion(scope.ServiceProvider.GetRequiredService<Datacontext>());
+        }
+
+        public async Task Con(Func<Datacontext, Task> accion)
+        {
+            using var scope = Services.CreateScope();
+            await accion(scope.ServiceProvider.GetRequiredService<Datacontext>());
+        }
+
+        public async Task<T> Con<T>(Func<Datacontext, Task<T>> accion)
+        {
+            using var scope = Services.CreateScope();
+            return await accion(scope.ServiceProvider.GetRequiredService<Datacontext>());
+        }
+    }
+
+    /// <summary>Usuario "admin" con todos los permisos del menu</summary>
+    public class UsuarioPruebas : AuthenticationHandler<AuthenticationSchemeOptions>
+    {
+        public UsuarioPruebas(IOptionsMonitor<AuthenticationSchemeOptions> o, ILoggerFactory l, UrlEncoder e) : base(o, l, e) { }
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, "admin"),
+                new(ClaimTypes.Name, "Pruebas automatizadas"),
+                new(ClaimTypes.Role, "Administrador")
+            };
+            for (int m = 1; m <= 3; m++) claims.Add(new Claim("menu" + m, "S"));
+            for (int m = 1; m <= 3; m++)
+                for (int s = 1; s <= 15; s++)
+                    claims.Add(new Claim($"submenu{m}_{s}", "S"));
+            var identidad = new ClaimsIdentity(claims, AppFactory.Esquema, ClaimTypes.Name, ClaimTypes.Role);
+            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identidad), AppFactory.Esquema)));
+        }
+    }
+
+    /// <summary>
+    /// Cliente HTTP que conserva cookies y obtiene el token antifalsificacion de cada formulario.
+    /// </summary>
+    public class Cliente
+    {
+        private static readonly Regex Token = new("name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"", RegexOptions.Compiled);
+        public HttpClient Http { get; }
+        public AppFactory App { get; }
+
+        public Cliente(HttpClient http, AppFactory app)
+        {
+            Http = http;
+            App = app;
+        }
+
+        public async Task<string> HtmlAsync(string url)
+        {
+            var r = await Http.GetAsync(url);
+            Assert.True(r.StatusCode == HttpStatusCode.OK, $"GET {url} devolvió {(int)r.StatusCode}");
+            return await r.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> TokenAsync(string desde)
+        {
+            var m = Token.Match(await HtmlAsync(desde));
+            Assert.True(m.Success, $"No se encontró el token del formulario en {desde}");
+            return WebUtility.HtmlDecode(m.Groups[1].Value);
+        }
+
+        /// <summary>Envia un formulario (tomando el token de la pagina 'desde') y devuelve la respuesta</summary>
+        public async Task<HttpResponseMessage> PostAsync(string desde, string url, params (string, object)[] campos)
+        {
+            var datos = campos.Select(c => new KeyValuePair<string, string>(c.Item1, Convert.ToString(c.Item2, System.Globalization.CultureInfo.InvariantCulture))).ToList();
+            datos.Add(new("__RequestVerificationToken", await TokenAsync(desde)));
+            return await Http.PostAsync(url, new FormUrlEncodedContent(datos));
+        }
+
+        /// <summary>Envia el formulario y exige una redireccion (operacion exitosa)</summary>
+        public async Task<string> PostOkAsync(string desde, string url, params (string, object)[] campos)
+        {
+            var r = await PostAsync(desde, url, campos);
+            var cuerpo = await r.Content.ReadAsStringAsync();
+            Assert.True(r.StatusCode == HttpStatusCode.Redirect, $"POST {url} devolvió {(int)r.StatusCode}: {Recortar(cuerpo)}");
+            return r.Headers.Location?.ToString();
+        }
+
+        public async Task<HttpResponseMessage> PostJsonAsync(string desde, string url, object cuerpo)
+        {
+            var token = await TokenAsync(desde);
+            var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(cuerpo) };
+            req.Headers.Add("RequestVerificationToken", token);
+            return await Http.SendAsync(req);
+        }
+
+        private static string Recortar(string s) => s.Length > 400 ? s[..400] : s;
+    }
+
+    [CollectionDefinition("App")]
+    public class ColeccionApp : ICollectionFixture<AppFactory> { }
+
+    public static class Marca
+    {
+        /// <summary>Prefijo unico para los registros que crean las pruebas</summary>
+        public static string Nueva() => "TEST-" + Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+    }
+}
