@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -29,6 +30,16 @@ namespace Planmenus.Tests
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Development");
+
+            // Las pruebas crean y borran datos: usan su propia base (ConnectionStrings:Pruebas en user-secrets)
+            // y nunca la del sistema. Sin esa cadena no se ejecutan.
+            var secretos = new ConfigurationBuilder().AddUserSecrets<Program>().AddEnvironmentVariables().Build();
+            var pruebas = secretos.GetConnectionString("Pruebas");
+            if (string.IsNullOrWhiteSpace(pruebas))
+            {
+                throw new InvalidOperationException("Configure ConnectionStrings:Pruebas (user-secrets del proyecto Planmenus) con una base solo para pruebas.");
+            }
+            builder.UseSetting("ConnectionStrings:DefaultConnection", pruebas);
             builder.ConfigureTestServices(services =>
             {
                 foreach (var d in services.Where(d => d.ServiceType == typeof(IHostedService)).ToList())
