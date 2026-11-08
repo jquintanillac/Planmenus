@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Configuracion del servidor (cadenas y claves reales): se publica, pero nunca se sube al repositorio
+appsettings.Production.json

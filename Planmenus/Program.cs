@@ -16,6 +16,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    // En el servidor no hay user-secrets: la cadena va en appsettings.Production.json o en una variable de entorno
+    throw new InvalidOperationException($"Falta ConnectionStrings:DefaultConnection para el entorno '{builder.Environment.EnvironmentName}'. " +
+        "En el servidor configúrela en appsettings.Production.json o en la variable de entorno ConnectionStrings__DefaultConnection.");
+}
 builder.Services.AddScoped<EmpresaActual>();
 builder.Services.AddDbContext<Datacontext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<SP_Menus>();
